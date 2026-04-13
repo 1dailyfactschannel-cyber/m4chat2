@@ -5,5 +5,9 @@ export const modules: ModuleMap = {
   "./components/mockups/telegram/ChatDetailScreen.tsx": () => import("../components/mockups/telegram/ChatDetailScreen.tsx"),
   "./components/mockups/telegram/ChatsScreen.tsx": () => import("../components/mockups/telegram/ChatsScreen.tsx"),
   "./components/mockups/telegram/ContactsScreen.tsx": () => import("../components/mockups/telegram/ContactsScreen.tsx"),
+  "./components/mockups/telegram/DesktopCalls.tsx": () => import("../components/mockups/telegram/DesktopCalls.tsx"),
+  "./components/mockups/telegram/DesktopContacts.tsx": () => import("../components/mockups/telegram/DesktopContacts.tsx"),
+  "./components/mockups/telegram/DesktopMain.tsx": () => import("../components/mockups/telegram/DesktopMain.tsx"),
+  "./components/mockups/telegram/DesktopSettings.tsx": () => import("../components/mockups/telegram/DesktopSettings.tsx"),
   "./components/mockups/telegram/SettingsScreen.tsx": () => import("../components/mockups/telegram/SettingsScreen.tsx")
 };
