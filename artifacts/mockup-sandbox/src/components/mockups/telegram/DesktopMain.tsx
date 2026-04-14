@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   MessageCircle, Phone, Bookmark, Settings, Users, Search, Edit3,
   Video, MoreHorizontal, Paperclip, Smile, Send, CheckCheck, Play,
-  X, Reply, Trash2, Copy, Forward, Pin, Mic, BellOff, Star,
+  X, Reply, Trash2, Copy, Forward, Pin, Mic, BellOff, Bell, Star,
   Moon, Sun, Image, Info, Hash, Check, Camera,
   MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut,
   ArrowDown, Slash, AtSign, Type, Clock, BarChart2, Link,
   File, Music, Archive, Eye, EyeOff, CheckSquare, Square,
+  UserPlus, Download, ChevronRight,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,7 +109,7 @@ export function DesktopMain() {
   const [replyTo, setReplyTo] = useState<Message|null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [chatBgId, setChatBgId] = useState('default');
-  const [showProfile, setShowProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(true);
   const [profileTab, setProfileTab] = useState<'media'|'files'|'links'|'audio'>('media');
   const [forwardMsgId, setForwardMsgId] = useState<number|null>(null);
   const [editingMsgId, setEditingMsgId] = useState<number|null>(null);
@@ -770,84 +771,228 @@ export function DesktopMain() {
 
       {/* Profile panel */}
       {showProfile&&(
-        <div className="w-[260px] shrink-0 flex flex-col overflow-y-auto" style={{background:bg.panel,borderLeft:`1px solid ${bg.panelBorder}`}}>
-          <div className="flex items-center justify-between px-4 h-[52px] shrink-0" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
-            <span className="font-semibold text-[14px]" style={{color:bg.text}}>Info</span>
-            <button onClick={()=>setShowProfile(false)} style={{color:bg.textSec}} className="hover:text-[#EF4444]"><X className="w-5 h-5"/></button>
-          </div>
-          <div className="flex flex-col items-center px-4 pt-5 pb-3">
-            <div className={`w-[68px] h-[68px] rounded-full bg-gradient-to-br ${activeChat.color} flex items-center justify-center text-white font-bold text-xl mb-2`}>{activeChat.avatar}</div>
-            <h3 className="font-bold text-[16px] mb-0.5" style={{color:bg.text}}>{activeChat.name}</h3>
-            {activeChat.status==='online'?<span className="text-[12px] text-[#4DCA65] font-medium">online</span>:<span className="text-[12px]" style={{color:bg.textSec}}>{activeChat.status}</span>}
-            <div className="flex gap-3 mt-3">
-              {[{icon:MessageCircle,label:'Message'},{icon:Phone,label:'Call'},{icon:Video,label:'Video'}].map(({icon:Icon,label})=>(
-                <div key={label} className="flex flex-col items-center gap-1 cursor-pointer group">
-                  <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center group-hover:bg-[#2481CC] transition-colors"><Icon className="w-4 h-4 text-[#2481CC] group-hover:text-white transition-colors"/></div>
-                  <span className="text-[10px] text-[#2481CC]">{label}</span>
-                </div>
-              ))}
+        <div className="w-[320px] shrink-0 flex flex-col overflow-hidden" style={{background:bg.panel,borderLeft:`1px solid ${bg.panelBorder}`}}>
+          {/* ── Cover area ───────────────────────────── */}
+          <div className="relative shrink-0">
+            <div className={`w-full bg-gradient-to-br ${activeChat.color}`} style={{height:160}}/>
+            {/* top buttons */}
+            <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 pt-3">
+              <button onClick={()=>setShowProfile(false)} className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors">
+                <X className="w-4 h-4"/>
+              </button>
+              <div className="flex gap-2">
+                {!isGroup&&<button className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors"><Edit3 className="w-4 h-4"/></button>}
+                <button className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/50 transition-colors"><MoreHorizontal className="w-4 h-4"/></button>
+              </div>
+            </div>
+            {/* avatar */}
+            <div className="absolute left-1/2 -translate-x-1/2" style={{bottom:-36}}>
+              <div className="relative">
+                <div className={`w-[72px] h-[72px] rounded-full bg-gradient-to-br ${activeChat.color} flex items-center justify-center text-white font-bold text-[26px] border-[3px] shadow-lg`} style={{borderColor:bg.panel}}>{activeChat.avatar}</div>
+                {activeChat.status==='online'&&<div className="absolute bottom-1 right-1 w-[14px] h-[14px] rounded-full bg-[#4DCA65] border-2 border-white"/>}
+              </div>
             </div>
           </div>
-          {activeChat.phone&&<div className="flex items-center gap-2.5 py-2.5 px-4" style={{borderBottom:`1px solid ${bg.panelBorder}`}}><Phone className="w-3.5 h-3.5 shrink-0" style={{color:bg.textSec}}/><div><div className="text-[13px]" style={{color:bg.text}}>{activeChat.phone}</div><div className="text-[10px]" style={{color:bg.textSec}}>Mobile</div></div></div>}
-          {activeChat.username&&<div className="flex items-center gap-2.5 py-2.5 px-4" style={{borderBottom:`1px solid ${bg.panelBorder}`}}><Hash className="w-3.5 h-3.5 shrink-0" style={{color:bg.textSec}}/><div><div className="text-[13px]" style={{color:bg.text}}>{activeChat.username}</div><div className="text-[10px]" style={{color:bg.textSec}}>Username</div></div></div>}
-          {activeChat.bio&&<div className="flex items-start gap-2.5 py-2.5 px-4" style={{borderBottom:`1px solid ${bg.panelBorder}`}}><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{color:bg.textSec}}/><div><div className="text-[13px] leading-snug" style={{color:bg.text}}>{activeChat.bio}</div><div className="text-[10px]" style={{color:bg.textSec}}>Bio</div></div></div>}
-          {/* Media tabs */}
-          <div className="flex border-b shrink-0" style={{borderColor:bg.panelBorder}}>
-            {([{id:'media',icon:Image,label:'Media'},{id:'files',icon:File,label:'Files'},{id:'links',icon:Link,label:'Links'},{id:'audio',icon:Music,label:'Audio'}] as const).map(tab=>(
-              <button key={tab.id} onClick={()=>setProfileTab(tab.id)} className={`flex-1 py-2 flex flex-col items-center gap-0.5 relative transition-colors`} style={{color:profileTab===tab.id?'#2481CC':bg.textSec}}>
-                <tab.icon className="w-4 h-4"/><span className="text-[9px] font-medium">{tab.label}</span>
-                {profileTab===tab.id&&<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2481CC]"/>}
-              </button>
+
+          {/* ── Name & status ─────────────────────────── */}
+          <div className="flex flex-col items-center pt-12 pb-3 px-4">
+            <h3 className="font-bold text-[17px] leading-tight text-center mb-0.5" style={{color:bg.text}}>{activeChat.name}</h3>
+            {activeChat.status==='online'
+              ?<span className="text-[13px] text-[#4DCA65] font-medium">online</span>
+              :<span className="text-[12px]" style={{color:bg.textSec}}>{activeChat.status}</span>
+            }
+          </div>
+
+          {/* ── Action buttons ────────────────────────── */}
+          <div className="flex justify-center gap-5 px-4 pb-4" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+            {([
+              {icon:MessageCircle,label:'Message',action:()=>setShowProfile(false)},
+              {icon:Phone,label:'Call',action:()=>startCall('audio')},
+              {icon:Video,label:'Video',action:()=>startCall('video')},
+              {icon:Search,label:'Search',action:()=>{setShowSearchBar(s=>!s);setShowProfile(false);}},
+            ]).map(({icon:Icon,label,action})=>(
+              <div key={label} className="flex flex-col items-center gap-1.5 cursor-pointer group" onClick={action}>
+                <div className="w-[42px] h-[42px] rounded-full bg-[#E8F4FF] flex items-center justify-center group-hover:bg-[#2481CC] transition-colors">
+                  <Icon className="w-[18px] h-[18px] text-[#2481CC] group-hover:text-white transition-colors"/>
+                </div>
+                <span className="text-[11px] font-medium text-[#2481CC]">{label}</span>
+              </div>
             ))}
           </div>
-          <div className="flex-1 p-3">
-            {profileTab==='media'&&(
-              <div className="grid grid-cols-3 gap-1">
-                {GRADIENTS.map((g,i)=>(
-                  <div key={i} onClick={()=>setLightbox({gradient:g})} className={`h-16 rounded-lg bg-gradient-to-tr ${g} flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}>
-                    <Image className="w-4 h-4 text-white opacity-60"/>
+
+          {/* ── Scrollable content ────────────────────── */}
+          <div className="flex-1 overflow-y-auto">
+
+            {/* Info rows */}
+            <div className="py-1">
+              {activeChat.phone&&(
+                <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] group transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+                  <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><Phone className="w-[18px] h-[18px] text-[#2481CC]"/></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-medium" style={{color:bg.text}}>{activeChat.phone}</div>
+                    <div className="text-[12px]" style={{color:bg.textSec}}>Mobile</div>
                   </div>
-                ))}
-              </div>
-            )}
-            {profileTab==='files'&&(
-              <div className="space-y-2">
-                {['Design_v2.fig','Report_Q4.pdf','Mockups.zip','Budget.xlsx'].map((f,i)=>(
-                  <div key={i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors">
-                    <div className="w-9 h-9 rounded-xl bg-[#E8F4FF] flex items-center justify-center shrink-0"><File className="w-4 h-4 text-[#2481CC]"/></div>
-                    <div><div className="text-[12px] font-medium" style={{color:bg.text}}>{f}</div><div className="text-[10px]" style={{color:bg.textSec}}>{['2.4 MB','1.1 MB','8.7 MB','340 KB'][i]}</div></div>
+                  <Copy className="w-4 h-4 text-[#C7C7CC] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"/>
+                </div>
+              )}
+              {activeChat.username&&(
+                <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] group transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+                  <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><AtSign className="w-[18px] h-[18px] text-[#2481CC]"/></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-medium text-[#2481CC]">{activeChat.username}</div>
+                    <div className="text-[12px]" style={{color:bg.textSec}}>Username</div>
                   </div>
-                ))}
-              </div>
-            )}
-            {profileTab==='links'&&(
-              <div className="space-y-2">
-                {LINK_PREVIEWS.map((l,i)=>(
-                  <div key={i} className="p-2 rounded-xl border hover:bg-[#F1F1F1] cursor-pointer transition-colors" style={{borderColor:bg.panelBorder}}>
-                    <div className="text-[12px] font-medium text-[#2481CC] truncate">{l.url}</div>
-                    <div className="text-[11px] truncate" style={{color:bg.text}}>{l.title}</div>
+                  <Copy className="w-4 h-4 text-[#C7C7CC] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"/>
+                </div>
+              )}
+              {activeChat.bio&&(
+                <div className="flex items-start gap-3 px-4 py-3" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+                  <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0"><Info className="w-[18px] h-[18px]" style={{color:bg.textSec}}/></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] leading-snug" style={{color:bg.text}}>{activeChat.bio}</div>
+                    <div className="text-[12px] mt-0.5" style={{color:bg.textSec}}>Bio</div>
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Notifications */}
+              <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}
+                onClick={()=>setChats(prev=>prev.map(c=>c.id!==activeChatId?c:{...c,muted:!c.muted}))}>
+                <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0">
+                  {activeChat.muted?<BellOff className="w-[18px] h-[18px]" style={{color:bg.textSec}}/>:<Bell className="w-[18px] h-[18px]" style={{color:bg.textSec}}/>}
+                </div>
+                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Notifications</span>
+                <div className={`w-10 h-[22px] rounded-full relative transition-colors shrink-0 ${!activeChat.muted?'bg-[#2481CC]':'bg-[#D1D1D6]'}`}>
+                  <div className={`absolute top-[2px] w-[18px] h-[18px] bg-white rounded-full shadow transition-all ${!activeChat.muted?'left-[20px]':'left-[2px]'}`}/>
+                </div>
               </div>
-            )}
-            {profileTab==='audio'&&(
-              <div className="space-y-2">
-                {['Voice message','Voice message','Voice message'].map((a,i)=>(
-                  <div key={i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors">
-                    <div className="w-9 h-9 rounded-full bg-[#2481CC] flex items-center justify-center shrink-0"><Play className="w-4 h-4 ml-0.5 text-white"/></div>
-                    <div className="flex-1"><div className="text-[12px] font-medium" style={{color:bg.text}}>{a} #{i+1}</div><div className="text-[10px]" style={{color:bg.textSec}}>{['0:12','0:28','0:07'][i]}</div></div>
+
+              {/* Search in chat */}
+              <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}
+                onClick={()=>{setShowSearchBar(true);setShowProfile(false);}}>
+                <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0"><Search className="w-[18px] h-[18px]" style={{color:bg.textSec}}/></div>
+                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Search in Chat</span>
+                <ChevronRight className="w-4 h-4 text-[#C7C7CC] shrink-0"/>
+              </div>
+
+              {/* Shared media header row */}
+              <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+                <span className="text-[14px] font-semibold" style={{color:bg.text}}>Shared Media</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-[13px]" style={{color:bg.textSec}}>{GRADIENTS.length + 4}</span>
+                  <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
+                </div>
+              </div>
+            </div>
+
+            {/* Media tabs */}
+            <div className="flex shrink-0" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+              {([
+                {id:'media',icon:Image,label:'Media',count:6},
+                {id:'files',icon:File,label:'Files',count:5},
+                {id:'links',icon:Link,label:'Links',count:3},
+                {id:'audio',icon:Music,label:'Audio',count:3},
+              ] as const).map(tab=>(
+                <button key={tab.id} onClick={()=>setProfileTab(tab.id)}
+                  className="flex-1 py-2.5 flex flex-col items-center gap-0.5 relative transition-colors"
+                  style={{color:profileTab===tab.id?'#2481CC':bg.textSec}}>
+                  <tab.icon className="w-4 h-4"/>
+                  <span className="text-[10px] font-semibold">{tab.label}</span>
+                  <span className="text-[9px]" style={{color:profileTab===tab.id?'#2481CC':'#C7C7CC'}}>{tab.count}</span>
+                  {profileTab===tab.id&&<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2481CC]"/>}
+                </button>
+              ))}
+            </div>
+
+            {/* Media content */}
+            <div className="p-3">
+              {profileTab==='media'&&(
+                <div className="grid grid-cols-3 gap-1">
+                  {GRADIENTS.map((g,i)=>(
+                    <div key={i} onClick={()=>setLightbox({gradient:g})}
+                      className={`aspect-square rounded-lg bg-gradient-to-tr ${g} flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}>
+                      <Image className="w-5 h-5 text-white opacity-50"/>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {profileTab==='files'&&(
+                <div className="space-y-1">
+                  {(['Design_v2.fig','Report_Q4.pdf','Mockups.zip','Budget.xlsx','Presentation.pptx'] as const).map((f,i)=>(
+                    <div key={f} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors group">
+                      <div className="w-10 h-10 rounded-xl bg-[#E8F4FF] flex items-center justify-center shrink-0"><File className="w-5 h-5 text-[#2481CC]"/></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-medium truncate" style={{color:bg.text}}>{f}</div>
+                        <div className="text-[11px]" style={{color:bg.textSec}}>{['2.4 MB','1.1 MB','8.7 MB','340 KB','5.2 MB'][i]}</div>
+                      </div>
+                      <Download className="w-4 h-4 text-[#C7C7CC] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"/>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {profileTab==='links'&&(
+                <div className="space-y-2">
+                  {LINK_PREVIEWS.map((l,i)=>(
+                    <div key={i} className="flex items-start gap-3 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer border transition-colors" style={{borderColor:bg.panelBorder}}>
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${l.color} flex items-center justify-center shrink-0`}><Link className="w-4 h-4 text-white"/></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[12px] font-semibold text-[#2481CC] truncate">{l.title}</div>
+                        <div className="text-[11px] truncate" style={{color:bg.textSec}}>{l.url}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {profileTab==='audio'&&(
+                <div className="space-y-1">
+                  {(['Voice message #1','Voice message #2','Voice message #3'] as const).map((a,i)=>(
+                    <div key={a} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-[#2481CC] flex items-center justify-center shrink-0"><Play className="w-5 h-5 ml-0.5 text-white"/></div>
+                      <div className="flex-1">
+                        <div className="text-[13px] font-medium" style={{color:bg.text}}>{a}</div>
+                        <div className="text-[11px]" style={{color:bg.textSec}}>{['0:12','0:28','0:07'][i]}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Members (groups only) */}
+              {activeChat.members&&(
+                <div className="mt-3 pt-3" style={{borderTop:`1px solid ${bg.panelBorder}`}}>
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <span className="text-[13px] font-semibold" style={{color:bg.text}}>{activeChat.members.length} members</span>
+                    <span className="text-[12px] text-[#2481CC] cursor-pointer hover:underline">See all</span>
                   </div>
-                ))}
-              </div>
-            )}
-            {activeChat.members&&(
-              <div className="mt-3" style={{borderTop:`1px solid ${bg.panelBorder}`,paddingTop:8}}>
-                <div className="text-[11px] font-semibold mb-2" style={{color:bg.text}}>{activeChat.members.length} members</div>
-                {activeChat.members.map(m=>(
-                  <div key={m} className="flex items-center gap-2 py-1.5"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-semibold shrink-0">{m[0]}</div><span className="text-[12px]" style={{color:bg.text}}>{m}</span></div>
-                ))}
-              </div>
-            )}
+                  {/* Add member */}
+                  <div className="flex items-center gap-3 px-1 py-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors mb-1">
+                    <div className="w-10 h-10 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><UserPlus className="w-[18px] h-[18px] text-[#2481CC]"/></div>
+                    <span className="text-[13px] font-medium text-[#2481CC]">Add Member</span>
+                  </div>
+                  {/* Member list */}
+                  {activeChat.members.map((m,i)=>{
+                    const MCOLORS=['from-blue-400 to-cyan-500','from-pink-400 to-rose-500','from-green-400 to-emerald-500','from-orange-400 to-amber-500','from-purple-400 to-violet-500','from-teal-400 to-green-500'];
+                    const online=i<2;
+                    return(
+                      <div key={m} className="flex items-center gap-3 px-1 py-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors">
+                        <div className="relative shrink-0">
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${MCOLORS[i%MCOLORS.length]} flex items-center justify-center text-white text-[13px] font-semibold`}>{m[0]}</div>
+                          {online&&<div className="absolute bottom-0 right-0 w-[10px] h-[10px] rounded-full bg-[#4DCA65] border-2 border-white"/>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[13px] font-medium truncate" style={{color:bg.text}}>{m}</div>
+                          <div className="text-[11px]" style={{color:online?'#4DCA65':bg.textSec}}>{online?'online':'last seen recently'}</div>
+                        </div>
+                        {i===0&&<span className="text-[10px] font-semibold text-[#8E8E93] bg-[#F1F1F1] px-1.5 py-0.5 rounded-full shrink-0">admin</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
