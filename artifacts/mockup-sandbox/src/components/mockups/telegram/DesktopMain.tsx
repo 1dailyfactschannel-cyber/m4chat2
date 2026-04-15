@@ -61,7 +61,7 @@ const CHAT_BACKGROUNDS = [
 ];
 const GRADIENTS = ['from-purple-400 to-pink-400','from-blue-400 to-cyan-400','from-green-400 to-teal-400','from-orange-400 to-red-400','from-indigo-400 to-purple-400','from-yellow-400 to-orange-400'];
 const AUTO_REPLIES = ['Got it, thanks!','Sure, sounds good.','I will check that out.','Thanks for letting me know!','On it.','Will do!','Perfect, thanks.','Interesting!','Makes sense!','I agree.'];
-const FOLDERS = ['All','Personal','Work','Unread'] as const;
+const FOLDERS = ['Все','Личные','Работа','Непрочитанные'] as const;
 const LINK_PREVIEWS = [
   { url:'github.com', title:'GitHub · Build software', description:'Where the world builds software. Millions of developers use GitHub to discover, fork, and contribute.', color:'from-gray-700 to-gray-900' },
   { url:'youtube.com', title:'YouTube', description:'Enjoy the videos and music you love, upload original content.', color:'from-red-500 to-red-700' },
@@ -69,30 +69,30 @@ const LINK_PREVIEWS = [
 ];
 
 const INITIAL_CHATS: Chat[] = [
-  { id:1, name:'Telegram', avatar:'T', color:'from-blue-400 to-blue-500', status:'bot', statusColor:'#8E8E93', time:'10:42', unread:null, pinned:true, folder:'personal', bio:'Official Telegram notifications.', username:'@telegram',
-    messages:[{id:1,text:'Welcome to Telegram!',time:'10:40',outgoing:false,type:'text'},{id:2,text:'Your account has been successfully set up.',time:'10:42',outgoing:false,type:'text'}]},
-  { id:2, name:'Night Owl Club', avatar:'N', color:'from-purple-400 to-purple-600', status:'14 members', statusColor:'#8E8E93', time:'9:15', unread:3, folder:'personal', bio:'We stay up late and code things.', username:'@nightowls', members:['Alice','Bob','David','Sarah','Mike'],
-    messages:[{id:1,text:'Are we still on for tonight?',time:'9:10',outgoing:false,type:'text'},{id:2,text:'Yes! I will bring snacks.',time:'9:12',outgoing:true,type:'text',read:true},{id:3,text:'David: Awesome, see you at 9!',time:'9:15',outgoing:false,type:'text'}]},
-  { id:3, name:'Alice', avatar:'A', color:'from-pink-400 to-pink-500', status:'online', statusColor:'#4DCA65', time:'Yesterday', unread:null, folder:'personal', bio:'Designer & coffee lover.', phone:'+1 (555) 234-5678', username:'@alicejohnson', pinnedMsgId:3,
+  { id:1, name:'Telegram', avatar:'T', color:'from-blue-400 to-blue-500', status:'бот', statusColor:'#8E8E93', time:'10:42', unread:null, pinned:true, folder:'personal', bio:'Официальные уведомления Telegram.', username:'@telegram',
+    messages:[{id:1,text:'Добро пожаловать в Telegram!',time:'10:40',outgoing:false,type:'text'},{id:2,text:'Ваш аккаунт успешно создан.',time:'10:42',outgoing:false,type:'text'}]},
+  { id:2, name:'Ночные совы', avatar:'Н', color:'from-purple-400 to-purple-600', status:'14 участников', statusColor:'#8E8E93', time:'9:15', unread:3, folder:'personal', bio:'Сидим допоздна и пишем код.', username:'@nightowls', members:['Алиса','Боб','Давид','Сара','Миша'],
+    messages:[{id:1,text:'Мы всё ещё встречаемся сегодня?',time:'9:10',outgoing:false,type:'text'},{id:2,text:'Да! Я принесу перекус.',time:'9:12',outgoing:true,type:'text',read:true},{id:3,text:'Давид: Отлично, увидимся в 9!',time:'9:15',outgoing:false,type:'text'}]},
+  { id:3, name:'Алиса', avatar:'А', color:'from-pink-400 to-pink-500', status:'в сети', statusColor:'#4DCA65', time:'Вчера', unread:null, folder:'personal', bio:'Дизайнер и любительница кофе.', phone:'+7 (999) 234-56-78', username:'@alicejohnson', pinnedMsgId:3,
     messages:[
-      {id:1,text:'Hi there! Did you get a chance to look at the project files?',time:'10:20',outgoing:false,type:'text'},
-      {id:2,text:'Yes, I just finished reviewing them. Looking good so far!',time:'10:25',outgoing:true,type:'text',read:true},
-      {id:3,text:'Here is the mockup for the new dashboard.',time:'10:26',outgoing:false,type:'image',gradient:'from-purple-400 to-pink-400'},
+      {id:1,text:'Привет! Ты успел(а) посмотреть файлы проекта?',time:'10:20',outgoing:false,type:'text'},
+      {id:2,text:'Да, только что закончил(а) проверку. Пока выглядит хорошо!',time:'10:25',outgoing:true,type:'text',read:true},
+      {id:3,text:'Вот макет нового дашборда.',time:'10:26',outgoing:false,type:'image',gradient:'from-purple-400 to-pink-400'},
       {id:4,text:'',time:'10:30',outgoing:true,type:'voice',read:true},
-      {id:5,text:'Awesome, let me know if you need any changes.',time:'10:32',outgoing:false,type:'text',reactions:[{emoji:'❤️',count:1,mine:true}]},
-      {id:6,text:'Check out this link: https://github.com',time:'10:44',outgoing:false,type:'text',linkPreview:LINK_PREVIEWS[0]},
-      {id:7,text:'I sent you the documents you requested. Check your email too!',time:'10:45',outgoing:false,type:'text'},
+      {id:5,text:'Отлично, дай знать, если нужно что-то изменить.',time:'10:32',outgoing:false,type:'text',reactions:[{emoji:'❤️',count:1,mine:true}]},
+      {id:6,text:'Посмотри эту ссылку: https://github.com',time:'10:44',outgoing:false,type:'text',linkPreview:LINK_PREVIEWS[0]},
+      {id:7,text:'Я отправила тебе запрошенные документы. Проверь также почту!',time:'10:45',outgoing:false,type:'text'},
     ]},
-  { id:4, name:'Bob Smith', avatar:'B', color:'from-green-400 to-green-600', status:'last seen 2h ago', statusColor:'#8E8E93', time:'Yesterday', unread:null, folder:'personal', bio:'Software engineer. Coffee addict.', phone:'+1 (555) 345-6789', username:'@bobsmith',
-    messages:[{id:1,text:'Hey, are you free tomorrow?',time:'14:00',outgoing:true,type:'text',read:true},{id:2,text:'Sure! What time?',time:'14:05',outgoing:false,type:'text'},{id:3,text:'How about 3 PM?',time:'14:07',outgoing:true,type:'text',read:true},{id:4,text:'Sounds good!',time:'14:10',outgoing:false,type:'text'},
-      {id:5,text:'',time:'14:12',outgoing:false,type:'poll',poll:{question:'Best framework for 2024?',options:[{text:'React',votes:42,voted:false},{text:'Vue',votes:18,voted:false},{text:'Svelte',votes:24,voted:false},{text:'Angular',votes:11,voted:false}],totalVotes:95}},
+  { id:4, name:'Боб Смит', avatar:'Б', color:'from-green-400 to-green-600', status:'был 2ч назад', statusColor:'#8E8E93', time:'Вчера', unread:null, folder:'personal', bio:'Разработчик ПО. Любитель кофе.', phone:'+7 (999) 345-67-89', username:'@bobsmith',
+    messages:[{id:1,text:'Привет, ты свободен завтра?',time:'14:00',outgoing:true,type:'text',read:true},{id:2,text:'Конечно! В какое время?',time:'14:05',outgoing:false,type:'text'},{id:3,text:'Как насчёт 15:00?',time:'14:07',outgoing:true,type:'text',read:true},{id:4,text:'Договорились!',time:'14:10',outgoing:false,type:'text'},
+      {id:5,text:'',time:'14:12',outgoing:false,type:'poll',poll:{question:'Лучший фреймворк 2024?',options:[{text:'React',votes:42,voted:false},{text:'Vue',votes:18,voted:false},{text:'Svelte',votes:24,voted:false},{text:'Angular',votes:11,voted:false}],totalVotes:95}},
     ]},
-  { id:5, name:'Work Team', avatar:'W', color:'from-orange-400 to-orange-500', status:'8 members', statusColor:'#8E8E93', time:'Mon', unread:12, folder:'work', bio:'Our product team.', username:'@workteam', members:['Alice','Bob','Sarah','Mike','Dan','Kate'],
-    messages:[{id:1,text:'Please review the latest PRs before EOD.',time:'9:00',outgoing:false,type:'text'},{id:2,text:'On it!',time:'9:05',outgoing:true,type:'text',read:true},{id:3,text:'Sarah: The new design looks great!',time:'9:20',outgoing:false,type:'text'},{id:4,text:'Mike: Can we schedule a standup?',time:'9:35',outgoing:false,type:'text'},{id:5,text:'Sure, 10 AM works.',time:'9:40',outgoing:true,type:'text',read:false},
-      {id:6,text:'Design mockups attached',time:'9:42',outgoing:false,type:'image',gradient:'from-orange-400 to-red-400',forwardedFrom:'Alice'},
+  { id:5, name:'Рабочая группа', avatar:'Р', color:'from-orange-400 to-orange-500', status:'8 участников', statusColor:'#8E8E93', time:'Пн', unread:12, folder:'work', bio:'Наша продуктовая команда.', username:'@workteam', members:['Алиса','Боб','Сара','Миша','Дан','Катя'],
+    messages:[{id:1,text:'Пожалуйста, проверьте PR до конца дня.',time:'9:00',outgoing:false,type:'text'},{id:2,text:'Уже делаю!',time:'9:05',outgoing:true,type:'text',read:true},{id:3,text:'Сара: Новый дизайн отлично выглядит!',time:'9:20',outgoing:false,type:'text'},{id:4,text:'Миша: Можем запланировать стендап?',time:'9:35',outgoing:false,type:'text'},{id:5,text:'Да, 10 утра подходит.',time:'9:40',outgoing:true,type:'text',read:false},
+      {id:6,text:'Прикрепляю дизайн-макеты',time:'9:42',outgoing:false,type:'image',gradient:'from-orange-400 to-red-400',forwardedFrom:'Алиса'},
     ]},
-  { id:6, name:'Mom', avatar:'M', color:'from-yellow-400 to-yellow-600', status:'last seen yesterday', statusColor:'#8E8E93', time:'Sun', unread:null, folder:'personal', phone:'+1 (555) 567-8901',
-    messages:[{id:1,text:'Are you coming for dinner Sunday?',time:'18:00',outgoing:false,type:'text'},{id:2,text:'Yes, I will be there at 7!',time:'18:05',outgoing:true,type:'text',read:true},{id:3,text:'Call me when you get home.',time:'22:30',outgoing:false,type:'text'}]},
+  { id:6, name:'Мама', avatar:'М', color:'from-yellow-400 to-yellow-600', status:'была вчера', statusColor:'#8E8E93', time:'Вс', unread:null, folder:'personal', phone:'+7 (999) 567-89-01',
+    messages:[{id:1,text:'Ты приедешь на ужин в воскресенье?',time:'18:00',outgoing:false,type:'text'},{id:2,text:'Да, буду в 19:00!',time:'18:05',outgoing:true,type:'text',read:true},{id:3,text:'Позвони, когда доберёшься домой.',time:'22:30',outgoing:false,type:'text'}]},
 ];
 
 export function DesktopMain() {
@@ -122,7 +122,8 @@ export function DesktopMain() {
   const [lightbox, setLightbox] = useState<{gradient:string}|null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [activeFolder, setActiveFolder] = useState<typeof FOLDERS[number]>('All');
+  const [activeFolder, setActiveFolder] = useState<typeof FOLDERS[number]>('Все');
+  const [showBurger, setShowBurger] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [suggestions, setSuggestions] = useState<{type:'command'|'mention';items:string[]}|null>(null);
@@ -157,9 +158,9 @@ export function DesktopMain() {
   const sortedChats = [...chats].sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0));
   const folderChats = sortedChats.filter(c => {
     if (searchText) return c.name.toLowerCase().includes(searchText.toLowerCase());
-    if (activeFolder==='Personal') return c.folder==='personal';
-    if (activeFolder==='Work') return c.folder==='work';
-    if (activeFolder==='Unread') return (c.unread??0)>0;
+    if (activeFolder==='Личные') return c.folder==='personal';
+    if (activeFolder==='Работа') return c.folder==='work';
+    if (activeFolder==='Непрочитанные') return (c.unread??0)>0;
     return true;
   });
   const filteredMessages = searchMsg
@@ -319,32 +320,61 @@ export function DesktopMain() {
   return (
     <div style={{width:'1280px',height:'800px',display:'flex',overflow:'hidden',fontFamily:'Inter,system-ui,sans-serif',position:'relative'}} onClick={closeAll}>
 
-      {/* Nav */}
-      <div className="w-[68px] shrink-0 flex flex-col items-center py-3 justify-between" style={{background:bg.nav}}>
-        <div className="flex flex-col items-center w-full gap-0.5">
-          <div className="w-9 h-9 flex items-center justify-center mb-4 mt-1">
-            <svg viewBox="0 0 24 24" fill="white" className="w-8 h-8"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-          </div>
-          {([{icon:MessageCircle,active:true},{icon:Phone,active:false},{icon:Users,active:false},{icon:Bookmark,active:false},{icon:Settings,active:false}] as const).map(({icon:Icon,active},idx)=>(
-            <div key={idx} className="w-full flex justify-center py-3 relative group cursor-pointer">
-              {active&&<div className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#2481CC] rounded-r-full"/>}
-              <Icon className={`w-6 h-6 transition-colors ${active?'text-[#2481CC]':'text-[#8E8E93] group-hover:text-white'}`}/>
+      {/* Burger Drawer Overlay */}
+      {showBurger&&(
+        <div className="absolute inset-0 z-40 flex" onClick={()=>setShowBurger(false)}>
+          <div className="absolute inset-0 bg-black/40"/>
+          <div className="relative w-[260px] h-full flex flex-col shadow-2xl z-10" style={{background:bg.panel}} onClick={e=>e.stopPropagation()}>
+            {/* Drawer header */}
+            <div className="px-5 pt-5 pb-4" style={{background:bg.nav}}>
+              <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-[18px] mb-3">ИИ</div>
+              <div className="font-bold text-[16px] text-white">Иван Иванов</div>
+              <div className="text-white/60 text-[13px]">@ivanov</div>
             </div>
-          ))}
+            {/* Nav items */}
+            <div className="flex-1 overflow-y-auto py-2">
+              {([{icon:MessageCircle,label:'Чаты',active:true},{icon:Phone,label:'Звонки',active:false},{icon:Users,label:'Контакты',active:false},{icon:Bookmark,label:'Избранное',active:false},{icon:Settings,label:'Настройки',active:false}]).map(({icon:Icon,label,active})=>(
+                <button key={label} className="w-full flex items-center gap-4 px-5 py-3 text-left transition-colors hover:opacity-80" style={{color:active?'#2481CC':bg.text}} onClick={()=>setShowBurger(false)}>
+                  <Icon className="w-5 h-5 shrink-0" style={{color:active?'#2481CC':bg.textSec}}/>
+                  <span className="text-[15px] font-medium">{label}</span>
+                </button>
+              ))}
+              <div className="mx-4 my-1" style={{borderTop:`1px solid ${bg.panelBorder}`}}/>
+              {/* Folders */}
+              <div className="px-5 py-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider" style={{color:bg.textSec}}>Папки</span>
+              </div>
+              {FOLDERS.map(f=>(
+                <button key={f} onClick={()=>{setActiveFolder(f);setShowBurger(false);}} className="w-full flex items-center gap-4 px-5 py-2.5 text-left hover:opacity-80 transition-colors"
+                  style={{color:activeFolder===f?'#2481CC':bg.text}}>
+                  <ChevronRight className="w-4 h-4 shrink-0" style={{color:activeFolder===f?'#2481CC':bg.textSec}}/>
+                  <span className="text-[14px]">{f}
+                    {f==='Непрочитанные'&&chats.filter(c=>(c.unread??0)>0).length>0&&(
+                      <span className="ml-2 bg-[#2481CC] text-white text-[10px] px-1.5 py-0.5 rounded-full">{chats.filter(c=>(c.unread??0)>0).length}</span>
+                    )}
+                  </span>
+                </button>
+              ))}
+              <div className="mx-4 my-1" style={{borderTop:`1px solid ${bg.panelBorder}`}}/>
+              <button onClick={e=>{e.stopPropagation();setDarkMode(m=>!m);}} className="w-full flex items-center gap-4 px-5 py-3 text-left hover:opacity-80 transition-colors" style={{color:bg.text}}>
+                {d?<Sun className="w-5 h-5 shrink-0" style={{color:bg.textSec}}/>:<Moon className="w-5 h-5 shrink-0" style={{color:bg.textSec}}/>}
+                <span className="text-[15px]">{d?'Светлый режим':'Ночной режим'}</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-2 mb-1">
-          <button onClick={e=>{e.stopPropagation();setDarkMode(m=>!m);}} className="w-8 h-8 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-white transition-colors">
-            {d?<Sun className="w-4 h-4"/>:<Moon className="w-4 h-4"/>}
-          </button>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm cursor-pointer">JD</div>
-        </div>
-      </div>
+      )}
 
       {/* Chat List */}
       <div className="w-[300px] shrink-0 flex flex-col" style={{background:bg.panel,borderRight:`1px solid ${bg.panelBorder}`}}>
-        <div className="h-[52px] flex items-center justify-between px-4 shrink-0" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
-          <h1 className="font-semibold text-[16px]" style={{color:bg.text}}>Telegram</h1>
-          <div className="flex items-center gap-3" style={{color:bg.textSec}}>
+        <div className="h-[52px] flex items-center gap-2 px-3 shrink-0" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
+          <button onClick={e=>{e.stopPropagation();setShowBurger(b=>!b);}} className="p-1.5 rounded-lg transition-colors hover:opacity-70" style={{color:bg.textSec}}>
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="0" y1="1" x2="18" y2="1"/><line x1="0" y1="7" x2="18" y2="7"/><line x1="0" y1="13" x2="18" y2="13"/>
+            </svg>
+          </button>
+          <h1 className="font-semibold text-[16px] flex-1" style={{color:bg.text}}>Telegram</h1>
+          <div className="flex items-center gap-2" style={{color:bg.textSec}}>
             <Search className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors"/>
             <Edit3 className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors"/>
           </div>
@@ -353,7 +383,7 @@ export function DesktopMain() {
         <div className="flex shrink-0 overflow-x-auto" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
           {FOLDERS.map(f=>(
             <button key={f} onClick={()=>setActiveFolder(f)} className="px-3 py-2 text-[12px] font-medium whitespace-nowrap transition-colors relative" style={{color:activeFolder===f?'#2481CC':bg.textSec}}>
-              {f}{f==='Unread'&&chats.filter(c=>(c.unread??0)>0).length>0&&<span className="ml-1 bg-[#2481CC] text-white text-[10px] px-1 rounded-full">{chats.filter(c=>(c.unread??0)>0).length}</span>}
+              {f}{f==='Непрочитанные'&&chats.filter(c=>(c.unread??0)>0).length>0&&<span className="ml-1 bg-[#2481CC] text-white text-[10px] px-1 rounded-full">{chats.filter(c=>(c.unread??0)>0).length}</span>}
               {activeFolder===f&&<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2481CC] rounded-t"/>}
             </button>
           ))}
@@ -362,7 +392,7 @@ export function DesktopMain() {
         <div className="px-3 py-2 shrink-0">
           <div className="rounded-full h-8 flex items-center px-3 gap-2" style={{background:bg.inputField}}>
             <Search className="w-4 h-4 shrink-0" style={{color:bg.textSec}}/>
-            <input type="text" placeholder="Search" value={searchText} onChange={e=>setSearchText(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full" style={{color:bg.text}}/>
+            <input type="text" placeholder="Поиск" value={searchText} onChange={e=>setSearchText(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full" style={{color:bg.text}}/>
             {searchText&&<X className="w-4 h-4 cursor-pointer" style={{color:bg.textSec}} onClick={()=>setSearchText('')}/>}
           </div>
         </div>
@@ -390,7 +420,7 @@ export function DesktopMain() {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-[12px] truncate pr-1" style={{color:isActive?'rgba(255,255,255,0.75)':draft?'#2481CC':bg.textSec}}>
-                      {draft?`Draft: ${draft}`:lastMsg?.type==='image'?'Photo':lastMsg?.type==='voice'?'Voice':lastMsg?.type==='poll'?`📊 ${lastMsg.poll?.question}`:lastMsg?.text}
+                      {draft?`Черновик: ${draft}`:lastMsg?.type==='image'?'Фото':lastMsg?.type==='voice'?'Голосовое':lastMsg?.type==='poll'?`📊 ${lastMsg.poll?.question}`:lastMsg?.text}
                     </p>
                     <div className="flex items-center gap-1 shrink-0">
                       {chat.muted&&<BellOff className="w-3 h-3" style={{color:bg.textSec}}/>}
@@ -412,27 +442,27 @@ export function DesktopMain() {
           {selectMode?(
             <div className="flex items-center gap-3">
               <button onClick={()=>{setSelectMode(false);setSelectedMsgs(new Set());}} style={{color:bg.textSec}}><X className="w-5 h-5"/></button>
-              <span className="font-semibold text-[15px]" style={{color:bg.text}}>{selectedMsgs.size} selected</span>
+              <span className="font-semibold text-[15px]" style={{color:bg.text}}>{selectedMsgs.size} выбрано</span>
             </div>
           ):(
             <button className="flex flex-col text-left hover:opacity-70 transition-opacity" onClick={e=>{e.stopPropagation();setShowProfile(p=>!p);}}>
               <h2 className="font-semibold text-[14px] leading-tight" style={{color:bg.text}}>{activeChat.name}</h2>
               <span className="text-[12px] leading-tight" style={{color:isTyping?'#4DCA65':activeChat.statusColor}}>
-                {isTyping?<span className="flex items-center gap-1">typing<span className="flex gap-[2px] items-end h-3">{[0,1,2].map(i=><span key={i} className="w-[3px] h-[3px] rounded-full bg-[#4DCA65] animate-bounce" style={{animationDelay:`${i*0.15}s`}}/>)}</span></span>:activeChat.status}
+                {isTyping?<span className="flex items-center gap-1">печатает<span className="flex gap-[2px] items-end h-3">{[0,1,2].map(i=><span key={i} className="w-[3px] h-[3px] rounded-full bg-[#4DCA65] animate-bounce" style={{animationDelay:`${i*0.15}s`}}/>)}</span></span>:activeChat.status}
               </span>
             </button>
           )}
           <div className="flex items-center gap-3" style={{color:bg.textSec}}>
             {selectMode?(
               <>
-                <button onClick={bulkDelete} className="flex items-center gap-1.5 text-[13px] text-[#EF4444] hover:opacity-80"><Trash2 className="w-4 h-4"/> Delete {selectedMsgs.size}</button>
-                <button onClick={()=>setForwardMsgId([...selectedMsgs][0])} className="flex items-center gap-1.5 text-[13px] text-[#2481CC] hover:opacity-80"><Forward className="w-4 h-4"/> Forward</button>
+                <button onClick={bulkDelete} className="flex items-center gap-1.5 text-[13px] text-[#EF4444] hover:opacity-80"><Trash2 className="w-4 h-4"/> Удалить {selectedMsgs.size}</button>
+                <button onClick={()=>setForwardMsgId([...selectedMsgs][0])} className="flex items-center gap-1.5 text-[13px] text-[#2481CC] hover:opacity-80"><Forward className="w-4 h-4"/> Переслать</button>
               </>
             ):(
               <>
                 {showSearchBar&&(
                   <div className="flex items-center gap-1">
-                    <input autoFocus type="text" placeholder="Search messages..." value={searchMsg} onChange={e=>{setSearchMsg(e.target.value);setSearchMsgIdx(0);}} onKeyDown={e=>e.key==='Escape'&&(setShowSearchBar(false),setSearchMsg(''))} className="border rounded-full px-3 py-1 text-[12px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text,width:150}} onClick={e=>e.stopPropagation()}/>
+                    <input autoFocus type="text" placeholder="Поиск в чате..." value={searchMsg} onChange={e=>{setSearchMsg(e.target.value);setSearchMsgIdx(0);}} onKeyDown={e=>e.key==='Escape'&&(setShowSearchBar(false),setSearchMsg(''))} className="border rounded-full px-3 py-1 text-[12px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text,width:150}} onClick={e=>e.stopPropagation()}/>
                     {searchResults.length>0&&<span className="text-[11px] whitespace-nowrap" style={{color:bg.textSec}}>{searchMsgIdx+1}/{searchResults.length}</span>}
                     {searchResults.length>1&&<><button onClick={()=>{const i=(searchMsgIdx-1+searchResults.length)%searchResults.length;setSearchMsgIdx(i);scrollToMsg(searchResults[i].id);}} className="hover:text-[#2481CC]">↑</button><button onClick={()=>{const i=(searchMsgIdx+1)%searchResults.length;setSearchMsgIdx(i);scrollToMsg(searchResults[i].id);}} className="hover:text-[#2481CC]">↓</button></>}
                   </div>
@@ -444,7 +474,7 @@ export function DesktopMain() {
                   <button onClick={e=>{e.stopPropagation();setShowFontSlider(p=>!p);}} className="hover:text-[#2481CC] transition-colors"><Type className="w-4 h-4"/></button>
                   {showFontSlider&&(
                     <div className="absolute right-0 top-7 rounded-xl shadow-xl border p-3 z-50" style={{background:bg.panel,borderColor:bg.panelBorder,width:180}} onClick={e=>e.stopPropagation()}>
-                      <div className="text-[12px] font-semibold mb-1" style={{color:bg.text}}>Font size: {fontSize}px</div>
+                      <div className="text-[12px] font-semibold mb-1" style={{color:bg.text}}>Размер шрифта: {fontSize}px</div>
                       <input type="range" min={12} max={20} value={fontSize} onChange={e=>setFontSize(Number(e.target.value))} className="w-full accent-[#2481CC]"/>
                       <div className="flex justify-between text-[11px] mt-1" style={{color:bg.textSec}}><span>Aa</span><span style={{fontSize:16}}>Aa</span></div>
                     </div>
@@ -454,11 +484,11 @@ export function DesktopMain() {
                   <MoreHorizontal className="w-4 h-4 cursor-pointer hover:text-[#2481CC]" onClick={e=>{e.stopPropagation();setShowBgPicker(p=>!p);}}/>
                   {showBgPicker&&(
                     <div className="absolute right-0 top-7 rounded-xl shadow-xl border p-3 z-50" style={{background:bg.panel,borderColor:bg.panelBorder,width:190}} onClick={e=>e.stopPropagation()}>
-                      <div className="text-[12px] font-semibold mb-2" style={{color:bg.text}}>Chat background</div>
+                      <div className="text-[12px] font-semibold mb-2" style={{color:bg.text}}>Фон чата</div>
                       <div className="grid grid-cols-5 gap-2 mb-2">
                         {CHAT_BACKGROUNDS.map(b=><button key={b.id} onClick={()=>{setChatBgId(b.id);setShowBgPicker(false);}} className={`w-9 h-9 rounded-lg border-2 transition-all ${chatBgId===b.id?'border-[#2481CC] scale-110':'border-transparent hover:border-[#2481CC]/50'}`} style={b.style}/>)}
                       </div>
-                      <button onClick={()=>{setSelectMode(true);setShowBgPicker(false);}} className="w-full text-left text-[12px] flex items-center gap-1.5 py-1 hover:text-[#2481CC] transition-colors" style={{color:bg.textSec}}><CheckSquare className="w-3.5 h-3.5"/> Select messages</button>
+                      <button onClick={()=>{setSelectMode(true);setShowBgPicker(false);}} className="w-full text-left text-[12px] flex items-center gap-1.5 py-1 hover:text-[#2481CC] transition-colors" style={{color:bg.textSec}}><CheckSquare className="w-3.5 h-3.5"/> Выбрать сообщения</button>
                     </div>
                   )}
                 </div>
@@ -474,8 +504,8 @@ export function DesktopMain() {
             onClick={()=>scrollToMsg(pinnedMsg.id)}>
             <Pin className="w-3.5 h-3.5 text-[#2481CC] mr-2 shrink-0"/>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-semibold text-[#2481CC]">Pinned message</div>
-              <div className="text-[12px] truncate" style={{color:bg.text}}>{pinnedMsg.type==='text'?pinnedMsg.text:pinnedMsg.type==='image'?'Photo':'Voice'}</div>
+              <div className="text-[10px] font-semibold text-[#2481CC]">Закреплённое сообщение</div>
+              <div className="text-[12px] truncate" style={{color:bg.text}}>{pinnedMsg.type==='text'?pinnedMsg.text:pinnedMsg.type==='image'?'Фото':'Голосовое'}</div>
             </div>
             <button onClick={e=>{e.stopPropagation();setChats(prev=>prev.map(c=>c.id!==activeChatId?c:{...c,pinnedMsgId:undefined}));}} style={{color:bg.textSec}} className="hover:text-[#EF4444]"><X className="w-4 h-4"/></button>
           </div>
@@ -483,7 +513,7 @@ export function DesktopMain() {
 
         {/* Messages */}
         <div ref={messagesScrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-1" style={chatBgStyle}>
-          <div className="flex justify-center mb-2"><div className="text-[11px] font-medium px-3 py-0.5 rounded-full" style={{background:isDarkBg?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)',color:'white'}}>Today</div></div>
+          <div className="flex justify-center mb-2"><div className="text-[11px] font-medium px-3 py-0.5 rounded-full" style={{background:isDarkBg?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)',color:'white'}}>Сегодня</div></div>
 
           {filteredMessages.map((msg,idx)=>{
             const replyMsg=msg.replyTo?activeChat.messages.find(m=>m.id===msg.replyTo):null;
@@ -496,7 +526,7 @@ export function DesktopMain() {
                 {showDivider&&(
                   <div className="flex items-center gap-3 my-2">
                     <div className="flex-1 h-px" style={{background:'#4DCA65',opacity:0.4}}/>
-                    <div className="text-[11px] font-semibold text-[#4DCA65] bg-white px-3 py-0.5 rounded-full border border-[#4DCA65]/30">New messages</div>
+                    <div className="text-[11px] font-semibold text-[#4DCA65] bg-white px-3 py-0.5 rounded-full border border-[#4DCA65]/30">Новые сообщения</div>
                     <div className="flex-1 h-px" style={{background:'#4DCA65',opacity:0.4}}/>
                   </div>
                 )}
@@ -531,14 +561,14 @@ export function DesktopMain() {
                     {/* Scheduled badge */}
                     {msg.scheduled&&(
                       <div className={`flex items-center gap-1 text-[10px] mb-0.5 ${msg.outgoing?'justify-end':'justify-start'}`}>
-                        <Clock className="w-3 h-3 text-[#2481CC]"/><span className="text-[#2481CC] font-medium">Scheduled</span>
+                        <Clock className="w-3 h-3 text-[#2481CC]"/><span className="text-[#2481CC] font-medium">Запланировано</span>
                       </div>
                     )}
 
                     {/* Forwarded label */}
                     {msg.forwardedFrom&&(
                       <div className={`text-[11px] font-semibold text-[#2481CC] mb-0.5 ${msg.outgoing?'text-right':'text-left'}`}>
-                        ↗ Forwarded from {msg.forwardedFrom}
+                        ↗ Переслано от {msg.forwardedFrom}
                       </div>
                     )}
 
@@ -553,7 +583,7 @@ export function DesktopMain() {
                       <div className="rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm min-w-[240px]" style={{background:bg.msgIn,border:`1px solid ${bg.panelBorder}`}}>
                         <div className="flex items-center gap-2 mb-2">
                           <BarChart2 className="w-4 h-4 text-[#2481CC]"/>
-                          <span className="text-[11px] font-semibold text-[#2481CC]">{msg.poll.options.some(o=>o.voted)?'Anonymous Poll · Final':'Anonymous Poll'}</span>
+                          <span className="text-[11px] font-semibold text-[#2481CC]">{msg.poll.options.some(o=>o.voted)?'Анонимный опрос · Итоги':'Анонимный опрос'}</span>
                         </div>
                         <p className="font-semibold text-[14px] mb-3" style={{color:bg.text}}>{msg.poll.question}</p>
                         {msg.poll.options.map((opt,i)=>{
@@ -576,7 +606,7 @@ export function DesktopMain() {
                             </button>
                           );
                         })}
-                        <div className="text-[11px] mt-1" style={{color:bg.textSec}}>{msg.poll.totalVotes} votes</div>
+                        <div className="text-[11px] mt-1" style={{color:bg.textSec}}>{msg.poll.totalVotes} голосов</div>
                       </div>
                     ):msg.type==='image'?(
                       <div className="rounded-2xl rounded-bl-sm shadow-sm overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" style={{background:bg.msgIn}} onClick={()=>setLightbox({gradient:msg.gradient||'from-purple-400 to-pink-400'})}>
@@ -584,7 +614,7 @@ export function DesktopMain() {
                           <Camera className="w-7 h-7 text-white opacity-60"/>
                         </div>
                         <div className="px-3 py-1.5 relative">
-                          <p style={{fontSize:fontSize-1,color:bg.text}} className="pr-10">Tap to view</p>
+                          <p style={{fontSize:fontSize-1,color:bg.text}} className="pr-10">Нажмите для просмотра</p>
                           <span className="absolute bottom-1.5 right-2 text-[11px]" style={{color:bg.textSec}}>{msg.time}</span>
                         </div>
                       </div>
@@ -601,8 +631,8 @@ export function DesktopMain() {
                       <div className={`rounded-2xl px-4 py-2 shadow-sm ${highlighted?'ring-2 ring-yellow-400':isSelected?'ring-2 ring-[#2481CC]':''} ${msg.outgoing?'rounded-br-sm':'rounded-bl-sm'}`} style={{background:msg.outgoing?bg.msgOut:bg.msgIn}}>
                         {replyMsg&&(
                           <div className={`text-[11px] mb-1.5 pl-2 border-l-2 ${msg.outgoing?'border-blue-200 text-blue-100':'border-[#2481CC] text-[#2481CC]'}`}>
-                            <div className="font-semibold">{replyMsg.outgoing?'You':activeChat.name}</div>
-                            <div className="truncate opacity-80">{replyMsg.type==='text'?replyMsg.text:'Media'}</div>
+                            <div className="font-semibold">{replyMsg.outgoing?'Вы':activeChat.name}</div>
+                            <div className="truncate opacity-80">{replyMsg.type==='text'?replyMsg.text:'Медиа'}</div>
                           </div>
                         )}
                         <p className="leading-relaxed pr-14" style={{fontSize,color:msg.outgoing?'white':bg.text}}>{msg.text}</p>
@@ -712,7 +742,7 @@ export function DesktopMain() {
             ):(
               <div className="p-2">
                 <div className="rounded-full h-7 flex items-center px-2 gap-1 mb-2" style={{background:bg.inputField}}>
-                  <Search className="w-3.5 h-3.5" style={{color:bg.textSec}}/><input type="text" placeholder="Search GIFs..." className="bg-transparent border-none outline-none text-[12px] flex-1" style={{color:bg.text}}/>
+                  <Search className="w-3.5 h-3.5" style={{color:bg.textSec}}/><input type="text" placeholder="Поиск GIF..." className="bg-transparent border-none outline-none text-[12px] flex-1" style={{color:bg.text}}/>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   {GIF_COLORS.map((g,i)=>(
@@ -732,7 +762,7 @@ export function DesktopMain() {
         <div className="flex items-center gap-2.5 px-4 py-2.5 shrink-0" style={{background:bg.input,borderTop:`1px solid ${bg.panelBorder}`}}>
           <button style={{color:bg.textSec}} className="hover:text-[#2481CC] transition-colors"><Paperclip className="w-5 h-5"/></button>
           <div className="flex-1 flex items-center px-3 h-9 gap-2 rounded-2xl" style={{background:bg.inputField}}>
-            <input ref={inputRef} type="text" placeholder="Write a message..." value={inputText} onChange={e=>handleInputChange(e.target.value)} onKeyDown={handleKeyDown}
+            <input ref={inputRef} type="text" placeholder="Написать сообщение..." value={inputText} onChange={e=>handleInputChange(e.target.value)} onKeyDown={handleKeyDown}
               className="flex-1 bg-transparent border-none outline-none" style={{fontSize,color:bg.text}} onClick={e=>e.stopPropagation()}/>
             <button onClick={e=>{e.stopPropagation();setShowEmojiPanel(p=>!p);}} className="hover:text-[#2481CC] transition-colors shrink-0" style={{color:bg.textSec}}><Smile className="w-4 h-4"/></button>
           </div>
@@ -806,10 +836,10 @@ export function DesktopMain() {
           {/* ── Action buttons ────────────────────────── */}
           <div className="flex justify-center gap-5 px-4 pb-4" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
             {([
-              {icon:MessageCircle,label:'Message',action:()=>setShowProfile(false)},
-              {icon:Phone,label:'Call',action:()=>startCall('audio')},
-              {icon:Video,label:'Video',action:()=>startCall('video')},
-              {icon:Search,label:'Search',action:()=>{setShowSearchBar(s=>!s);setShowProfile(false);}},
+              {icon:MessageCircle,label:'Сообщение',action:()=>setShowProfile(false)},
+              {icon:Phone,label:'Звонок',action:()=>startCall('audio')},
+              {icon:Video,label:'Видео',action:()=>startCall('video')},
+              {icon:Search,label:'Поиск',action:()=>{setShowSearchBar(s=>!s);setShowProfile(false);}},
             ]).map(({icon:Icon,label,action})=>(
               <div key={label} className="flex flex-col items-center gap-1.5 cursor-pointer group" onClick={action}>
                 <div className="w-[42px] h-[42px] rounded-full bg-[#E8F4FF] flex items-center justify-center group-hover:bg-[#2481CC] transition-colors">
@@ -830,7 +860,7 @@ export function DesktopMain() {
                   <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><Phone className="w-[18px] h-[18px] text-[#2481CC]"/></div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[14px] font-medium" style={{color:bg.text}}>{activeChat.phone}</div>
-                    <div className="text-[12px]" style={{color:bg.textSec}}>Mobile</div>
+                    <div className="text-[12px]" style={{color:bg.textSec}}>Мобильный</div>
                   </div>
                   <Copy className="w-4 h-4 text-[#C7C7CC] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"/>
                 </div>
@@ -840,7 +870,7 @@ export function DesktopMain() {
                   <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><AtSign className="w-[18px] h-[18px] text-[#2481CC]"/></div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[14px] font-medium text-[#2481CC]">{activeChat.username}</div>
-                    <div className="text-[12px]" style={{color:bg.textSec}}>Username</div>
+                    <div className="text-[12px]" style={{color:bg.textSec}}>Имя пользователя</div>
                   </div>
                   <Copy className="w-4 h-4 text-[#C7C7CC] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"/>
                 </div>
@@ -850,7 +880,7 @@ export function DesktopMain() {
                   <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0"><Info className="w-[18px] h-[18px]" style={{color:bg.textSec}}/></div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[14px] leading-snug" style={{color:bg.text}}>{activeChat.bio}</div>
-                    <div className="text-[12px] mt-0.5" style={{color:bg.textSec}}>Bio</div>
+                    <div className="text-[12px] mt-0.5" style={{color:bg.textSec}}>О себе</div>
                   </div>
                 </div>
               )}
@@ -861,7 +891,7 @@ export function DesktopMain() {
                 <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0">
                   {activeChat.muted?<BellOff className="w-[18px] h-[18px]" style={{color:bg.textSec}}/>:<Bell className="w-[18px] h-[18px]" style={{color:bg.textSec}}/>}
                 </div>
-                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Notifications</span>
+                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Уведомления</span>
                 <div className={`w-10 h-[22px] rounded-full relative transition-colors shrink-0 ${!activeChat.muted?'bg-[#2481CC]':'bg-[#D1D1D6]'}`}>
                   <div className={`absolute top-[2px] w-[18px] h-[18px] bg-white rounded-full shadow transition-all ${!activeChat.muted?'left-[20px]':'left-[2px]'}`}/>
                 </div>
@@ -871,13 +901,13 @@ export function DesktopMain() {
               <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}
                 onClick={()=>{setShowSearchBar(true);setShowProfile(false);}}>
                 <div className="w-9 h-9 rounded-full bg-[#F1F1F1] flex items-center justify-center shrink-0"><Search className="w-[18px] h-[18px]" style={{color:bg.textSec}}/></div>
-                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Search in Chat</span>
+                <span className="flex-1 text-[14px] font-medium" style={{color:bg.text}}>Поиск в чате</span>
                 <ChevronRight className="w-4 h-4 text-[#C7C7CC] shrink-0"/>
               </div>
 
               {/* Shared media header row */}
               <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
-                <span className="text-[14px] font-semibold" style={{color:bg.text}}>Shared Media</span>
+                <span className="text-[14px] font-semibold" style={{color:bg.text}}>Общие медиа</span>
                 <div className="flex items-center gap-1">
                   <span className="text-[13px]" style={{color:bg.textSec}}>{GRADIENTS.length + 4}</span>
                   <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
@@ -888,10 +918,10 @@ export function DesktopMain() {
             {/* Media tabs */}
             <div className="flex shrink-0" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
               {([
-                {id:'media',icon:Image,label:'Media',count:6},
-                {id:'files',icon:File,label:'Files',count:5},
-                {id:'links',icon:Link,label:'Links',count:3},
-                {id:'audio',icon:Music,label:'Audio',count:3},
+                {id:'media',icon:Image,label:'Медиа',count:6},
+                {id:'files',icon:File,label:'Файлы',count:5},
+                {id:'links',icon:Link,label:'Ссылки',count:3},
+                {id:'audio',icon:Music,label:'Аудио',count:3},
               ] as const).map(tab=>(
                 <button key={tab.id} onClick={()=>setProfileTab(tab.id)}
                   className="flex-1 py-2.5 flex flex-col items-center gap-0.5 relative transition-colors"
@@ -948,7 +978,7 @@ export function DesktopMain() {
 
               {profileTab==='audio'&&(
                 <div className="space-y-1">
-                  {(['Voice message #1','Voice message #2','Voice message #3'] as const).map((a,i)=>(
+                  {(['Голосовое сообщение #1','Голосовое сообщение #2','Голосовое сообщение #3'] as const).map((a,i)=>(
                     <div key={a} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors">
                       <div className="w-10 h-10 rounded-full bg-[#2481CC] flex items-center justify-center shrink-0"><Play className="w-5 h-5 ml-0.5 text-white"/></div>
                       <div className="flex-1">
@@ -964,13 +994,13 @@ export function DesktopMain() {
               {activeChat.members&&(
                 <div className="mt-3 pt-3" style={{borderTop:`1px solid ${bg.panelBorder}`}}>
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <span className="text-[13px] font-semibold" style={{color:bg.text}}>{activeChat.members.length} members</span>
-                    <span className="text-[12px] text-[#2481CC] cursor-pointer hover:underline">See all</span>
+                    <span className="text-[13px] font-semibold" style={{color:bg.text}}>{activeChat.members.length} участников</span>
+                    <span className="text-[12px] text-[#2481CC] cursor-pointer hover:underline">Все</span>
                   </div>
                   {/* Add member */}
                   <div className="flex items-center gap-3 px-1 py-2 rounded-xl hover:bg-[#F1F1F1] cursor-pointer transition-colors mb-1">
                     <div className="w-10 h-10 rounded-full bg-[#E8F4FF] flex items-center justify-center shrink-0"><UserPlus className="w-[18px] h-[18px] text-[#2481CC]"/></div>
-                    <span className="text-[13px] font-medium text-[#2481CC]">Add Member</span>
+                    <span className="text-[13px] font-medium text-[#2481CC]">Добавить участника</span>
                   </div>
                   {/* Member list */}
                   {activeChat.members.map((m,i)=>{
@@ -1001,11 +1031,11 @@ export function DesktopMain() {
       {chatCtxMenu&&(
         <div className="fixed rounded-xl shadow-2xl py-1 z-50 min-w-[180px] border" style={{left:chatCtxMenu.x,top:chatCtxMenu.y,background:bg.panel,borderColor:bg.panelBorder}} onClick={e=>e.stopPropagation()}>
           {[
-            {icon:Pin,label:chats.find(c=>c.id===chatCtxMenu.chatId)?.pinned?'Unpin chat':'Pin chat',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,pinned:!c.pinned}));setChatCtxMenu(null);}},
-            {icon:BellOff,label:chats.find(c=>c.id===chatCtxMenu.chatId)?.muted?'Unmute':'Mute',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,muted:!c.muted}));setChatCtxMenu(null);}},
-            {icon:Eye,label:'Mark as read',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,unread:null}));setChatCtxMenu(null);}},
-            {icon:Archive,label:'Archive',action:()=>setChatCtxMenu(null)},
-            {icon:Trash2,label:'Delete chat',danger:true,action:()=>{setChats(prev=>prev.filter(c=>c.id!==chatCtxMenu.chatId));setChatCtxMenu(null);if(activeChatId===chatCtxMenu.chatId)setActiveChatId(chats.find(c=>c.id!==chatCtxMenu.chatId)?.id??1);}},
+            {icon:Pin,label:chats.find(c=>c.id===chatCtxMenu.chatId)?.pinned?'Открепить чат':'Закрепить чат',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,pinned:!c.pinned}));setChatCtxMenu(null);}},
+            {icon:BellOff,label:chats.find(c=>c.id===chatCtxMenu.chatId)?.muted?'Включить уведомления':'Выключить уведомления',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,muted:!c.muted}));setChatCtxMenu(null);}},
+            {icon:Eye,label:'Отметить как прочитанное',action:()=>{setChats(prev=>prev.map(c=>c.id!==chatCtxMenu.chatId?c:{...c,unread:null}));setChatCtxMenu(null);}},
+            {icon:Archive,label:'Архивировать',action:()=>setChatCtxMenu(null)},
+            {icon:Trash2,label:'Удалить чат',danger:true,action:()=>{setChats(prev=>prev.filter(c=>c.id!==chatCtxMenu.chatId));setChatCtxMenu(null);if(activeChatId===chatCtxMenu.chatId)setActiveChatId(chats.find(c=>c.id!==chatCtxMenu.chatId)?.id??1);}},
           ].map(({icon:Icon,label,action,danger})=>(
             <button key={label} onClick={action} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-left transition-colors"
               style={{color:danger?'#EF4444':bg.text}}
@@ -1021,14 +1051,14 @@ export function DesktopMain() {
       {contextMenu&&(
         <div className="fixed rounded-xl shadow-2xl py-1 z-50 min-w-[180px] border" style={{left:contextMenu.x,top:contextMenu.y,background:bg.panel,borderColor:bg.panelBorder}} onClick={e=>e.stopPropagation()}>
           {[
-            {icon:Reply,label:'Reply',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m)setReplyTo(m);setContextMenu(null);}},
-            {icon:Edit3,label:'Edit',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m?.outgoing&&m.type==='text'){setEditingMsgId(m.id);setEditText(m.text);}setContextMenu(null);},show:activeChat.messages.find(m=>m.id===contextMenu.msgId)?.outgoing},
-            {icon:Copy,label:'Copy text',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m)navigator.clipboard?.writeText(m.text);setContextMenu(null);}},
-            {icon:Forward,label:'Forward',action:()=>{setForwardMsgId(contextMenu.msgId);setContextMenu(null);}},
-            {icon:CheckSquare,label:'Select',action:()=>{setSelectMode(true);setSelectedMsgs(new Set([contextMenu.msgId]));setContextMenu(null);}},
-            {icon:Pin,label:activeChat.pinnedMsgId===contextMenu.msgId?'Unpin':'Pin',action:()=>pinMessage(contextMenu.msgId)},
-            {icon:Star,label:'Save',action:()=>setContextMenu(null)},
-            {icon:Trash2,label:'Delete',action:()=>deleteMessage(contextMenu.msgId),danger:true},
+            {icon:Reply,label:'Ответить',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m)setReplyTo(m);setContextMenu(null);}},
+            {icon:Edit3,label:'Редактировать',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m?.outgoing&&m.type==='text'){setEditingMsgId(m.id);setEditText(m.text);}setContextMenu(null);},show:activeChat.messages.find(m=>m.id===contextMenu.msgId)?.outgoing},
+            {icon:Copy,label:'Копировать текст',action:()=>{const m=activeChat.messages.find(x=>x.id===contextMenu.msgId);if(m)navigator.clipboard?.writeText(m.text);setContextMenu(null);}},
+            {icon:Forward,label:'Переслать',action:()=>{setForwardMsgId(contextMenu.msgId);setContextMenu(null);}},
+            {icon:CheckSquare,label:'Выбрать',action:()=>{setSelectMode(true);setSelectedMsgs(new Set([contextMenu.msgId]));setContextMenu(null);}},
+            {icon:Pin,label:activeChat.pinnedMsgId===contextMenu.msgId?'Открепить':'Закрепить',action:()=>pinMessage(contextMenu.msgId)},
+            {icon:Star,label:'Сохранить',action:()=>setContextMenu(null)},
+            {icon:Trash2,label:'Удалить',action:()=>deleteMessage(contextMenu.msgId),danger:true},
           ].filter(i=>i.show!==false).map(({icon:Icon,label,action,danger})=>(
             <button key={label} onClick={action} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-left transition-colors"
               style={{color:danger?'#EF4444':bg.text}}
@@ -1044,7 +1074,7 @@ export function DesktopMain() {
       {forwardMsgId!==null&&(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={()=>setForwardMsgId(null)}>
           <div className="rounded-2xl shadow-2xl p-5 w-[360px]" style={{background:bg.panel}} onClick={e=>e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-[15px]" style={{color:bg.text}}>Forward message</h3><button onClick={()=>setForwardMsgId(null)} style={{color:bg.textSec}} className="hover:text-[#EF4444]"><X className="w-5 h-5"/></button></div>
+            <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-[15px]" style={{color:bg.text}}>Переслать сообщение</h3><button onClick={()=>setForwardMsgId(null)} style={{color:bg.textSec}} className="hover:text-[#EF4444]"><X className="w-5 h-5"/></button></div>
             <div className="max-h-[280px] overflow-y-auto space-y-0.5">
               {chats.filter(c=>c.id!==activeChatId).map(chat=>(
                 <div key={chat.id} className="flex items-center gap-3 px-2 py-2 rounded-xl cursor-pointer transition-colors"
@@ -1069,14 +1099,14 @@ export function DesktopMain() {
       {showSchedule&&(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={()=>setShowSchedule(false)}>
           <div className="rounded-2xl shadow-2xl p-6 w-[340px]" style={{background:bg.panel}} onClick={e=>e.stopPropagation()}>
-            <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-[#2481CC]"/><h3 className="font-semibold text-[15px]" style={{color:bg.text}}>Schedule message</h3></div>
+            <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-[#2481CC]"/><h3 className="font-semibold text-[15px]" style={{color:bg.text}}>Запланировать сообщение</h3></div>
             <div className="space-y-3 mb-4">
-              <div><label className="text-[12px] font-medium mb-1 block" style={{color:bg.textSec}}>Date</label><input type="date" value={scheduleDate} onChange={e=>setScheduleDate(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-[13px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text}}/></div>
-              <div><label className="text-[12px] font-medium mb-1 block" style={{color:bg.textSec}}>Time</label><input type="time" value={scheduleTime} onChange={e=>setScheduleTime(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-[13px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text}}/></div>
+              <div><label className="text-[12px] font-medium mb-1 block" style={{color:bg.textSec}}>Дата</label><input type="date" value={scheduleDate} onChange={e=>setScheduleDate(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-[13px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text}}/></div>
+              <div><label className="text-[12px] font-medium mb-1 block" style={{color:bg.textSec}}>Время</label><input type="time" value={scheduleTime} onChange={e=>setScheduleTime(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-[13px] outline-none" style={{borderColor:bg.panelBorder,background:bg.inputField,color:bg.text}}/></div>
             </div>
             <div className="flex gap-2">
-              <button onClick={()=>setShowSchedule(false)} className="flex-1 py-2 rounded-xl border text-[13px] font-medium" style={{borderColor:bg.panelBorder,color:bg.textSec}}>Cancel</button>
-              <button onClick={()=>sendMessage(true)} className="flex-1 py-2 rounded-xl bg-[#2481CC] text-white text-[13px] font-medium hover:bg-[#1f73b8] transition-colors">Schedule</button>
+              <button onClick={()=>setShowSchedule(false)} className="flex-1 py-2 rounded-xl border text-[13px] font-medium" style={{borderColor:bg.panelBorder,color:bg.textSec}}>Отмена</button>
+              <button onClick={()=>sendMessage(true)} className="flex-1 py-2 rounded-xl bg-[#2481CC] text-white text-[13px] font-medium hover:bg-[#1f73b8] transition-colors">Запланировать</button>
             </div>
           </div>
         </div>
@@ -1102,7 +1132,7 @@ export function DesktopMain() {
           <div className="flex flex-col items-center gap-4">
             <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${activeChat.color} flex items-center justify-center text-white font-bold text-3xl shadow-2xl`}>{activeChat.avatar}</div>
             <h2 className="text-white font-bold text-[24px]">{activeChat.name}</h2>
-            <p className="text-white/70 text-[16px]">{callState.status==='ringing'?(callState.type==='video'?'Video calling…':'Calling…'):fmtSecs(callState.seconds)}</p>
+            <p className="text-white/70 text-[16px]">{callState.status==='ringing'?(callState.type==='video'?'Видеозвонок…':'Вызов…'):fmtSecs(callState.seconds)}</p>
             {callState.status==='active'&&(
               <div className="flex items-center gap-4 mt-4">
                 <button onClick={()=>setIsMuted(m=>!m)} className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${isMuted?'bg-white text-slate-800':'bg-white/20 text-white hover:bg-white/30'}`}>{isMuted?<MicOff className="w-6 h-6"/>:<Mic className="w-6 h-6"/>}</button>
@@ -1113,8 +1143,8 @@ export function DesktopMain() {
             )}
             {callState.status==='ringing'&&(
               <div className="flex items-center gap-8 mt-6">
-                <button onClick={()=>setCallState(null)} className="flex flex-col items-center gap-2"><div className="w-14 h-14 rounded-full bg-[#EF4444] flex items-center justify-center"><PhoneOff className="w-6 h-6 text-white"/></div><span className="text-white/70 text-[13px]">Decline</span></button>
-                <button onClick={()=>setCallState(s=>s?{...s,status:'active'}:null)} className="flex flex-col items-center gap-2"><div className="w-14 h-14 rounded-full bg-[#4DCA65] flex items-center justify-center"><Phone className="w-6 h-6 text-white"/></div><span className="text-white/70 text-[13px]">Accept</span></button>
+                <button onClick={()=>setCallState(null)} className="flex flex-col items-center gap-2"><div className="w-14 h-14 rounded-full bg-[#EF4444] flex items-center justify-center"><PhoneOff className="w-6 h-6 text-white"/></div><span className="text-white/70 text-[13px]">Отклонить</span></button>
+                <button onClick={()=>setCallState(s=>s?{...s,status:'active'}:null)} className="flex flex-col items-center gap-2"><div className="w-14 h-14 rounded-full bg-[#4DCA65] flex items-center justify-center"><Phone className="w-6 h-6 text-white"/></div><span className="text-white/70 text-[13px]">Принять</span></button>
               </div>
             )}
           </div>
