@@ -410,7 +410,7 @@ export function DesktopMain() {
                 onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.background=isActive?'#2481CC':'transparent';}}>
                 <div className="relative shrink-0 mr-2.5">
                   <div className={`w-[42px] h-[42px] rounded-full bg-gradient-to-br ${chat.color} flex items-center justify-center text-white font-semibold text-[13px]`}>{chat.avatar}</div>
-                  {chat.status==='online'&&<div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#4DCA65] border-2 border-white"/>}
+                  {chat.status==='в сети'&&<div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#4DCA65] border-2 border-white"/>}
                   {chat.pinned&&!isActive&&<div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#8E8E93] flex items-center justify-center"><Pin className="w-2 h-2 text-white"/></div>}
                 </div>
                 <div className="flex-1 min-w-0 py-1" style={{borderBottom:isActive?'none':`1px solid ${bg.panelBorder}`}}>
@@ -648,14 +648,14 @@ export function DesktopMain() {
                           </div>
                         )}
                         <div className={`absolute bottom-1.5 right-2 flex items-center gap-1 ${msg.outgoing?'text-blue-100':'text-[#8E8E93]'}`}>
-                          {msg.edited&&<span className="text-[10px] opacity-70">edited</span>}
+                          {msg.edited&&<span className="text-[10px] opacity-70">изм.</span>}
                           <span className="text-[11px]">{msg.time}</span>
                           {msg.outgoing&&(
                             <button onClick={e=>{e.stopPropagation();setReadReceiptMsg(r=>r===msg.id?null:msg.id);}} className="relative">
                               <CheckCheck className={`w-3.5 h-3.5 ${msg.read?'text-blue-200':'text-blue-200/60'}`}/>
                               {readReceiptMsg===msg.id&&(
                                 <div className="absolute bottom-5 right-0 bg-white rounded-xl shadow-xl border border-[#EDEDED] p-2.5 text-left whitespace-nowrap z-30" style={{minWidth:170}}>
-                                  <div className="text-[11px] font-semibold text-[#1C1C1E] mb-1.5">Read by</div>
+                                  <div className="text-[11px] font-semibold text-[#1C1C1E] mb-1.5">Прочитано</div>
                                   {(activeChat.members||[activeChat.name]).slice(0,3).map(m=>(
                                     <div key={m} className="text-[12px] text-[#1C1C1E] flex items-center gap-1.5 py-0.5"><CheckCheck className="w-3 h-3 text-[#2481CC]"/>{m}<span className="text-[#8E8E93] text-[10px]">at {msg.time}</span></div>
                                   ))}
@@ -697,8 +697,8 @@ export function DesktopMain() {
           <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{background:bg.input,borderTop:`1px solid ${bg.panelBorder}`}}>
             <div className="w-1 h-8 bg-[#2481CC] rounded-full shrink-0"/>
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-semibold text-[#2481CC]">Reply to {replyTo.outgoing?'Yourself':activeChat.name}</div>
-              <div className="text-[12px] truncate" style={{color:bg.textSec}}>{replyTo.type==='text'?replyTo.text:'Media'}</div>
+              <div className="text-[11px] font-semibold text-[#2481CC]">Ответ {replyTo.outgoing?'себе':activeChat.name}</div>
+              <div className="text-[12px] truncate" style={{color:bg.textSec}}>{replyTo.type==='text'?replyTo.text:'Медиа'}</div>
             </div>
             <button onClick={()=>setReplyTo(null)} style={{color:bg.textSec}} className="hover:text-[#EF4444]"><X className="w-4 h-4"/></button>
           </div>
@@ -709,7 +709,7 @@ export function DesktopMain() {
           <div className="mx-4 mb-1 rounded-xl border shadow-lg overflow-hidden z-30" style={{background:bg.panel,borderColor:bg.panelBorder}} onClick={e=>e.stopPropagation()}>
             <div className="flex items-center gap-2 px-3 py-1.5" style={{borderBottom:`1px solid ${bg.panelBorder}`}}>
               {suggestions.type==='command'?<Slash className="w-3.5 h-3.5 text-[#2481CC]"/>:<AtSign className="w-3.5 h-3.5 text-[#2481CC]"/>}
-              <span className="text-[11px] font-semibold text-[#2481CC]">{suggestions.type==='command'?'Commands':'Mentions'}</span>
+              <span className="text-[11px] font-semibold text-[#2481CC]">{suggestions.type==='command'?'Команды':'Упоминания'}</span>
             </div>
             {suggestions.items.map(item=>(
               <button key={item} onClick={()=>{
@@ -717,7 +717,7 @@ export function DesktopMain() {
                 else setInputText(t=>t.replace(/@\w*$/,'@'+item+' '));
                 setSuggestions(null);inputRef.current?.focus();
               }} className="w-full flex items-center gap-3 px-3 py-2 text-[13px] transition-colors text-left hover:bg-[#F1F1F1]" style={{color:bg.text}}>
-                {suggestions.type==='command'?<><span className="font-medium text-[#2481CC]">{item}</span><span style={{color:bg.textSec}} className="text-[12px]">{item==='/start'?'Start bot':item==='/help'?'Get help':item==='/settings'?'Open settings':item==='/mute'?'Mute':item==='/unmute'?'Unmute':'Info'}</span></>:
+                {suggestions.type==='command'?<><span className="font-medium text-[#2481CC]">{item}</span><span style={{color:bg.textSec}} className="text-[12px]">{item==='/start'?'Запустить бота':item==='/help'?'Помощь':item==='/settings'?'Настройки':item==='/mute'?'Отключить звук':item==='/unmute'?'Включить звук':'Информация'}</span></>:
                   <><div className="w-6 h-6 rounded-full bg-[#2481CC] flex items-center justify-center text-white text-[11px]">{item[0]}</div><span>@{item}</span></>}
               </button>
             ))}
@@ -776,7 +776,7 @@ export function DesktopMain() {
             <div className="flex gap-1.5">
               {/* Long-press schedule via right click on send */}
               <button onClick={sendMessage} onContextMenu={e=>{e.preventDefault();e.stopPropagation();setShowSchedule(true);}}
-                className="w-9 h-9 rounded-full bg-[#2481CC] flex items-center justify-center shrink-0 hover:bg-[#1f73b8] transition-all" title="Send · Right-click to schedule">
+                className="w-9 h-9 rounded-full bg-[#2481CC] flex items-center justify-center shrink-0 hover:bg-[#1f73b8] transition-all" title="Отправить · ПКМ для планирования">
                 <Send className="w-4 h-4 text-white ml-0.5"/>
               </button>
             </div>
@@ -788,12 +788,12 @@ export function DesktopMain() {
           <div className="absolute inset-x-0 bottom-0 h-[52px] flex items-center justify-between px-5 z-30" style={{background:'#EF4444'}}>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-white animate-pulse"/>
-              <span className="text-white font-semibold text-[14px]">Recording… {fmtSecs(recordingSeconds)}</span>
+              <span className="text-white font-semibold text-[14px]">Запись… {fmtSecs(recordingSeconds)}</span>
               <div className="flex gap-[2px] items-center h-5 ml-2">{[...Array(16)].map((_,i)=><div key={i} className="w-[2px] bg-white/60 rounded-full animate-pulse" style={{height:`${20+Math.random()*80}%`,animationDelay:`${i*0.05}s`}}/>)}</div>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={()=>setIsRecording(false)} className="text-white/80 hover:text-white text-[13px] flex items-center gap-1"><X className="w-4 h-4"/> Cancel</button>
-              <button onClick={sendVoice} className="bg-white text-red-500 font-semibold text-[13px] px-3 py-1 rounded-full flex items-center gap-1"><Send className="w-3.5 h-3.5"/> Send</button>
+              <button onClick={()=>setIsRecording(false)} className="text-white/80 hover:text-white text-[13px] flex items-center gap-1"><X className="w-4 h-4"/> Отмена</button>
+              <button onClick={sendVoice} className="bg-white text-red-500 font-semibold text-[13px] px-3 py-1 rounded-full flex items-center gap-1"><Send className="w-3.5 h-3.5"/> Отправить</button>
             </div>
           </div>
         )}
@@ -819,7 +819,7 @@ export function DesktopMain() {
             <div className="absolute left-1/2 -translate-x-1/2" style={{bottom:-36}}>
               <div className="relative">
                 <div className={`w-[72px] h-[72px] rounded-full bg-gradient-to-br ${activeChat.color} flex items-center justify-center text-white font-bold text-[26px] border-[3px] shadow-lg`} style={{borderColor:bg.panel}}>{activeChat.avatar}</div>
-                {activeChat.status==='online'&&<div className="absolute bottom-1 right-1 w-[14px] h-[14px] rounded-full bg-[#4DCA65] border-2 border-white"/>}
+                {activeChat.status==='в сети'&&<div className="absolute bottom-1 right-1 w-[14px] h-[14px] rounded-full bg-[#4DCA65] border-2 border-white"/>}
               </div>
             </div>
           </div>
@@ -827,8 +827,8 @@ export function DesktopMain() {
           {/* ── Name & status ─────────────────────────── */}
           <div className="flex flex-col items-center pt-12 pb-3 px-4">
             <h3 className="font-bold text-[17px] leading-tight text-center mb-0.5" style={{color:bg.text}}>{activeChat.name}</h3>
-            {activeChat.status==='online'
-              ?<span className="text-[13px] text-[#4DCA65] font-medium">online</span>
+            {activeChat.status==='в сети'
+              ?<span className="text-[13px] text-[#4DCA65] font-medium">в сети</span>
               :<span className="text-[12px]" style={{color:bg.textSec}}>{activeChat.status}</span>
             }
           </div>
@@ -1014,9 +1014,9 @@ export function DesktopMain() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[13px] font-medium truncate" style={{color:bg.text}}>{m}</div>
-                          <div className="text-[11px]" style={{color:online?'#4DCA65':bg.textSec}}>{online?'online':'last seen recently'}</div>
+                          <div className="text-[11px]" style={{color:online?'#4DCA65':bg.textSec}}>{online?'в сети':'недавно был(а) в сети'}</div>
                         </div>
-                        {i===0&&<span className="text-[10px] font-semibold text-[#8E8E93] bg-[#F1F1F1] px-1.5 py-0.5 rounded-full shrink-0">admin</span>}
+                        {i===0&&<span className="text-[10px] font-semibold text-[#8E8E93] bg-[#F1F1F1] px-1.5 py-0.5 rounded-full shrink-0">администратор</span>}
                       </div>
                     );
                   })}
