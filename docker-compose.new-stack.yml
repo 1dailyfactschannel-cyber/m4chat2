@@ -1,0 +1,103 @@
+# ==========================================
+# M4Chat2 - New Complete Stack
+# ==========================================
+# Stack name: m4chat2-new (или любое другое)
+#
+# Полный стек для создания НОВОГО деплоя:
+# - PostgreSQL Database (новая)
+# - API Backend (сборка из GitHub)
+# - Frontend Web (сборка из GitHub)
+#
+# Порты:
+# - 5446: PostgreSQL (внешний доступ)
+# - 8081: API (внешний доступ, опционально)
+# - 81: Web интерфейс (Nginx)
+#
+# Использует GitHub репозиторий для сборки
+
+services:
+  # ==========================================
+  # 1. PostgreSQL Database (НОВАЯ)
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat2-new-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat2_db
+    ports:
+      - "5446:5432" # Новый порт, не конфликтует с существующей БД
+    volumes:
+      - m4chat2_new_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat2_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat2-new-network
+
+  # ==========================================
+  # 2. API Backend (сборка из GitHub)
+  # ==========================================
+  api:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: api
+    container_name: m4chat2-new-api
+    restart: unless-stopped
+    environment:
+      # Подключение к БД внутри Docker сети
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat2_db
+      PORT: 8080
+      NODE_ENV: production
+    expose:
+      - "8080"
+    # Раскомментируйте если нужен прямой доступ к API:
+    # ports:
+    #   - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - m4chat2-new-network
+
+  # ==========================================
+  # 3. Frontend Web (сборка из GitHub)
+  # ==========================================
+  web:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: web
+    container_name: m4chat2-new-web
+    restart: unless-stopped
+    ports:
+      - "81:80" # Порт 81, чтобы не конфликтовать с существующим стеком
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - m4chat2-new-network
+
+# ==========================================
+# Volumes & Networks (НОВЫЕ, изолированные)
+# ==========================================
+volumes:
+  m4chat2_new_data:
+    driver: local
+
+networks:
+  m4chat2-new-network:
+    driver: bridge
