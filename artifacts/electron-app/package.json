@@ -1,0 +1,24 @@
+{
+  "name": "@workspace/electron-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsc && concurrently -k -n API,WEB,ELECTRON \"cross-env PORT=8080 pnpm --filter @workspace/api-server run dev\" \"cross-env PORT=8081 BASE_PATH=/ pnpm --filter @workspace/frontend run dev\" \"wait-on http://localhost:8081 && cross-env NODE_ENV=development electron .\"",
+    "dev:electron": "tsc && cross-env NODE_ENV=development electron .",
+    "dev:web": "cross-env PORT=8081 BASE_PATH=/ pnpm --filter @workspace/frontend run dev",
+    "build:main": "tsc",
+    "build:frontend": "cross-env PORT=8081 BASE_PATH=/ pnpm --filter @workspace/frontend run build",
+    "build:api": "pnpm --filter @workspace/api-server run build",
+    "build": "pnpm run build:api && pnpm run build:frontend && pnpm run build:main && electron-builder",
+    "pack": "pnpm run build:api && pnpm run build:frontend && pnpm run build:main && electron-builder --dir"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "concurrently": "^9.1.2",
+    "electron": "^36.4.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "~5.9.2",
+    "wait-on": "^8.0.3"
+  }
+}
