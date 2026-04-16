@@ -1,0 +1,90 @@
+# ==========================================
+# M4Chat - Production Deployment
+# ==========================================
+# Stack name: m4chat
+#
+# Использует pre-built образы из Docker Hub
+# Обновляется автоматически через GitHub Actions + Webhook
+#
+# Требования:
+# 1. Docker Hub аккаунт
+# 2. GitHub Secrets: DOCKER_USERNAME, DOCKER_PASSWORD, PORTAINER_WEBHOOK_URL
+# 3. Portainer webhook включен для этого стека
+
+services:
+  # ==========================================
+  # 1. PostgreSQL Database
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat_pg
+    ports:
+      - "5445:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat_pg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 2. API Backend (Node.js)
+  # ==========================================
+  # Для использования своих образов замените YOUR_DOCKER_USERNAME
+  api:
+    image: ${DOCKER_USERNAME:-yourusername}/m4chat-api:latest
+    container_name: m4chat-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      PORT: 8080
+      NODE_ENV: production
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 3. Frontend (Nginx)
+  # ==========================================
+  # Для использования своих образов замените YOUR_DOCKER_USERNAME
+  web:
+    image: ${DOCKER_USERNAME:-yourusername}/m4chat-web:latest
+    container_name: m4chat-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - m4chat-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  m4chat-network:
+    driver: bridge
