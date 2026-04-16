@@ -1,0 +1,133 @@
+UI/UX Design Prompt: Telegram Clone
+Project Overview
+Create a fully functional Telegram messenger UI/UX design clone. The design should be pixel-perfect, modern, and follow Material Design 3 principles with Telegram's signature aesthetic.
+
+Color Palette
+Primary Background: #FFFFFF (Light) / #0E0E0E (Dark)
+Secondary Background: #F2F3F5 (Light) / #121212 (Dark)
+Accent Color: #2481CC (Telegram Blue)
+Secondary Accent: #40C351 (Online Green)
+Destructive: #EF4444 (Red)
+Text Primary: #1C1C1E (Light) / #FFFFFF (Dark)
+Text Secondary: #8E8E93 (Gray)
+Dividers: #E5E5EA (Light) / #2C2C2E (Dark)
+Typography
+Font Family: SF Pro Display (iOS), Roboto (Android), Inter (Web)
+Heading 1: 24px, Bold, -0.5px
+Heading 2: 20px, SemiBold
+Body: 16px, Regular
+Caption: 13px, Regular
+Timestamp: 12px, Medium, #8E8E93
+Screen Structure
+1. Main Layout
+Bottom navigation with 4 tabs: Chats, Calls, Contacts, Settings
+Each tab with icon + label
+Active state: Telegram Blue (#2481CC)
+Inactive state: #8E8E93
+Safe area padding for notch devices
+2. Chats Tab (Main Screen)
+Header:
+Left: Hamburger menu icon + "Telegram" title
+Right: Search icon + New message icon
+Background: White/Dark with subtle shadow
+Chat List Items:
+Avatar (56px circle) with online indicator (green dot)
+Name (bold, 16px)
+Last message preview (gray, 14px, max 2 lines, ellipsis)
+Timestamp (right-aligned, 12px, gray)
+Unread badge (circle, 18px, white on blue)
+Muted icon if applicable
+Divider line between items
+Floating Action Button:
+Blue (#2481CC), 56px circle
+Pen/Plus icon, white
+Bottom-right, 16px margin
+Shadow: 0 4px 12px rgba(36, 129, 204, 0.3)
+3. Chat Detail Screen
+Header:
+Back arrow
+Avatar (40px) + Name + Status (online/last seen)
+Right: Video call + Call + Menu icons
+Message List:
+Incoming: Left-aligned, white bubble, rounded corners
+Outgoing: Right-aligned, #E1F3E1 bubble
+Message text (16px)
+Timestamp + Read indicators (double check for read)
+Images, videos, files support
+Voice messages with waveform
+Date separators
+Input Area:
+Attachment icon (left)
+Text input with placeholder "Message..."
+Emoji keyboard toggle
+Send button (blue circle, appears when text entered)
+Voice hold-to-record button
+Background: #F2F3F5
+4. Calls Tab
+List items:
+Avatar (48px)
+Name/Number
+Call type icon + duration
+Date/time
+Missed calls in red
+Empty state: Phone illustration + "No calls yet"
+5. Contacts Tab
+Header: "Contacts" title + Add contact button
+Search bar below header
+Section index (A-Z sidebar)
+Contact items:
+Avatar (44px)
+Name
+Phone number (gray)
+Online status indicator
+6. Settings Tab
+Profile section:
+Avatar (80px) + Edit icon
+Name (editable)
+Phone number
+Username (@)
+Settings list:
+Notifications
+Privacy and Security
+Data and Storage
+Appearance
+Language
+Telegram Premium
+Help
+Dark mode toggle
+Log out button at bottom
+Components Required
+Buttons
+Primary: Blue (#2481CC), white text, 8px radius
+Secondary: Transparent, blue text
+Destructive: Red text
+Input Fields
+Background: #F2F3F5
+Border radius: 20px (pill shape)
+Placeholder: #8E8E93
+Badges
+Unread count: Circle, #2481CC, white text
+Notification dot: 8px, red
+Modals/Bottom Sheets
+Slide-up animation (300ms ease-out)
+Drag indicator: 36px wide, 4px height, gray
+Rounded top corners: 12px
+Animations & Interactions
+Page transitions: Slide left/right (250ms)
+List item tap: Ripple effect
+Button press: Scale 0.97 (100ms)
+FAB tap: Bounce effect
+Pull-to-refresh: Native iOS/Android
+Keyboard: Slide up with input
+Dark Mode
+Full dark theme support
+OLED black option (#000000)
+Reduced contrast for eye comfort
+Deliverables
+Mobile app design (iPhone/Android)
+All screens listed above
+Component library
+Color system
+Typography scale
+Icon set (custom Telegram-style)
+Animations prototype

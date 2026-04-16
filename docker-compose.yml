@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # База данных PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: workspace_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d workspace_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # API Backend (Node.js)
+  api:
+    build: 
+      context: .
+      target: api
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/workspace_db
+      - PORT=8080
+      - NODE_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend (Nginx)
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
