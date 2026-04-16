@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # База данных PostgreSQL
@@ -19,9 +19,11 @@ services:
 
   # API Backend (Node.js)
   api:
-    build: 
+    build:
       context: .
       target: api
+    expose:
+      - "8080"
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/workspace_db
       - PORT=8080
@@ -30,6 +32,16 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # Frontend (Nginx)
   web:
@@ -39,7 +51,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
