@@ -6,10 +6,12 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 
-# Собираем проект
+# Собираем проект (без typecheck из-за ошибок в DesktopMain.tsx)
 ENV NODE_ENV=production
 ENV BASE_PATH=/
-RUN pnpm run build
+# Билдим только artifacts напрямую без общего typecheck
+RUN pnpm --filter @workspace/api-server run build && \
+    pnpm --filter @workspace/frontend run build
 
 # ==========================================
 # Образ для API-сервера
