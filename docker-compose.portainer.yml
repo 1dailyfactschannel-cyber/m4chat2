@@ -1,0 +1,91 @@
+# ==========================================
+# M4Chat2 - Complete Stack for Portainer Repository Method
+# ==========================================
+#
+# Для деплоя через Portainer Repository:
+# 1. Создай стек в Portainer с методом "Repository"
+# 2. URL: https://github.com/1dailyfactschannel-cyber/m4chat2.git
+# 3. Compose path: docker-compose.portainer.yml
+# 4. Ветка: main
+#
+# Этот файл создаёт НОВЫЙ стек с новой базой данных
+
+services:
+  # ==========================================
+  # 1. PostgreSQL Database
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat2-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat2_db
+    ports:
+      - "5446:5432"
+    volumes:
+      - m4chat2_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat2_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat2-network
+
+  # ==========================================
+  # 2. API Backend
+  # ==========================================
+  api:
+    build:
+      context: .
+      target: api
+    container_name: m4chat2-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat2_db
+      PORT: 8080
+      NODE_ENV: production
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - m4chat2-network
+
+  # ==========================================
+  # 3. Frontend Web
+  # ==========================================
+  web:
+    build:
+      context: .
+      target: web
+    container_name: m4chat2-web
+    restart: unless-stopped
+    ports:
+      - "81:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - m4chat2-network
+
+volumes:
+  m4chat2_data:
+    driver: local
+
+networks:
+  m4chat2-network:
+    driver: bridge
