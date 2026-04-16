@@ -1,0 +1,81 @@
+# ==========================================
+# M4Chat2 Application + Database (Combined)
+# ==========================================
+# Stack name: m4chat-full
+#
+# Вариант A: Полный стек с базой данных внутри
+# Используйте это, если хотите всё в одном стеке
+
+services:
+  # База данных PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat_pg
+    ports:
+      - "5445:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat_pg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat-network
+
+  # API Backend (Node.js)
+  api:
+    build:
+      context: .
+      target: api
+    container_name: m4chat-api
+    expose:
+      - "8080"
+    environment:
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      PORT: 8080
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - m4chat-network
+
+  # Frontend (Nginx)
+  web:
+    build:
+      context: .
+      target: web
+    container_name: m4chat-web
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - m4chat-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  m4chat-network:
+    driver: bridge
