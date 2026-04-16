@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
@@ -14,8 +14,8 @@ RUN pnpm run build
 # ==========================================
 # Образ для API-сервера
 # ==========================================
-FROM node:22-alpine AS api
-RUN corepack enable && corepack prepare pnpm@latest --activate && apk add --no-cache wget
+FROM node:22-slim AS api
+RUN corepack enable && corepack prepare pnpm@latest --activate && apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Копируем собранное приложение из builder
