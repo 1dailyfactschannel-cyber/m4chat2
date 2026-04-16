@@ -1,14 +1,21 @@
 # ==========================================
-# PostgreSQL Database Only Deployment
+# M4Chat - Full Stack with Database
 # ==========================================
 # Stack name: m4chat
-# Use this in Portainer web editor
+# Полный стек: База данных + API + Frontend
+#
+# Порты:
+# - 5445: PostgreSQL (внешний доступ)
+# - 80: Web интерфейс (Nginx)
+# - 8080: API (внутренний, через Nginx)
 
 services:
-  # PostgreSQL Database
+  # ==========================================
+  # 1. PostgreSQL Database
+  # ==========================================
   db:
     image: postgres:15-alpine
-    container_name: m4chat
+    container_name: m4chat-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -23,7 +30,65 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - m4chat-network
 
+  # ==========================================
+  # 2. API Backend (Node.js)
+  # ==========================================
+  api:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: api
+    container_name: m4chat-api
+    restart: unless-stopped
+    environment:
+      # Подключение к БД внутри Docker сети (db - имя сервиса)
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      PORT: 8080
+      NODE_ENV: production
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 3. Frontend (Nginx)
+  # ==========================================
+  web:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: web
+    container_name: m4chat-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - m4chat-network
+
+# ==========================================
+# Volumes & Networks
+# ==========================================
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  m4chat-network:
+    driver: bridge
