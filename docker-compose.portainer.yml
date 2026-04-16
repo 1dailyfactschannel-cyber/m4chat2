@@ -8,6 +8,11 @@
 # 3. Compose path: docker-compose.portainer.yml
 # 4. Ветка: main
 #
+# Environment Variables (добавь в Portainer при создании стека):
+# - POSTGRES_PASSWORD (обязательно): пароль для базы данных
+# - DATABASE_URL (обязательно): полный URL подключения к БД
+# - Опционально: POSTGRES_USER, POSTGRES_DB, DB_PORT, WEB_PORT, API_PORT, NODE_ENV
+#
 # Этот файл создаёт НОВЫЙ стек с новой базой данных
 
 services:
@@ -19,15 +24,19 @@ services:
     container_name: m4chat2-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
-      POSTGRES_DB: m4chat2_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-XYL9zWCqwjACdnm}
+      POSTGRES_DB: ${POSTGRES_DB:-m4chat2_db}
     ports:
-      - "5446:5432"
+      - "${DB_PORT:-5446}:5432"
     volumes:
       - m4chat2_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat2_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-m4chat2_db}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,9 +53,9 @@ services:
     container_name: m4chat2-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat2_db
-      PORT: 8080
-      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat2_db}
+      PORT: ${API_PORT:-8080}
+      NODE_ENV: ${NODE_ENV:-production}
     expose:
       - "8080"
     depends_on:
@@ -75,7 +84,7 @@ services:
     container_name: m4chat2-web
     restart: unless-stopped
     ports:
-      - "81:80"
+      - "${WEB_PORT:-81}:80"
     depends_on:
       api:
         condition: service_healthy
