@@ -34,11 +34,13 @@ const authMiddleware = (req: any, res: any, next: any) => {
   const token = req.headers["x-admin-token"] || req.query.token;
 
   if (!token) {
-    return res.status(401).json({ error: "Token required" });
+    res.status(401).json({ error: "Token required" });
+    return;
   }
 
   if (token !== ADMIN_TOKEN) {
-    return res.status(403).json({ error: "Invalid token" });
+    res.status(403).json({ error: "Invalid token" });
+    return;
   }
 
   next();

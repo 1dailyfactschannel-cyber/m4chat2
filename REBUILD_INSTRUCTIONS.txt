@@ -1,0 +1,16 @@
+Нужно полностью пересобрать API контейнер с новым кодом:
+
+В Portainer:
+1. Stacks → m4chat → Delete (данные БД сохранятся!)
+2. Add stack → Method: Repository
+3. Repository URL: https://github.com/1dailyfactschannel-cyber/m4chat2.git
+4. Compose path: docker-compose.yml  
+5. Deploy the stack
+
+Или если Repository не работает:
+
+1. Add stack → Method: Web Editor
+2. Скопируйте весь код из файла docker-compose.yml
+3. Deploy the stack
+
+Важно: нужно пересобрать контейнер API, чтобы добавился admin router!
