@@ -14,7 +14,7 @@
 #
 # Порты:
 # - 5446: PostgreSQL (внешний доступ)
-# - 8080: API (напрямую)
+# - 8083: API (напрямую)
 # - 8082: Web интерфейс (Nginx с прокси)
 
 services:
@@ -57,7 +57,7 @@ services:
       NODE_ENV: production
       ADMIN_TOKEN: m4chat-secret-admin-token-2024
     ports:
-      - "8080:8080"
+      - "8083:8080"
     expose:
       - "8080"
     depends_on:
