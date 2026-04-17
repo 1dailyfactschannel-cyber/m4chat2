@@ -1,0 +1,66 @@
+name: Deploy Database Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/db/src/schema/**"
+      - ".github/workflows/deploy-db.yml"
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Execute database migration
+        run: |
+          echo "🚀 Connecting to server and running drizzle push..."
+          ssh root@${{ secrets.SERVER_IP }} << 'EOF'
+            echo "✅ Connected to server"
+            
+            # Находим контейнер API
+            CONTAINER_ID=$(docker ps -q -f name=m4chat-api)
+            
+            if [ -z "$CONTAINER_ID" ]; then
+              echo "❌ Container m4chat-api not found!"
+              exit 1
+            fi
+            
+            echo "📦 Found container: $CONTAINER_ID"
+            
+            # Выполняем миграцию Drizzle
+            echo "🔄 Running drizzle-kit push..."
+            docker exec $CONTAINER_ID bash -c "cd /app && pnpm --filter @workspace/db run push-force"
+            
+            if [ $? -eq 0 ]; then
+              echo "✅ Migration completed successfully!"
+            else
+              echo "❌ Migration failed!"
+              exit 1
+            fi
+            
+            # Проверяем таблицы
+            echo "📋 Checking database tables..."
+            docker exec m4chat-db psql -U postgres -d m4chat_pg -c "\dt"
+            
+            echo "🎉 All done!"
+          EOF
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Database migration completed via GitHub Actions"
+          echo "Server: ${{ secrets.SERVER_IP }}"
