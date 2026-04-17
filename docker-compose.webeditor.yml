@@ -1,0 +1,126 @@
+# ==========================================
+# M4Chat - Web Editor Method (Надёжный)
+# ==========================================
+#
+# ДЛЯ ДЕПЛОЯ ЧЕРЕЗ PORTAINER WEB EDITOR:
+#
+# 1. Portainer → Stacks → Add stack
+# 2. Method: Web editor
+# 3. Скопируйте ВЕСЬ этот файл в поле редактора
+# 4. Name: m4chat
+# 5. Deploy the stack
+#
+# Преимущества Web Editor:
+# - Не зависит от доступности GitHub
+# - Быстрый деплой
+# - Понятный контроль
+#
+# Порты:
+# - 5446: PostgreSQL
+# - 8082: Web интерфейс
+
+services:
+  # ==========================================
+  # 1. PostgreSQL Database
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat_pg
+    ports:
+      - "5446:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat_pg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 2. API Backend (сборка из GitHub при старте)
+  # ==========================================
+  api:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: api
+    container_name: m4chat-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      PORT: 8080
+      NODE_ENV: production
+      ADMIN_TOKEN: m4chat-secret-admin-token-2024
+    expose:
+      - "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 3. Frontend Web
+  # ==========================================
+  web:
+    build:
+      context: https://github.com/1dailyfactschannel-cyber/m4chat2.git#main
+      target: web
+    container_name: m4chat-web
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    depends_on:
+      - api
+    networks:
+      - m4chat-network
+    # Перезаписываем nginx.conf для правильного проксирования
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/conf.d/default.conf
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  m4chat-network:
+    driver: bridge
+
+configs:
+  nginx_config:
+    content: |
+      server {
+          listen 80;
+          server_name localhost;
+          
+          location / {
+              root /usr/share/nginx/html;
+              index index.html index.htm;
+              try_files $uri $uri/ /index.html;
+          }
+          
+          location /api/ {
+              proxy_pass http://api:8080/api/;
+              proxy_http_version 1.1;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+          
+          location /admin/ {
+              proxy_pass http://api:8080/admin/;
+              proxy_http_version 1.1;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+          
+          location /health {
+              proxy_pass http://api:8080/health;
+          }
+      }
