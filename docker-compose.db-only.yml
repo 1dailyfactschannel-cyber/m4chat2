@@ -6,7 +6,7 @@
 #
 # Порты:
 # - 5446: PostgreSQL (внешний доступ)
-# - 8081: Web интерфейс (Nginx)
+# - 8082: Web интерфейс (Nginx)
 # - 8080: API (внутренний, через Nginx)
 
 services:
@@ -73,7 +73,7 @@ services:
     container_name: m4chat-web
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "8082:80"
     depends_on:
       - api
     networks:
