@@ -55,6 +55,7 @@ services:
       DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
       PORT: 8080
       NODE_ENV: production
+      ADMIN_TOKEN: m4chat-secret-admin-token-2024
     expose:
       - "8080"
     depends_on:
