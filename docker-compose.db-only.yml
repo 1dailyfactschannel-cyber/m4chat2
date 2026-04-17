@@ -5,8 +5,8 @@
 # Полный стек: База данных + API + Frontend
 #
 # Порты:
-# - 5445: PostgreSQL (внешний доступ)
-# - 80: Web интерфейс (Nginx)
+# - 5446: PostgreSQL (внешний доступ)
+# - 8081: Web интерфейс (Nginx)
 # - 8080: API (внутренний, через Nginx)
 
 services:
@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: XYL9zWCqwjACdnm
       POSTGRES_DB: m4chat_pg
     ports:
-      - "5445:5432"
+      - "5446:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -73,7 +73,7 @@ services:
     container_name: m4chat-web
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - api
     networks:
