@@ -23,6 +23,9 @@ WORKDIR /app
 # Копируем собранное приложение из builder
 COPY --from=builder /app /app
 
+# Копируем исходники для доступа к admin routes
+COPY --from=builder /app/artifacts/api-server/src /app/artifacts/api-server/src
+
 EXPOSE 8080
 # Запускаем миграции БД перед стартом API
 CMD ["sh", "-c", "pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run start"]
