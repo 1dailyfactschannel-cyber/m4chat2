@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: m4chat-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_DB: m4chat_pg
+    ports:
+      - "5446:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d m4chat_pg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: node:22-slim
+    container_name: m4chat-api
+    environment:
+      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      PORT: 8080
+      NODE_ENV: production
+      ADMIN_TOKEN: m4chat-secret-admin-token-2024
+    ports:
+      - "8083:8080"
+    volumes:
+      - api_data:/app
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y git wget &&
+        git clone https://github.com/1dailyfactschannel-cyber/m4chat2.git /tmp/repo &&
+        mkdir -p /app/artifacts/api-server &&
+        cp -r /tmp/repo/artifacts/api-server/* /app/artifacts/api-server/ &&
+        cp -r /tmp/repo/lib /app/ &&
+        cp /tmp/repo/package.json /tmp/repo/pnpm-workspace.yaml /app/ &&
+        npm install -g pnpm &&
+        cd /app && pnpm install --frozen-lockfile &&
+        cd /app/artifacts/api-server && node build.mjs &&
+        node dist/index.mjs
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: nginx:alpine
+    container_name: m4chat-web
+    ports:
+      - "8082:80"
+    command: >
+      sh -c "
+        echo 'server {
+          listen 80;
+          location / { root /usr/share/nginx/html; try_files \$$uri /index.html; }
+          location /api/ { proxy_pass http://api:8080/api/; }
+          location /admin/ { proxy_pass http://api:8080/admin/; }
+          location /health { proxy_pass http://api:8080/health; }
+        }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+      "
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  api_data:
