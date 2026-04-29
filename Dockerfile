@@ -31,7 +31,7 @@ ENV BASE_PATH=/
 # Образ для API-сервера
 # ==========================================
 FROM node:22-slim AS api
-RUN corepack enable && apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+RUN corepack enable
 WORKDIR /app
 
 # Копируем собранное приложение из builder
