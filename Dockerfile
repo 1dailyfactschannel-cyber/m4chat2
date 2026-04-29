@@ -6,12 +6,13 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 
-# Собираем проект (без typecheck из-за ошибок в DesktopMain.tsx)
-ENV NODE_ENV=production
-ENV BASE_PATH=/
 # Билдим только artifacts напрямую без общего typecheck
+# NODE_ENV=production ставим ПОСЛЕ install, чтобы devDeps (drizzle-kit, tsx) были доступны
 RUN pnpm --filter @workspace/api-server run build && \
     pnpm --filter @workspace/frontend run build
+
+ENV NODE_ENV=production
+ENV BASE_PATH=/
 
 # ==========================================
 # Образ для API-сервера
