@@ -6,6 +6,7 @@ import chatsRouter from "./chats";
 import messagesRouter from "./messages";
 import filesRouter from "./files";
 import signalRouter from "./signal";
+import linkPreviewRouter from "./linkPreview";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(chatsRouter);
 router.use(messagesRouter);
 router.use(filesRouter);
 router.use(signalRouter);
+router.use(linkPreviewRouter);
 
 export default router;

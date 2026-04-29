@@ -280,6 +280,11 @@ class ApiClient {
     return this.request(`/api/folders/${folderId}/chats/${chatId}`, { method: 'DELETE' });
   }
 
+  // Link Preview
+  async getLinkPreview(url: string) {
+    return this.request(`/api/link-preview?url=${encodeURIComponent(url)}`);
+  }
+
   // Polls
   async createPoll(messageId: number, question: string, options: string[], isAnonymous = true, allowsMultiple = false) {
     return this.request(`/api/messages/${messageId}/poll`, {

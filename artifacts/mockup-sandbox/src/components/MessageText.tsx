@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { MessageEntity } from "../types/entities";
+import { LinkPreview } from "./LinkPreview";
 
 interface MessageTextProps {
   content: string | null;
@@ -127,16 +128,18 @@ export const MessageText: React.FC<MessageTextProps> = ({
         }
         if (seg.types.includes("text_link") && seg.url) {
           element = (
-            <a
-              key={key}
-              href={seg.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-[#2481CC] hover:text-[#1a6db3]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {element}
-            </a>
+            <span key={key} className="inline">
+              <a
+                href={seg.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-[#2481CC] hover:text-[#1a6db3]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {element}
+              </a>
+              <LinkPreview url={seg.url} darkMode={darkMode} />
+            </span>
           );
         }
         if (seg.types.includes("mention")) {
