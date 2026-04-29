@@ -27,6 +27,7 @@ import { MessageText } from '../../MessageText';
 import { FormatToolbar } from '../../FormatToolbar';
 import { DesktopSettings } from './DesktopSettings';
 import { VoiceMessage } from '../../VoiceMessage';
+import { PollMessage } from '../../PollMessage';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -955,6 +956,12 @@ export default function DesktopMain() {
                                         darkMode={darkMode}
                                         outgoing={msg.senderId === user?.id}
                                       />
+                                    ) : msg.messageType === 'poll' ? (
+                                      <PollMessage
+                                        messageId={msg.id}
+                                        darkMode={darkMode}
+                                        outgoing={msg.senderId === user?.id}
+                                      />
                                     ) : (
                                       <FileMessage
                                         fileName={msg.content || 'file'}
@@ -1028,15 +1035,41 @@ export default function DesktopMain() {
                   if (fmt) wrapSelection(fmt.before, fmt.after);
                 }}
               />
-              <label className="flex items-center gap-1.5 cursor-pointer select-none" style={{ color: bg.textSec }}>
-                <input
-                  type="checkbox"
-                  checked={isSilent}
-                  onChange={(e) => setIsSilent(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded accent-[#2481CC]"
-                />
-                <span className="text-[11px]">Без звука</span>
-              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const question = prompt('Вопрос опроса:');
+                    if (!question) return;
+                    const optionsStr = prompt('Варианты ответа (через запятую):');
+                    if (!optionsStr) return;
+                    const options = optionsStr.split(',').map((s) => s.trim()).filter(Boolean);
+                    if (options.length < 2) {
+                      alert('Нужно минимум 2 варианта');
+                      return;
+                    }
+                    // Send poll as message
+                    sendMessage(question, 'poll', replyTo?.id).then(async (msg) => {
+                      if (msg) {
+                        await api.createPoll(msg.id, question, options);
+                      }
+                    });
+                  }}
+                  className="text-[11px] flex items-center gap-1 hover:opacity-70 transition-opacity"
+                  style={{ color: bg.textSec }}
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                  Опрос
+                </button>
+                <label className="flex items-center gap-1.5 cursor-pointer select-none" style={{ color: bg.textSec }}>
+                  <input
+                    type="checkbox"
+                    checked={isSilent}
+                    onChange={(e) => setIsSilent(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded accent-[#2481CC]"
+                  />
+                  <span className="text-[11px]">Без звука</span>
+                </label>
+              </div>
             </div>
             <div className="flex items-end gap-2">
             {replyTo && (

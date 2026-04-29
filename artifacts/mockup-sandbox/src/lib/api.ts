@@ -249,6 +249,25 @@ class ApiClient {
     return this.request(`/api/keys/bundle/${userId}`);
   }
 
+  // Polls
+  async createPoll(messageId: number, question: string, options: string[], isAnonymous = true, allowsMultiple = false) {
+    return this.request(`/api/messages/${messageId}/poll`, {
+      method: 'POST',
+      body: JSON.stringify({ question, options, isAnonymous, allowsMultiple }),
+    });
+  }
+
+  async getPoll(messageId: number) {
+    return this.request(`/api/messages/${messageId}/poll`);
+  }
+
+  async votePoll(pollId: number, optionIndex: number) {
+    return this.request(`/api/polls/${pollId}/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ optionIndex }),
+    });
+  }
+
   // Messages
   async getMessages(chatId: number, limit = 50, offset = 0) {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);

@@ -496,3 +496,61 @@ export const insertSignalSessionSchema = createInsertSchema(signalSessionTable).
 export const selectSignalSessionSchema = createSelectSchema(signalSessionTable);
 export type InsertSignalSession = z.infer<typeof insertSignalSessionSchema>;
 export type SignalSession = z.infer<typeof selectSignalSessionSchema>;
+
+// ==========================================
+// 15. Polls
+// ==========================================
+export const pollsTable = pgTable(
+  "polls",
+  {
+    id: serial("id").primaryKey(),
+    messageId: integer("message_id")
+      .references(() => messagesTable.id, { onDelete: "cascade" })
+      .notNull(),
+    question: text("question").notNull(),
+    options: jsonb("options").$type<string[]>(),
+    isAnonymous: boolean("is_anonymous").default(true),
+    allowsMultiple: boolean("allows_multiple").default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    messageIdIdx: index("polls_message_id_idx").on(table.messageId),
+  }),
+);
+
+export const insertPollSchema = createInsertSchema(pollsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const selectPollSchema = createSelectSchema(pollsTable);
+export type InsertPoll = z.infer<typeof insertPollSchema>;
+export type Poll = z.infer<typeof selectPollSchema>;
+
+// ==========================================
+// 16. Poll Votes
+// ==========================================
+export const pollVotesTable = pgTable(
+  "poll_votes",
+  {
+    id: serial("id").primaryKey(),
+    pollId: integer("poll_id")
+      .references(() => pollsTable.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: integer("user_id")
+      .references(() => usersTable.id, { onDelete: "cascade" })
+      .notNull(),
+    optionIndex: integer("option_index").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    pollUserIdx: index("poll_votes_poll_user_idx").on(table.pollId, table.userId),
+  }),
+);
+
+export const insertPollVoteSchema = createInsertSchema(pollVotesTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const selectPollVoteSchema = createSelectSchema(pollVotesTable);
+export type InsertPollVote = z.infer<typeof insertPollVoteSchema>;
+export type PollVote = z.infer<typeof selectPollVoteSchema>;

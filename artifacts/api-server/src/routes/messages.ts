@@ -8,6 +8,8 @@ import {
   messageReadsTable,
   sessionsTable,
   reactionsTable,
+  pollsTable,
+  pollVotesTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 import { parseMarkdown } from "../lib/parseMarkdown.js";
@@ -611,6 +613,142 @@ router.get("/messages/search", requireAuth, async (req: any, res) => {
     );
 
     res.json(results);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create poll
+router.post("/messages/:messageId/poll", requireAuth, async (req: any, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.userId;
+    const { question, options, isAnonymous, allowsMultiple } = req.body;
+
+    const [message] = await db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.id, Number(messageId)));
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    if (message.senderId !== userId) {
+      return res.status(403).json({ error: "Can only add poll to own messages" });
+    }
+
+    const [poll] = await db
+      .insert(pollsTable)
+      .values({
+        messageId: Number(messageId),
+        question,
+        options,
+        isAnonymous,
+        allowsMultiple,
+      })
+      .returning();
+
+    res.status(201).json(poll);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get poll with votes
+router.get("/messages/:messageId/poll", requireAuth, async (req: any, res) => {
+  try {
+    const { messageId } = req.params;
+
+    const [poll] = await db
+      .select()
+      .from(pollsTable)
+      .where(eq(pollsTable.messageId, Number(messageId)));
+
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    const votes = await db
+      .select({
+        optionIndex: pollVotesTable.optionIndex,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(pollVotesTable)
+      .where(eq(pollVotesTable.pollId, poll.id))
+      .groupBy(pollVotesTable.optionIndex);
+
+    const voteCounts: Record<number, number> = {};
+    votes.forEach((v) => {
+      voteCounts[v.optionIndex] = Number(v.count);
+    });
+
+    res.json({
+      ...poll,
+      votes: voteCounts,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Vote in poll
+router.post("/polls/:pollId/vote", requireAuth, async (req: any, res) => {
+  try {
+    const { pollId } = req.params;
+    const userId = req.userId;
+    const { optionIndex } = req.body;
+
+    const [poll] = await db
+      .select()
+      .from(pollsTable)
+      .where(eq(pollsTable.id, Number(pollId)));
+
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    // Check if already voted
+    const [existing] = await db
+      .select()
+      .from(pollVotesTable)
+      .where(
+        and(
+          eq(pollVotesTable.pollId, Number(pollId)),
+          eq(pollVotesTable.userId, userId)
+        )
+      );
+
+    if (existing && !poll.allowsMultiple) {
+      // Update vote
+      await db
+        .update(pollVotesTable)
+        .set({ optionIndex })
+        .where(eq(pollVotesTable.id, existing.id));
+    } else {
+      await db.insert(pollVotesTable).values({
+        pollId: Number(pollId),
+        userId,
+        optionIndex,
+      });
+    }
+
+    // Return updated votes
+    const votes = await db
+      .select({
+        optionIndex: pollVotesTable.optionIndex,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(pollVotesTable)
+      .where(eq(pollVotesTable.pollId, Number(pollId)))
+      .groupBy(pollVotesTable.optionIndex);
+
+    const voteCounts: Record<number, number> = {};
+    votes.forEach((v) => {
+      voteCounts[v.optionIndex] = Number(v.count);
+    });
+
+    res.json({ votes: voteCounts });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
