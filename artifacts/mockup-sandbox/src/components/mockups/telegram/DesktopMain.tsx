@@ -9,7 +9,7 @@ import {
   MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut, Monitor,
   ArrowDown, Slash, AtSign, Type, Clock, BarChart2, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
-  UserPlus, Download, ChevronRight, Loader2, Lock,
+  UserPlus, Download, ChevronRight, Loader2, Lock, Plus,
 } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useChats, useMessages } from '../../../hooks/useChats';
@@ -43,7 +43,7 @@ const CHAT_BACKGROUNDS = [
   { id: 'dark', style: { backgroundColor: '#1a1a2e' } },
 ];
 
-const FOLDERS = ['Все', 'Личные', 'Работа', 'Непрочитанные'] as const;
+const DEFAULT_FOLDERS = ['Все', 'Личные', 'Работа', 'Непрочитанные'] as const;
 
 const GRADIENTS = [
   'from-purple-400 to-pink-400', 'from-blue-400 to-cyan-400',
@@ -64,7 +64,7 @@ function getInitials(name: string) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DesktopMain() {
   const { user, logout } = useAuth();
-  const { chats, loading: chatsLoading, refresh: refreshChats } = useChats();
+  const { chats, folders, loading: chatsLoading, refresh: refreshChats } = useChats();
   const {
     activeChatId, setActiveChatId,
     darkMode, toggleDarkMode,
@@ -437,11 +437,22 @@ export default function DesktopMain() {
   const activeChats = chats.filter((c) => !c.archivedAt);
   const archivedChats = chats.filter((c) => c.archivedAt);
 
+  const isCustomFolder = !DEFAULT_FOLDERS.includes(activeFolder as any);
+  const customFolder = folders.find((f) => f.name === activeFolder);
+
   const filteredChats = (showArchived ? archivedChats : activeChats).filter((c) => {
     if (searchText) return c.name?.toLowerCase().includes(searchText.toLowerCase());
     if (activeFolder === 'Личные') return c.type === 'private';
     if (activeFolder === 'Работа') return c.name?.toLowerCase().includes('работа');
     if (activeFolder === 'Непрочитанные') return (c.unreadCount ?? 0) > 0;
+    if (isCustomFolder && customFolder) {
+      // For custom folders, filter by includeTypes if specified
+      if (customFolder.includeTypes) {
+        const types = customFolder.includeTypes.split(',');
+        if (!types.includes(c.type || '')) return false;
+      }
+      return true;
+    }
     return true;
   });
 
@@ -589,7 +600,7 @@ export default function DesktopMain() {
                 <div className="px-5 py-1.5">
                   <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: bg.textSec }}>Папки</span>
                 </div>
-                {FOLDERS.map((f) => (
+                {[...DEFAULT_FOLDERS, ...folders.map(f => f.name)].map((f) => (
                   <button
                     key={f}
                     onClick={() => { setActiveFolder(f); setShowBurger(false); }}
@@ -600,6 +611,19 @@ export default function DesktopMain() {
                     <span className="text-[14px]">{f}</span>
                   </button>
                 ))}
+                <button
+                  onClick={() => {
+                    const name = prompt('Название новой папки:');
+                    if (name) {
+                      api.createFolder({ name }).then(() => refreshChats());
+                    }
+                  }}
+                  className="w-full flex items-center gap-4 px-5 py-2.5 text-left hover:opacity-80 transition-colors"
+                  style={{ color: bg.textSec }}
+                >
+                  <Plus className="w-4 h-4 shrink-0" />
+                  <span className="text-[14px]">Создать папку</span>
+                </button>
                 <div className="mx-4 my-1" style={{ borderTop: `1px solid ${bg.panelBorder}` }} />
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
@@ -668,7 +692,7 @@ export default function DesktopMain() {
         </div>
         {/* Folder tabs */}
         <div className="flex shrink-0 overflow-x-auto" style={{ borderBottom: `1px solid ${bg.panelBorder}` }}>
-          {FOLDERS.map((f) => (
+          {[...DEFAULT_FOLDERS, ...folders.map(f => f.name)].map((f) => (
             <button
               key={f}
               onClick={() => setActiveFolder(f)}

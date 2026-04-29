@@ -9,6 +9,8 @@ import {
   messageReadsTable,
   sessionsTable,
   reactionsTable,
+  chatFoldersTable,
+  folderChatsTable,
 } from "@workspace/db/schema";
 import { eq, and, or, desc, sql, count, ne } from "drizzle-orm";
 
@@ -730,6 +732,196 @@ router.put("/chats/:chatId/members/:targetUserId/role", requireAuth, async (req:
         and(
           eq(chatMembersTable.chatId, Number(chatId)),
           eq(chatMembersTable.userId, Number(targetUserId))
+        )
+      );
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's custom folders
+router.get("/folders", requireAuth, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+
+    const folders = await db
+      .select()
+      .from(chatFoldersTable)
+      .where(eq(chatFoldersTable.userId, userId))
+      .orderBy(chatFoldersTable.sortOrder);
+
+    // Include chat counts
+    const foldersWithCounts = await Promise.all(
+      folders.map(async (folder) => {
+        const count = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(folderChatsTable)
+          .where(eq(folderChatsTable.folderId, folder.id));
+
+        return {
+          ...folder,
+          chatCount: count[0]?.count || 0,
+        };
+      })
+    );
+
+    res.json(foldersWithCounts);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create folder
+router.post("/folders", requireAuth, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const { name, icon, color, includeTypes, excludeMuted } = req.body;
+
+    const [folder] = await db
+      .insert(chatFoldersTable)
+      .values({
+        userId,
+        name,
+        icon: icon || null,
+        color: color || null,
+        includeTypes: includeTypes || "",
+        excludeMuted: excludeMuted || false,
+      })
+      .returning();
+
+    res.status(201).json(folder);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update folder
+router.put("/folders/:folderId", requireAuth, async (req: any, res) => {
+  try {
+    const { folderId } = req.params;
+    const userId = req.userId;
+    const { name, icon, color, includeTypes, excludeMuted, sortOrder } = req.body;
+
+    const [folder] = await db
+      .select()
+      .from(chatFoldersTable)
+      .where(
+        and(
+          eq(chatFoldersTable.id, Number(folderId)),
+          eq(chatFoldersTable.userId, userId)
+        )
+      );
+
+    if (!folder) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const [updated] = await db
+      .update(chatFoldersTable)
+      .set({
+        name: name || folder.name,
+        icon: icon !== undefined ? icon : folder.icon,
+        color: color !== undefined ? color : folder.color,
+        includeTypes: includeTypes !== undefined ? includeTypes : folder.includeTypes,
+        excludeMuted: excludeMuted !== undefined ? excludeMuted : folder.excludeMuted,
+        sortOrder: sortOrder !== undefined ? sortOrder : folder.sortOrder,
+      })
+      .where(eq(chatFoldersTable.id, Number(folderId)))
+      .returning();
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete folder
+router.delete("/folders/:folderId", requireAuth, async (req: any, res) => {
+  try {
+    const { folderId } = req.params;
+    const userId = req.userId;
+
+    const [folder] = await db
+      .select()
+      .from(chatFoldersTable)
+      .where(
+        and(
+          eq(chatFoldersTable.id, Number(folderId)),
+          eq(chatFoldersTable.userId, userId)
+        )
+      );
+
+    if (!folder) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    await db.delete(chatFoldersTable).where(eq(chatFoldersTable.id, Number(folderId)));
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add chat to folder
+router.post("/folders/:folderId/chats/:chatId", requireAuth, async (req: any, res) => {
+  try {
+    const { folderId, chatId } = req.params;
+    const userId = req.userId;
+
+    const [folder] = await db
+      .select()
+      .from(chatFoldersTable)
+      .where(
+        and(
+          eq(chatFoldersTable.id, Number(folderId)),
+          eq(chatFoldersTable.userId, userId)
+        )
+      );
+
+    if (!folder) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    await db
+      .insert(folderChatsTable)
+      .values({ folderId: Number(folderId), chatId: Number(chatId) })
+      .onConflictDoNothing();
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remove chat from folder
+router.delete("/folders/:folderId/chats/:chatId", requireAuth, async (req: any, res) => {
+  try {
+    const { folderId, chatId } = req.params;
+    const userId = req.userId;
+
+    const [folder] = await db
+      .select()
+      .from(chatFoldersTable)
+      .where(
+        and(
+          eq(chatFoldersTable.id, Number(folderId)),
+          eq(chatFoldersTable.userId, userId)
+        )
+      );
+
+    if (!folder) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    await db
+      .delete(folderChatsTable)
+      .where(
+        and(
+          eq(folderChatsTable.folderId, Number(folderId)),
+          eq(folderChatsTable.chatId, Number(chatId))
         )
       );
 

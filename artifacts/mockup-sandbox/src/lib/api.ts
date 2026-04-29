@@ -249,6 +249,37 @@ class ApiClient {
     return this.request(`/api/keys/bundle/${userId}`);
   }
 
+  // Folders
+  async getFolders() {
+    return this.request('/api/folders');
+  }
+
+  async createFolder(data: { name: string; icon?: string; color?: string; includeTypes?: string; excludeMuted?: boolean }) {
+    return this.request('/api/folders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateFolder(folderId: number, data: { name?: string; icon?: string; color?: string; includeTypes?: string; excludeMuted?: boolean; sortOrder?: number }) {
+    return this.request(`/api/folders/${folderId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteFolder(folderId: number) {
+    return this.request(`/api/folders/${folderId}`, { method: 'DELETE' });
+  }
+
+  async addChatToFolder(folderId: number, chatId: number) {
+    return this.request(`/api/folders/${folderId}/chats/${chatId}`, { method: 'POST' });
+  }
+
+  async removeChatFromFolder(folderId: number, chatId: number) {
+    return this.request(`/api/folders/${folderId}/chats/${chatId}`, { method: 'DELETE' });
+  }
+
   // Polls
   async createPoll(messageId: number, question: string, options: string[], isAnonymous = true, allowsMultiple = false) {
     return this.request(`/api/messages/${messageId}/poll`, {

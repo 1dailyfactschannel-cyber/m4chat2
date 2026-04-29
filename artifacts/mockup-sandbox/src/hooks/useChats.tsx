@@ -46,14 +46,30 @@ export type ChatItem = {
   unreadCount: number;
 };
 
+export type ChatFolder = {
+  id: number;
+  name: string;
+  icon?: string;
+  color?: string;
+  includeTypes?: string;
+  excludeMuted?: boolean;
+  sortOrder?: number;
+  chatCount?: number;
+};
+
 export function useChats() {
   const [chats, setChats] = useState<ChatItem[]>([]);
+  const [folders, setFolders] = useState<ChatFolder[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchChats = useCallback(async () => {
     try {
-      const data = await api.getChats();
+      const [data, folderData] = await Promise.all([
+        api.getChats(),
+        api.getFolders().catch(() => []),
+      ]);
       setChats(data);
+      setFolders(folderData);
       await cacheDB.saveChats(data);
     } catch (error) {
       console.error('Failed to fetch chats:', error);
@@ -85,7 +101,7 @@ export function useChats() {
     return chat;
   };
 
-  return { chats, loading, createChat, refresh: fetchChats };
+  return { chats, folders, loading, createChat, refresh: fetchChats };
 }
 
 export function useMessages(chatId: number | null) {
