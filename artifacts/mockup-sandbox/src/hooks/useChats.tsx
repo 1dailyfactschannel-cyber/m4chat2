@@ -31,6 +31,7 @@ export type ChatItem = {
   role?: string;
   pinnedAt?: string | null;
   archivedAt?: string | null;
+  isSelfChat?: boolean;
   lastMessage?: {
     id: number;
     content: string;

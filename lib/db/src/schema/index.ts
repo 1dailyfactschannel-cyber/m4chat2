@@ -85,6 +85,7 @@ export const chatsTable = pgTable(
     inviteLink: varchar("invite_link", { length: 255 }).unique(),
     pinnedMessageId: integer("pinned_message_id"),
     isArchived: boolean("is_archived").default(false),
+    isSelfChat: boolean("is_self_chat").default(false),
     createdBy: integer("created_by").references(() => usersTable.id),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

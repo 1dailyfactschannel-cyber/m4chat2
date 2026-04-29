@@ -4,7 +4,7 @@ import crypto from "crypto";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 import { db } from "@workspace/db";
-import { usersTable, sessionsTable } from "@workspace/db/schema";
+import { usersTable, sessionsTable, chatsTable, chatMembersTable } from "@workspace/db/schema";
 import { eq, and, gt, ne } from "drizzle-orm";
 import { authRateLimiter } from "../middleware/rateLimit";
 
@@ -46,6 +46,20 @@ router.post("/auth/register", authRateLimiter, async (req, res) => {
       phone: phone || null,
       passwordHash,
     }).returning();
+
+    // Create self-chat (Saved Messages)
+    const [selfChat] = await db.insert(chatsTable).values({
+      name: "Избранное",
+      type: "private",
+      isSelfChat: true,
+      createdBy: user.id,
+    }).returning();
+
+    await db.insert(chatMembersTable).values({
+      chatId: selfChat.id,
+      userId: user.id,
+      role: "creator",
+    });
 
     const { token, refreshToken, expiresAt } = generateTokens();
 

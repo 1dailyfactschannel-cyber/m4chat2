@@ -437,7 +437,14 @@ export default function DesktopMain() {
                     key={label}
                     className="w-full flex items-center gap-4 px-5 py-3 text-left transition-colors hover:opacity-80"
                     style={{ color: active ? '#2481CC' : bg.text }}
-                    onClick={() => { if (label === 'Настройки') { /* open settings */ } setShowBurger(false); }}
+                    onClick={() => {
+                      if (label === 'Избранное') {
+                        const savedChat = chats.find((c) => c.isSelfChat);
+                        if (savedChat) openChat(savedChat.id);
+                      }
+                      if (label === 'Настройки') { /* open settings */ }
+                      setShowBurger(false);
+                    }}
                   >
                     <Icon className="w-5 h-5 shrink-0" style={{ color: active ? '#2481CC' : bg.textSec }} />
                     <span className="text-[15px] font-medium">{label}</span>
