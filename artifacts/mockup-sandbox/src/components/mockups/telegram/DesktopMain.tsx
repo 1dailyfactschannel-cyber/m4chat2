@@ -26,6 +26,7 @@ import { cacheDB } from '../../../lib/cache';
 import { MessageText } from '../../MessageText';
 import { FormatToolbar } from '../../FormatToolbar';
 import { DesktopSettings } from './DesktopSettings';
+import { VoiceMessage } from '../../VoiceMessage';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -900,14 +901,23 @@ export default function DesktopMain() {
                               >
                                 {isMedia && msg.mediaUrl ? (
                                   <div className="cursor-pointer" onClick={() => msg.messageType === 'image' && openLightbox(msg.mediaUrl!)}>
-                                    <FileMessage
-                                      fileName={msg.content || 'file'}
-                                      fileSize={0}
-                                      mimeType={msg.messageType === 'image' ? 'image/jpeg' : msg.messageType === 'video' ? 'video/mp4' : msg.messageType === 'audio' ? 'audio/mpeg' : 'application/octet-stream'}
-                                      url={msg.mediaUrl}
-                                      darkMode={darkMode}
-                                      outgoing={msg.senderId === user?.id}
-                                    />
+                                    {msg.messageType === 'audio' ? (
+                                      <VoiceMessage
+                                        url={msg.mediaUrl}
+                                        duration={msg.content ? Number(msg.content) || 0 : 0}
+                                        darkMode={darkMode}
+                                        outgoing={msg.senderId === user?.id}
+                                      />
+                                    ) : (
+                                      <FileMessage
+                                        fileName={msg.content || 'file'}
+                                        fileSize={0}
+                                        mimeType={msg.messageType === 'image' ? 'image/jpeg' : msg.messageType === 'video' ? 'video/mp4' : 'application/octet-stream'}
+                                        url={msg.mediaUrl}
+                                        darkMode={darkMode}
+                                        outgoing={msg.senderId === user?.id}
+                                      />
+                                    )}
                                   </div>
                                 ) : (
                                   <p className="leading-relaxed pr-14" style={{ fontSize, color: msg.senderId === user?.id ? 'white' : bg.text }}>
