@@ -1,10 +1,23 @@
 FROM node:22-slim AS builder
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable
 WORKDIR /app
 
-# Копируем исходники и устанавливаем зависимости
-COPY . .
+# Копируем package.json с packageManager first для кеширования слоёв
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY artifacts/mockup-sandbox/package.json ./artifacts/mockup-sandbox/
+COPY artifacts/api-server/package.json ./artifacts/api-server/
+COPY artifacts/electron-app/package.json ./artifacts/electron-app/
+COPY lib/db/package.json ./lib/db/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY lib/api-client-react/package.json ./lib/api-client-react/
+COPY scripts/package.json ./scripts/
+
+# Устанавливаем зависимости
 RUN pnpm install --frozen-lockfile
+
+# Копируем остальные файлы
+COPY . .
 
 # Билдим только artifacts напрямую без общего typecheck
 # NODE_ENV=production ставим ПОСЛЕ install, чтобы devDeps (drizzle-kit, tsx) были доступны
@@ -18,7 +31,7 @@ ENV BASE_PATH=/
 # Образ для API-сервера
 # ==========================================
 FROM node:22-slim AS api
-RUN corepack enable && corepack prepare pnpm@latest --activate && apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+RUN corepack enable && apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Копируем собранное приложение из builder
