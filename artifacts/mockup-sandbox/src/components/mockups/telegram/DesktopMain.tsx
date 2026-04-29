@@ -28,6 +28,7 @@ import { FormatToolbar } from '../../FormatToolbar';
 import { DesktopSettings } from './DesktopSettings';
 import { VoiceMessage } from '../../VoiceMessage';
 import { PollMessage } from '../../PollMessage';
+import { GifPicker } from '../../GifPicker';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -94,6 +95,7 @@ export default function DesktopMain() {
   const [chatCtxMenu, setChatCtxMenu] = useState<{ x: number; y: number; chatId: number } | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showGifPanel, setShowGifPanel] = useState(false);
   const [isSilent, setIsSilent] = useState(false);
   const [decryptedMessages, setDecryptedMessages] = useState<Record<number, string>>({});
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -1044,6 +1046,16 @@ export default function DesktopMain() {
         {/* Input Area */}
         {activeChatId && (
           <div className="px-3 py-2 flex flex-col gap-1 shrink-0 relative" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
+            {showGifPanel && (
+              <GifPicker
+                darkMode={darkMode}
+                onSelect={(gifUrl) => {
+                  sendMessage('GIF', 'image', replyTo?.id, gifUrl);
+                  setShowGifPanel(false);
+                }}
+                onClose={() => setShowGifPanel(false)}
+              />
+            )}
             <div className="flex items-center justify-between px-1">
               <FormatToolbar
                 darkMode={darkMode}
@@ -1132,6 +1144,13 @@ export default function DesktopMain() {
                 className="bg-transparent border-none outline-none text-[14px] flex-1 py-2"
                 style={{ color: bg.text }}
               />
+              <button
+                className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
+                style={{ color: bg.textSec }}
+                onClick={() => setShowGifPanel((prev) => !prev)}
+              >
+                GIF
+              </button>
               <button className="p-1.5 hover:opacity-70 transition-opacity shrink-0" style={{ color: bg.textSec }}>
                 <Smile className="w-5 h-5" />
               </button>

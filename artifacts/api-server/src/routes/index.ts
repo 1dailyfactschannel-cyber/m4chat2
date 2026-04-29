@@ -7,6 +7,7 @@ import messagesRouter from "./messages";
 import filesRouter from "./files";
 import signalRouter from "./signal";
 import linkPreviewRouter from "./linkPreview";
+import gifsRouter from "./gifs";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(messagesRouter);
 router.use(filesRouter);
 router.use(signalRouter);
 router.use(linkPreviewRouter);
+router.use(gifsRouter);
 
 export default router;

@@ -285,6 +285,15 @@ class ApiClient {
     return this.request(`/api/link-preview?url=${encodeURIComponent(url)}`);
   }
 
+  // GIFs
+  async searchGifs(query: string, limit = 20) {
+    return this.request(`/api/gifs/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+  }
+
+  async getTrendingGifs() {
+    return this.request('/api/gifs/trending');
+  }
+
   // Polls
   async createPoll(messageId: number, question: string, options: string[], isAnonymous = true, allowsMultiple = false) {
     return this.request(`/api/messages/${messageId}/poll`, {
