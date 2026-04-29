@@ -16,7 +16,7 @@
 # - 5446: PostgreSQL (внешний доступ)
 # - 8083: API (напрямую)
 # - 8082: Web интерфейс (Nginx с прокси)
-# - 9000: RustFS S3 API
+# - 9010: RustFS S3 API (внешний, внутри сети rustfs:9000)
 # - 9001: RustFS Console (опционально)
 
 services:
@@ -54,7 +54,7 @@ services:
       - RUSTFS_ROOT_USER=${S3_ACCESS_KEY:-m4chat}
       - RUSTFS_ROOT_PASSWORD=${S3_SECRET_KEY:-changeme}
     ports:
-      - "9000:9000"
+      - "9010:9000"
     volumes:
       - rustfs_data:/data
     healthcheck:
