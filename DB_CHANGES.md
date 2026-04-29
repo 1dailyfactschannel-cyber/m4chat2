@@ -12,41 +12,46 @@ ALTER TABLE "messages" ADD COLUMN "entities" jsonb;
 
 ## ✅ ЭТАП 1: Core UX — ПОЛНОСТЬЮ ГОТОВО
 
-### ✅ 1. Закреплённые чаты (Pinned Chats) — Этап 1.2
+### ✅ 1.1 Форматирование текста
+**Таблица:** `messages`
+```sql
+ALTER TABLE "messages" ADD COLUMN "entities" jsonb;
+```
+
+### ✅ 1.2 Закреплённые чаты
 **Таблица:** `chat_members`
 ```sql
 ALTER TABLE "chat_members" ADD COLUMN "pinned_at" timestamp with time zone;
 CREATE INDEX "chat_members_pinned_at_idx" ON "chat_members" ("pinned_at");
 ```
 
-### ✅ 2. Архив чатов (Chat Archive) — Этап 1.3
+### ✅ 1.3 Архив чатов
 **Таблица:** `chat_members`
 ```sql
 ALTER TABLE "chat_members" ADD COLUMN "archived_at" timestamp with time zone;
 CREATE INDEX "chat_members_archived_at_idx" ON "chat_members" ("archived_at");
 ```
 
-### ✅ 3. Сохранённые сообщения (Saved Messages) — Этап 1.4
+### ✅ 1.4 Сохранённые сообщения
 **Таблица:** `chats`
 ```sql
 ALTER TABLE "chats" ADD COLUMN "is_self_chat" boolean DEFAULT false;
 CREATE INDEX "chats_is_self_chat_idx" ON "chats" ("is_self_chat");
 ```
 
-### ✅ 4. Загрузка аватаров (Avatars) — Этап 1.5
-**Изменений не требуется** — используются существующие поля `avatar_url` (users) и `photo` (chats).
+### ✅ 1.5 Загрузка аватаров
+**Изменений не требуется** — используются существующие поля.
 
-### ✅ 5. Экран настроек (Settings Screen) — Этап 1.6
-**Изменений не требуется** — чисто frontend компонент DesktopSettings.
+### ✅ 1.6 Экран настроек
+**Изменений не требуется** — чисто frontend компонент.
 
 ---
 
-## ЭТАП 2: Messaging Enhancements — В РАБОТЕ
+## ✅ ЭТАП 2: Messaging Enhancements — ПОЛНОСТЬЮ ГОТОВО
 
-### 6. @упоминания — Этап 2.1
-**Таблица:** `messages` (уже есть `entities`)
-**Изменений не требуется** — mentions хранятся в JSONB `entities`.
-**Дополнительно (опционально, для нотификаций):**
+### ✅ 2.1 @упоминания
+**Изменений не требуется** — хранятся в JSONB `entities`.
+**Дополнительно (опционально):**
 ```sql
 CREATE TABLE "message_mentions" (
   "id" serial PRIMARY KEY,
@@ -57,26 +62,29 @@ CREATE TABLE "message_mentions" (
 CREATE INDEX "message_mentions_user_id_idx" ON "message_mentions" ("user_id");
 ```
 
-### 7. Тихие сообщения — Этап 2.2
+### ✅ 2.2 Тихие сообщения
 **Таблица:** `messages`
 ```sql
 ALTER TABLE "messages" ADD COLUMN "is_silent" boolean DEFAULT false;
 ```
 
-### 8. Автоудаление сообщений — Этап 2.3
+### ✅ 2.3 Автоудаление сообщений
 **Таблица:** `chats`
 ```sql
-ALTER TABLE "chats" ADD COLUMN "auto_delete_timer" integer; -- секунды: 86400 (24ч), 604800 (7д), 2592000 (30д)
+ALTER TABLE "chats" ADD COLUMN "auto_delete_timer" integer;
 ```
 
-### 9. Спойлеры — Этап 2.4
-**Изменений не требуется** — уже реализовано в рамках форматирования (entities).
+### ✅ 2.4 Спойлеры
+**Изменений не требуется** — уже реализовано в рамках форматирования.
 
 ---
 
-## ЭТАП 3: Security (E2E)
+## 🔄 ЭТАП 3: Security (E2E) — В РАБОТЕ
 
-### 10. Секретные чаты (Secret Chats) — Этап 3.2
+### 3.1 Интеграция Signal Protocol в отправку
+**Статус:** Инфраструктура есть (таблицы signal_*), нужно подключить к сообщениям.
+
+### 3.2 Секретные чаты
 **Таблица:** `chats`, `messages`
 ```sql
 ALTER TABLE "chats" ADD COLUMN "is_secret" boolean DEFAULT false;
@@ -86,21 +94,11 @@ ALTER TABLE "messages" ADD COLUMN "self_destruct_timer" integer;
 
 ---
 
-## ЭТАП 5: Polish
-
-### 11. Настройки уведомлений per chat
-**Таблица:** `chat_members`
-```sql
-ALTER TABLE "chat_members" ADD COLUMN "mute_until" timestamp with time zone;
-ALTER TABLE "chat_members" ADD COLUMN "notification_settings" jsonb DEFAULT '{}';
-```
-
----
-
 ## Как применить в production
 
 1. Запустить локально/на сервере с доступной БД:
 ```bash
+pnpm --filter @workspace/db run generate
 pnpm --filter @workspace/db run migrate
 ```
 
@@ -114,4 +112,4 @@ psql $DATABASE_URL -f db_changes.sql
 ---
 
 **Последнее обновление:** Текущая дата
-**Статус:** Этап 1 ✅ ГОТОВО | Этап 2 🔄 В РАБОТЕ
+**Статус:** Этап 1 ✅ | Этап 2 ✅ | Этап 3 🔄
