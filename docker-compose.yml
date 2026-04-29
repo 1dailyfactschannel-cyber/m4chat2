@@ -101,7 +101,10 @@ services:
   # 4. Frontend Web (nginx с проксированием)
   # ==========================================
   web:
-    image: nginx:alpine
+    build:
+      context: .
+      target: web
+      dockerfile: Dockerfile
     container_name: m4chat-web
     restart: unless-stopped
     ports:
@@ -110,49 +113,6 @@ services:
       - api
     networks:
       - m4chat-network
-    command: >
-      sh -c "
-        echo 'server {
-          listen 80;
-          server_name localhost;
-          
-          location / {
-            root /usr/share/nginx/html;
-            index index.html index.htm;
-            try_files \$$uri \$$uri/ /index.html;
-          }
-          
-          location /api/ {
-            proxy_pass http://api:8080/api/;
-            proxy_http_version 1.1;
-            proxy_set_header Host \$$host;
-            proxy_set_header X-Real-IP \$$remote_addr;
-            proxy_set_header Upgrade \$$http_upgrade;
-            proxy_set_header Connection \"upgrade\";
-          }
-          
-          location /admin/ {
-            proxy_pass http://api:8080/admin/;
-            proxy_http_version 1.1;
-            proxy_set_header Host \$$host;
-            proxy_set_header X-Real-IP \$$remote_addr;
-          }
-          
-          location /socket/ {
-            proxy_pass http://api:8080/socket/;
-            proxy_http_version 1.1;
-            proxy_set_header Host \$$host;
-            proxy_set_header X-Real-IP \$$remote_addr;
-            proxy_set_header Upgrade \$$http_upgrade;
-            proxy_set_header Connection \"upgrade\";
-          }
-          
-          location /health {
-            proxy_pass http://api:8080/health;
-          }
-        }' > /etc/nginx/conf.d/default.conf &&
-        nginx -g 'daemon off;'
-      "
 
 volumes:
   postgres_data:
