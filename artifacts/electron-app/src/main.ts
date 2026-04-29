@@ -211,7 +211,23 @@ function createWindow(url: string) {
     mainWindow.maximize();
   }
 
-  mainWindow.loadURL(url);
+  mainWindow.loadURL(url).catch((err) => {
+    console.error('[Electron] Failed to load URL:', url, err);
+    dialog.showErrorBox('Failed to load', `Could not load ${url}. Make sure the dev server is running.`);
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+    console.error('[Electron] did-fail-load:', errorCode, errorDescription);
+  });
+
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error('[Electron] render-process-gone:', details);
+  });
+
+  mainWindow.webContents.on('unresponsive', () => {
+    console.error('[Electron] Window became unresponsive');
+  });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
     if (isDev) mainWindow?.webContents.openDevTools();
@@ -347,30 +363,36 @@ function handleProtocolUrl(url: string) {
 let appUrl: string;
 
 app.whenReady().then(async () => {
-  // Protocol handler for Windows
-  const protocolUrl = process.argv.find((arg) => arg.startsWith(`${PROTOCOL}://`));
-  if (protocolUrl) handleProtocolUrl(protocolUrl);
+  try {
+    // Protocol handler for Windows
+    const protocolUrl = process.argv.find((arg) => arg.startsWith(`${PROTOCOL}://`));
+    if (protocolUrl) handleProtocolUrl(protocolUrl);
 
-  if (isDev) {
-    appUrl = `http://localhost:8081${BASE_PATH}`;
-  } else {
-    const distPath = path.join(process.resourcesPath, 'frontend', 'dist');
-    await Promise.all([startApiServer(), startStaticServer(distPath)]);
-    appUrl = `http://localhost:${STATIC_PORT}${BASE_PATH}`;
-  }
-
-  createWindow(appUrl);
-  createTray();
-  registerGlobalShortcuts();
-  setupAutoUpdater();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow(appUrl);
+    if (isDev) {
+      appUrl = `http://localhost:8081${BASE_PATH}`;
     } else {
-      mainWindow?.show();
+      const distPath = path.join(process.resourcesPath, 'frontend', 'dist');
+      await Promise.all([startApiServer(), startStaticServer(distPath)]);
+      appUrl = `http://localhost:${STATIC_PORT}${BASE_PATH}`;
     }
-  });
+
+    createWindow(appUrl);
+    createTray();
+    registerGlobalShortcuts();
+    setupAutoUpdater();
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow(appUrl);
+      } else {
+        mainWindow?.show();
+      }
+    });
+  } catch (err: any) {
+    console.error('[Electron] Fatal startup error:', err);
+    dialog.showErrorBox('Startup Error', err?.message || String(err));
+    app.quit();
+  }
 });
 
 // macOS: handle protocol when app is already running
