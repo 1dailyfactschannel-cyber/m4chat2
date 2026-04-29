@@ -32,11 +32,11 @@
 - [x] 4.2 Waveform аудио (canvas visualization + seekbar)
 - [x] 4.3 Галерея медиа (prev/next navigation in lightbox)
 
-## ⏳ ЭТАП 5: Polish
-- [ ] 5.1 Push-уведомления (Electron Notification + sounds + taskbar badge)
-- [ ] 5.2 Опросы (Polls: create + vote + progress bars)
-- [ ] 5.3 Кастомные папки (use existing DB tables + UI CRUD + DnD)
-- [ ] 5.4 Предпросмотр ссылок (OG parsing + link preview card)
+## ✅ ЭТАП 5: Polish — ГОТОВО
+- [x] 5.1 Push-уведомления (Electron Notification + sounds + taskbar badge)
+- [x] 5.2 Опросы (Polls: create + vote + progress bars)
+- [x] 5.3 Кастомные папки (use existing DB tables + UI CRUD)
+- [x] 5.4 Предпросмотр ссылок (OG parsing + link preview card)
 
 ## ⏳ ЭТАП 6: Future (Nice to Have)
 - [ ] 6.1 Стикеры

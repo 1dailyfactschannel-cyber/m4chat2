@@ -51,16 +51,6 @@ CREATE INDEX "chats_is_self_chat_idx" ON "chats" ("is_self_chat");
 
 ### ✅ 2.1 @упоминания
 **Изменений не требуется** — хранятся в JSONB `entities`.
-**Дополнительно (опционально):**
-```sql
-CREATE TABLE "message_mentions" (
-  "id" serial PRIMARY KEY,
-  "message_id" integer NOT NULL REFERENCES "messages"("id") ON DELETE CASCADE,
-  "user_id" integer NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-  "mentioned_at" timestamp with time zone DEFAULT NOW()
-);
-CREATE INDEX "message_mentions_user_id_idx" ON "message_mentions" ("user_id");
-```
 
 ### ✅ 2.2 Тихие сообщения
 **Таблица:** `messages`
@@ -79,18 +69,56 @@ ALTER TABLE "chats" ADD COLUMN "auto_delete_timer" integer;
 
 ---
 
-## 🔄 ЭТАП 3: Security (E2E) — В РАБОТЕ
+## ✅ ЭТАП 3: Security (E2E) — ГОТОВО
 
-### 3.1 Интеграция Signal Protocol в отправку
-**Статус:** Инфраструктура есть (таблицы signal_*), нужно подключить к сообщениям.
-
-### 3.2 Секретные чаты
+### ✅ 3.1-3.2 Секретные чаты (Signal Protocol)
 **Таблица:** `chats`, `messages`
 ```sql
 ALTER TABLE "chats" ADD COLUMN "is_secret" boolean DEFAULT false;
 ALTER TABLE "messages" ADD COLUMN "encrypted_payload" text;
-ALTER TABLE "messages" ADD COLUMN "self_destruct_timer" integer;
 ```
+
+---
+
+## ✅ ЭТАП 4: Calls & Media — ГОТОВО
+**Изменений не требуется** — чисто frontend.
+
+---
+
+## ✅ ЭТАП 5: Polish — ГОТОВО
+
+### ✅ 5.1 Push-уведомления
+**Изменений не требуется** — чисто frontend + Electron.
+
+### ✅ 5.2 Опросы (Polls)
+**Таблицы:** `polls`, `poll_votes`
+```sql
+CREATE TABLE "polls" (
+  "id" serial PRIMARY KEY,
+  "message_id" integer NOT NULL REFERENCES "messages"("id") ON DELETE CASCADE,
+  "question" text NOT NULL,
+  "options" jsonb,
+  "is_anonymous" boolean DEFAULT true,
+  "allows_multiple" boolean DEFAULT false,
+  "created_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "polls_message_id_idx" ON "polls" ("message_id");
+
+CREATE TABLE "poll_votes" (
+  "id" serial PRIMARY KEY,
+  "poll_id" integer NOT NULL REFERENCES "polls"("id") ON DELETE CASCADE,
+  "user_id" integer NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+  "option_index" integer NOT NULL,
+  "created_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "poll_votes_poll_user_idx" ON "poll_votes" ("poll_id", "user_id");
+```
+
+### ✅ 5.3 Кастомные папки
+**Изменений не требуется** — таблицы `chat_folders` и `folder_chats` уже существуют.
+
+### ✅ 5.4 Предпросмотр ссылок
+**Изменений не требуется** — чисто frontend + API endpoint.
 
 ---
 
@@ -112,4 +140,4 @@ psql $DATABASE_URL -f db_changes.sql
 ---
 
 **Последнее обновление:** Текущая дата
-**Статус:** Этап 1 ✅ | Этап 2 ✅ | Этап 3 🔄
+**Статус:** Этап 1 ✅ | Этап 2 ✅ | Этап 3 ✅ | Этап 4 ✅ | Этап 5 ✅
