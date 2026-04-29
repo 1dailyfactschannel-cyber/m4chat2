@@ -27,10 +27,10 @@
 - [ ] 3.3 Проверка ключей безопасности (UI: fingerprint comparison) — ОТЛОЖЕНО
 - [x] 3.4 Обработка prekeys и их ротация — базовая реализация
 
-## ⏳ ЭТАП 4: Calls & Media (No Group Calls)
-- [ ] 4.1 Скриншеринг (getDisplayMedia + toggle during call)
-- [ ] 4.2 Waveform аудио (canvas visualization + seekbar)
-- [ ] 4.3 Галерея медиа (prev/next navigation in lightbox)
+## ✅ ЭТАП 4: Calls & Media (No Group Calls) — ГОТОВО
+- [x] 4.1 Скриншеринг (getDisplayMedia + toggle during call)
+- [x] 4.2 Waveform аудио (canvas visualization + seekbar)
+- [x] 4.3 Галерея медиа (prev/next navigation in lightbox)
 
 ## ⏳ ЭТАП 5: Polish
 - [ ] 5.1 Push-уведомления (Electron Notification + sounds + taskbar badge)

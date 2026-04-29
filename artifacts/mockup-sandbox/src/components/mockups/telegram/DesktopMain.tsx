@@ -180,6 +180,51 @@ export default function DesktopMain() {
     return () => { unsub?.off(); };
   }, [socket.socket, chats]);
 
+  // Request notification permission
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Desktop notifications for new messages
+  useEffect(() => {
+    const unsub = socket.onMessageNew((msg) => {
+      if (msg.senderId === user?.id) return; // Don't notify for own messages
+      if (msg.isSilent) return; // Don't notify for silent messages
+      if (document.visibilityState === 'visible' && activeChatId === msg.chatId) return; // Don't notify if chat is open and visible
+
+      const chat = chats.find((c) => c.id === msg.chatId);
+      const title = chat?.name || 'Новое сообщение';
+      const body = msg.content || 'Медиа';
+
+      // Browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/icon.png' });
+      }
+
+      // Electron notification
+      if ((window as any).electron?.showNotification) {
+        (window as any).electron.showNotification(title, body);
+      }
+    });
+    return () => { unsub(); };
+  }, [socket, user, chats, activeChatId]);
+
+  // Update badge count
+  useEffect(() => {
+    const totalUnread = chats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+    if ((window as any).electron?.updateBadge) {
+      (window as any).electron.updateBadge(totalUnread);
+    }
+    // Update document title
+    if (totalUnread > 0) {
+      document.title = `(${totalUnread}) M4Chat`;
+    } else {
+      document.title = 'M4Chat';
+    }
+  }, [chats]);
+
   // Listen for mentions
   useEffect(() => {
     const unsub = socket.onMention(({ senderName, chatId }) => {
