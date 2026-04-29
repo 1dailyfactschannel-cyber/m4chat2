@@ -28,7 +28,7 @@ COPY --from=builder /app/artifacts/api-server/src /app/artifacts/api-server/src
 
 EXPOSE 8080
 # Запускаем миграции БД перед стартом API
-CMD ["sh", "-c", "pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server run start"]
+CMD ["sh", "-c", "pnpm --filter @workspace/db run migrate && pnpm --filter @workspace/api-server run start"]
 
 # ==========================================
 # Образ для Frontend (Nginx)
