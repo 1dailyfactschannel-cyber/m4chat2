@@ -48,10 +48,12 @@ router.get("/chats", requireAuth, async (req: any, res) => {
         isArchived: chatsTable.isArchived,
         createdAt: chatsTable.createdAt,
         role: chatMembersTable.role,
+        pinnedAt: chatMembersTable.pinnedAt,
       })
       .from(chatMembersTable)
       .innerJoin(chatsTable, eq(chatMembersTable.chatId, chatsTable.id))
-      .where(eq(chatMembersTable.userId, userId));
+      .where(eq(chatMembersTable.userId, userId))
+      .orderBy(desc(chatMembersTable.pinnedAt), desc(chatsTable.updatedAt));
 
     const chatsWithLastMessage = await Promise.all(
       userChats.map(async (chat) => {
@@ -484,6 +486,78 @@ router.post("/chats/join/:inviteLink", requireAuth, async (req: any, res) => {
     });
 
     res.json(chat);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Pin chat
+router.post("/chats/:chatId/pin", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this chat" });
+    }
+
+    await db
+      .update(chatMembersTable)
+      .set({ pinnedAt: new Date() })
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    res.json({ success: true, pinned: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Unpin chat
+router.post("/chats/:chatId/unpin", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this chat" });
+    }
+
+    await db
+      .update(chatMembersTable)
+      .set({ pinnedAt: null })
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    res.json({ success: true, pinned: false });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

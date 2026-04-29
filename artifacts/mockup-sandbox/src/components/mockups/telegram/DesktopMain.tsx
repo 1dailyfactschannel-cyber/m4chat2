@@ -60,7 +60,7 @@ function getInitials(name: string) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DesktopMain() {
   const { user, logout } = useAuth();
-  const { chats, loading: chatsLoading } = useChats();
+  const { chats, loading: chatsLoading, refresh: refreshChats } = useChats();
   const {
     activeChatId, setActiveChatId,
     darkMode, toggleDarkMode,
@@ -253,6 +253,26 @@ export default function DesktopMain() {
   const handleChatCtx = (e: React.MouseEvent, chatId: number) => {
     e.preventDefault();
     setChatCtxMenu({ x: Math.min(e.clientX, 300), y: Math.min(e.clientY, window.innerHeight - 200), chatId });
+  };
+
+  const handlePinChat = async (chatId: number) => {
+    try {
+      await api.pinChat(chatId);
+      await refreshChats();
+      setChatCtxMenu(null);
+    } catch (err) {
+      console.error('Failed to pin chat:', err);
+    }
+  };
+
+  const handleUnpinChat = async (chatId: number) => {
+    try {
+      await api.unpinChat(chatId);
+      await refreshChats();
+      setChatCtxMenu(null);
+    } catch (err) {
+      console.error('Failed to unpin chat:', err);
+    }
   };
 
   const openChat = (id: number) => {
@@ -512,9 +532,14 @@ export default function DesktopMain() {
                   <div className="flex-1 min-w-0 py-1" style={{ borderBottom: isActive ? 'none' : `1px solid ${bg.panelBorder}` }}>
                     <div className="flex justify-between items-baseline mb-0.5">
                       <h3 className="font-semibold text-[14px] truncate pr-1" style={{ color: isActive ? 'white' : bg.text }}>{chat.name || 'Unknown'}</h3>
-                      <span className="text-[11px] whitespace-nowrap" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : bg.textSec }}>
-                        {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {chat.pinnedAt && (
+                          <Pin className="w-3 h-3 rotate-45" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : bg.textSec }} />
+                        )}
+                        <span className="text-[11px] whitespace-nowrap" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : bg.textSec }}>
+                          {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <p className="text-[12px] truncate pr-1" style={{ color: isActive ? 'rgba(255,255,255,0.75)' : bg.textSec }}>
@@ -906,7 +931,7 @@ export default function DesktopMain() {
         )}
       </AnimatePresence>
 
-      {/* Context Menu */}
+      {/* Message Context Menu */}
       <AnimatePresence>
         {contextMenu && (
           <motion.div
@@ -928,6 +953,35 @@ export default function DesktopMain() {
                 <Icon className="w-4 h-4" /> {label}
               </button>
             ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat Context Menu */}
+      <AnimatePresence>
+        {chatCtxMenu && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className="fixed z-50 rounded-xl shadow-xl border py-1 min-w-[180px]"
+            style={{ left: chatCtxMenu.x, top: chatCtxMenu.y, background: bg.panel, borderColor: bg.panelBorder }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const chat = chats.find((c) => c.id === chatCtxMenu.chatId);
+              const isPinned = !!chat?.pinnedAt;
+              return [
+                { label: isPinned ? 'Открепить' : 'Закрепить', icon: Pin, action: () => isPinned ? handleUnpinChat(chatCtxMenu.chatId) : handlePinChat(chatCtxMenu.chatId) },
+                { label: 'Архивировать', icon: Archive, action: () => { setChatCtxMenu(null); /* TODO: archive */ } },
+                { label: 'Удалить чат', icon: Trash2, action: () => { setChatCtxMenu(null); /* TODO: delete */ } },
+              ].map(({ label, icon: Icon, action }) => (
+                <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === 'Удалить чат' ? '#EF4444' : bg.text }}>
+                  <Icon className="w-4 h-4" /> {label}
+                </button>
+              ));
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

@@ -29,6 +29,7 @@ export type ChatItem = {
   isArchived?: boolean;
   createdAt: string;
   role?: string;
+  pinnedAt?: string | null;
   lastMessage?: {
     id: number;
     content: string;

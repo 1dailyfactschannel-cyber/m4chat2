@@ -119,11 +119,13 @@ export const chatMembersTable = pgTable(
       .notNull(),
     role: varchar("role", { length: 50 }).default("member"), // creator, admin, member, restricted
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow(),
+    pinnedAt: timestamp("pinned_at", { withTimezone: true }),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.chatId, table.userId] }),
     chatIdIdx: index("chat_members_chat_id_idx").on(table.chatId),
     userIdIdx: index("chat_members_user_id_idx").on(table.userId),
+    pinnedAtIdx: index("chat_members_pinned_at_idx").on(table.pinnedAt),
   }),
 );
 
