@@ -6,7 +6,7 @@ import {
   Video, MoreHorizontal, Paperclip, Smile, Send, CheckCheck, Play,
   X, Reply, Trash2, Copy, Forward, Pin, Mic, BellOff, Bell, Star,
   Moon, Sun, Image, Info, Hash, Check, Camera,
-  MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut,
+  MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut, Monitor,
   ArrowDown, Slash, AtSign, Type, Clock, BarChart2, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
   UserPlus, Download, ChevronRight, Loader2, Lock,
@@ -1332,6 +1332,14 @@ export default function DesktopMain() {
               {callState.type === 'video' && (
                 <button onClick={webrtc.toggleVideo} className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   {webrtc.localStream?.getVideoTracks()[0]?.enabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+                </button>
+              )}
+              {callState.type === 'video' && (
+                <button
+                  onClick={webrtc.isScreenSharing ? webrtc.stopScreenShare : webrtc.startScreenShare}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-colors ${webrtc.isScreenSharing ? 'bg-[#2481CC]' : 'bg-white/10 hover:bg-white/20'}`}
+                >
+                  <Monitor className="w-5 h-5" />
                 </button>
               )}
               <button onClick={endActiveCall} className="w-14 h-14 rounded-full bg-[#EF4444] flex items-center justify-center text-white hover:scale-110 transition-transform">

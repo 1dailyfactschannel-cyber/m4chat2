@@ -14,18 +14,18 @@
 - [x] 2.3 Автоудаление сообщений (timer per chat: 24h/7d/1mo + cron worker)
 - [x] 2.4 Спойлеры (||text|| → blurred blob + click to reveal)
 
-## 🔄 ЭТАП 3: Security (E2E) — Thorough Implementation
-- [ ] 3.1 Интеграция Signal Protocol в отправку сообщений
-  - [ ] Шифрование payload при отправке в secret chats
-  - [ ] Дешифрование при получении
-  - [ ] Ротация ключей
-- [ ] 3.2 Секретные чаты (new chat type: secret + no server storage + self-destruct)
-  - [ ] Новый тип чата `secret` в БД
-  - [ ] UI создания секретного чата
-  - [ ] Отдельная таблица для зашифрованных сообщений (или поле `encryptedPayload`)
-  - [ ] Самоуничтожающиеся сообщения
-- [ ] 3.3 Проверка ключей безопасности (UI: fingerprint comparison)
-- [ ] 3.4 Обработка prekeys и их ротация
+## ✅ ЭТАП 3: Security (E2E) — ГОТОВО
+- [x] 3.1 Интеграция Signal Protocol в отправку сообщений
+  - [x] Шифрование payload при отправке в secret chats
+  - [x] Дешифрование при получении
+  - [x] Ротация ключей (через Double Ratchet)
+- [x] 3.2 Секретные чаты (new chat type: secret + encryptedPayload + self-destruct)
+  - [x] Новый тип чата `secret` в БД
+  - [x] UI создания секретного чата
+  - [x] Поле `encryptedPayload` в messagesTable
+  - [x] Самоуничтожающиеся сообщения (autoDeleteTimer)
+- [ ] 3.3 Проверка ключей безопасности (UI: fingerprint comparison) — ОТЛОЖЕНО
+- [x] 3.4 Обработка prekeys и их ротация — базовая реализация
 
 ## ⏳ ЭТАП 4: Calls & Media (No Group Calls)
 - [ ] 4.1 Скриншеринг (getDisplayMedia + toggle during call)
