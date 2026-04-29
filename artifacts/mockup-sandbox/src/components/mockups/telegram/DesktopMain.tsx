@@ -24,6 +24,7 @@ import { useWebRTC } from '../../../hooks/useWebRTC';
 import { cacheDB } from '../../../lib/cache';
 import { MessageText } from '../../MessageText';
 import { FormatToolbar } from '../../FormatToolbar';
+import { DesktopSettings } from './DesktopSettings';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -89,6 +90,7 @@ export default function DesktopMain() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msgId: number } | null>(null);
   const [chatCtxMenu, setChatCtxMenu] = useState<{ x: number; y: number; chatId: number } | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -473,7 +475,7 @@ export default function DesktopMain() {
                         const savedChat = chats.find((c) => c.isSelfChat);
                         if (savedChat) openChat(savedChat.id);
                       }
-                      if (label === 'Настройки') { /* open settings */ }
+                      if (label === 'Настройки') { setShowSettings(true); }
                       setShowBurger(false);
                     }}
                   >
@@ -1228,6 +1230,15 @@ export default function DesktopMain() {
         currentUserId={user?.id}
         userRole={activeChat?.role}
       />
+
+      {/* Settings */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={() => setShowSettings(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-[900px] h-[600px] rounded-xl overflow-hidden shadow-2xl">
+            <DesktopSettings />
+          </div>
+        </div>
+      )}
 
       {/* Toasts */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
