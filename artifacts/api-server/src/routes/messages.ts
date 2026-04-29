@@ -143,7 +143,7 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
   try {
     const { chatId } = req.params;
     const userId = req.userId;
-    const { content, messageType, mediaUrl, replyTo } = req.body;
+    const { content, messageType, mediaUrl, replyTo, isSilent } = req.body;
 
     if (!content && !mediaUrl) {
       return res.status(400).json({ error: "Content or media required" });
@@ -182,6 +182,7 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         messageType: messageType || "text",
         mediaUrl: mediaUrl || null,
         replyTo: replyTo || null,
+        isSilent: isSilent || false,
       })
       .returning();
 
@@ -198,6 +199,7 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         senderAvatar: sender?.avatarUrl,
         reactions: [],
       });
+      // Do not send push notification sound for silent messages
 
       // Send mention notifications
       if (messageEntities) {

@@ -230,10 +230,10 @@ class ApiClient {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);
   }
 
-  async sendMessage(chatId: number, content: string, messageType = 'text', replyTo?: number, mediaUrl?: string) {
+  async sendMessage(chatId: number, content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean) {
     return this.request(`/api/chats/${chatId}/messages`, {
       method: 'POST',
-      body: JSON.stringify({ content, messageType, replyTo, mediaUrl }),
+      body: JSON.stringify({ content, messageType, replyTo, mediaUrl, isSilent }),
     });
   }
 

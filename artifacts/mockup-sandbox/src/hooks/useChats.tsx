@@ -180,9 +180,9 @@ export function useMessages(chatId: number | null) {
     };
   }, [chatId, fetchMessages, socket]);
 
-  const sendMessage = async (content: string, messageType = 'text', replyTo?: number, mediaUrl?: string) => {
+  const sendMessage = async (content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean) => {
     if (!chatId) return null;
-    const message = await api.sendMessage(chatId, content, messageType, replyTo, mediaUrl);
+    const message = await api.sendMessage(chatId, content, messageType, replyTo, mediaUrl, isSilent);
     setMessages((prev) => [...prev, message]);
     return message;
   };

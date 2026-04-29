@@ -161,6 +161,7 @@ export const messagesTable = pgTable(
   }),
     isEdited: boolean("is_edited").default(false),
     isDeleted: boolean("is_deleted").default(false),
+    isSilent: boolean("is_silent").default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

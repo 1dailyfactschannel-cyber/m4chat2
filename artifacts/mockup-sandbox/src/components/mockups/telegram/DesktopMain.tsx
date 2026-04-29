@@ -91,6 +91,7 @@ export default function DesktopMain() {
   const [chatCtxMenu, setChatCtxMenu] = useState<{ x: number; y: number; chatId: number } | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isSilent, setIsSilent] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -218,10 +219,11 @@ export default function DesktopMain() {
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
     if (!text || !activeChatId) return;
-    await sendMessage(text, 'text', replyTo?.id);
+    await sendMessage(text, 'text', replyTo?.id, undefined, isSilent);
     setInputText('');
     setReplyTo(null);
     setShowEmojiPanel(false);
+    setIsSilent(false);
     if (activeChatId) socket.stopTyping(activeChatId);
   }, [inputText, activeChatId, replyTo, sendMessage, setReplyTo, socket]);
 
@@ -879,7 +881,7 @@ export default function DesktopMain() {
         {/* Input Area */}
         {activeChatId && (
           <div className="px-3 py-2 flex flex-col gap-1 shrink-0 relative" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-between px-1">
               <FormatToolbar
                 darkMode={darkMode}
                 onFormat={(type) => {
@@ -894,6 +896,15 @@ export default function DesktopMain() {
                   if (fmt) wrapSelection(fmt.before, fmt.after);
                 }}
               />
+              <label className="flex items-center gap-1.5 cursor-pointer select-none" style={{ color: bg.textSec }}>
+                <input
+                  type="checkbox"
+                  checked={isSilent}
+                  onChange={(e) => setIsSilent(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded accent-[#2481CC]"
+                />
+                <span className="text-[11px]">Без звука</span>
+              </label>
             </div>
             <div className="flex items-end gap-2">
             {replyTo && (
