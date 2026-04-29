@@ -98,18 +98,7 @@ services:
       - m4chat-network
 
   # ==========================================
-  # 4. Frontend Web (nginx — только внутри сети)
-  # ==========================================
-  # ВАЖНО: Этот сервис НЕ публикует порты наружу.
-  # Доступ через Nginx Proxy Manager (NPM):
-  #   1. Зайдите в NPM: http://89.208.14.253:81
-  #   2. Add Proxy Host
-  #   3. Domain Names: 89.208.14.253 (или ваш домен)
-  #   4. Scheme: http, Forward Hostname: m4chat-web, Port: 80
-  #   5. Advanced → Custom Locations (для API и WebSocket):
-  #      Location: /api
-  #      Scheme: http, Forward Hostname: api, Port: 8080
-  #   6. Save
+  # 4. Frontend Web (nginx + прокси на API)
   # ==========================================
   web:
     build:
@@ -118,6 +107,8 @@ services:
       dockerfile: Dockerfile
     container_name: m4chat-web
     restart: unless-stopped
+    ports:
+      - "8082:80"
     expose:
       - "80"
     depends_on:
