@@ -62,6 +62,7 @@ router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         senderId: messagesTable.senderId,
         content: messagesTable.content,
         entities: messagesTable.entities,
+        encryptedPayload: messagesTable.encryptedPayload,
         messageType: messagesTable.messageType,
         mediaUrl: messagesTable.mediaUrl,
         replyTo: messagesTable.replyTo,
@@ -143,9 +144,9 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
   try {
     const { chatId } = req.params;
     const userId = req.userId;
-    const { content, messageType, mediaUrl, replyTo, isSilent } = req.body;
+    const { content, messageType, mediaUrl, replyTo, isSilent, encryptedPayload } = req.body;
 
-    if (!content && !mediaUrl) {
+    if (!content && !mediaUrl && !encryptedPayload) {
       return res.status(400).json({ error: "Content or media required" });
     }
 
@@ -163,13 +164,27 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
       return res.status(403).json({ error: "Not a member of this chat" });
     }
 
-    // Parse Telegram-style Markdown into entities
+    // Check if chat is secret
+    const [chatInfo] = await db
+      .select({ isSecret: chatsTable.isSecret })
+      .from(chatsTable)
+      .where(eq(chatsTable.id, Number(chatId)));
+
     let parsedText = content || "";
     let messageEntities = null;
-    if (content && (!messageType || messageType === "text")) {
-      const parsed = parseMarkdown(content);
-      parsedText = parsed.text;
-      messageEntities = parsed.entities.length > 0 ? parsed.entities : null;
+
+    // For secret chats, store encryptedPayload only
+    if (chatInfo?.isSecret) {
+      if (!encryptedPayload) {
+        return res.status(400).json({ error: "Encrypted payload required for secret chats" });
+      }
+    } else {
+      // Parse Telegram-style Markdown into entities for regular chats
+      if (content && (!messageType || messageType === "text")) {
+        const parsed = parseMarkdown(content);
+        parsedText = parsed.text;
+        messageEntities = parsed.entities.length > 0 ? parsed.entities : null;
+      }
     }
 
     const [message] = await db
@@ -177,8 +192,9 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
       .values({
         chatId: Number(chatId),
         senderId: userId,
-        content: parsedText || null,
-        entities: messageEntities,
+        content: chatInfo?.isSecret ? null : (parsedText || null),
+        entities: chatInfo?.isSecret ? null : messageEntities,
+        encryptedPayload: chatInfo?.isSecret ? encryptedPayload : null,
         messageType: messageType || "text",
         mediaUrl: mediaUrl || null,
         replyTo: replyTo || null,

@@ -12,6 +12,7 @@ export type ChatMessage = {
   senderAvatar?: string;
   content: string;
   entities?: MessageEntity[] | null;
+  encryptedPayload?: string | null;
   messageType: string;
   mediaUrl?: string;
   replyTo?: number;
@@ -32,6 +33,7 @@ export type ChatItem = {
   pinnedAt?: string | null;
   archivedAt?: string | null;
   isSelfChat?: boolean;
+  isSecret?: boolean;
   autoDeleteTimer?: number | null;
   lastMessage?: {
     id: number;
@@ -181,9 +183,9 @@ export function useMessages(chatId: number | null) {
     };
   }, [chatId, fetchMessages, socket]);
 
-  const sendMessage = async (content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean) => {
+  const sendMessage = async (content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean, encryptedPayload?: string) => {
     if (!chatId) return null;
-    const message = await api.sendMessage(chatId, content, messageType, replyTo, mediaUrl, isSilent);
+    const message = await api.sendMessage(chatId, content, messageType, replyTo, mediaUrl, isSilent, encryptedPayload);
     setMessages((prev) => [...prev, message]);
     return message;
   };

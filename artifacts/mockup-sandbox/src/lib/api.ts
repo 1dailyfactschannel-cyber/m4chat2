@@ -232,15 +232,32 @@ class ApiClient {
     });
   }
 
+  // Signal Protocol
+  async registerSignalKeys(keys: {
+    registrationId: number;
+    identityKey: string;
+    signedPreKey: { keyId: number; publicKey: string; signature: string };
+    preKeys: { keyId: number; publicKey: string }[];
+  }) {
+    return this.request('/api/keys/register', {
+      method: 'POST',
+      body: JSON.stringify(keys),
+    });
+  }
+
+  async getSignalKeyBundle(userId: number) {
+    return this.request(`/api/keys/bundle/${userId}`);
+  }
+
   // Messages
   async getMessages(chatId: number, limit = 50, offset = 0) {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);
   }
 
-  async sendMessage(chatId: number, content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean) {
+  async sendMessage(chatId: number, content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean, encryptedPayload?: string) {
     return this.request(`/api/chats/${chatId}/messages`, {
       method: 'POST',
-      body: JSON.stringify({ content, messageType, replyTo, mediaUrl, isSilent }),
+      body: JSON.stringify({ content, messageType, replyTo, mediaUrl, isSilent, encryptedPayload }),
     });
   }
 

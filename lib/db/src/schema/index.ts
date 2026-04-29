@@ -86,6 +86,7 @@ export const chatsTable = pgTable(
     pinnedMessageId: integer("pinned_message_id"),
     isArchived: boolean("is_archived").default(false),
     isSelfChat: boolean("is_self_chat").default(false),
+    isSecret: boolean("is_secret").default(false),
     autoDeleteTimer: integer("auto_delete_timer"), // seconds: 86400 (24h), 604800 (7d), 2592000 (30d)
     createdBy: integer("created_by").references(() => usersTable.id),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -163,6 +164,7 @@ export const messagesTable = pgTable(
     isEdited: boolean("is_edited").default(false),
     isDeleted: boolean("is_deleted").default(false),
     isSilent: boolean("is_silent").default(false),
+    encryptedPayload: text("encrypted_payload"),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

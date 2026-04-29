@@ -160,6 +160,7 @@ router.post("/chats", requireAuth, async (req: any, res) => {
       .values({
         name: name || null,
         type: type || "private",
+        isSecret: type === "secret",
         createdBy: userId,
       })
       .returning();

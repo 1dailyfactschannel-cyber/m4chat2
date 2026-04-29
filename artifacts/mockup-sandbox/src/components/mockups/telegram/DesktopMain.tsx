@@ -9,11 +9,12 @@ import {
   MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut,
   ArrowDown, Slash, AtSign, Type, Clock, BarChart2, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
-  UserPlus, Download, ChevronRight, Loader2,
+  UserPlus, Download, ChevronRight, Loader2, Lock,
 } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useChats, useMessages } from '../../../hooks/useChats';
 import { useSocket } from '../../../hooks/useSocket';
+import { useSignalProtocol } from '../../../hooks/useSignalProtocol';
 import { useUIStore } from '../../../store/uiStore';
 import { api } from '../../../lib/api';
 import { CreateChatModal } from '../../CreateChatModal';
@@ -92,6 +93,7 @@ export default function DesktopMain() {
   const [showArchived, setShowArchived] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isSilent, setIsSilent] = useState(false);
+  const [decryptedMessages, setDecryptedMessages] = useState<Record<number, string>>({});
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -117,6 +119,7 @@ export default function DesktopMain() {
   } = useMessages(activeChatId);
 
   const socket = useSocket();
+  const signalProtocol = useSignalProtocol();
   const webrtc = useWebRTC();
 
   const d = darkMode;
@@ -193,6 +196,24 @@ export default function DesktopMain() {
     return () => { unsub(); };
   }, [socket, addToast, chats]);
 
+  // Decrypt secret chat messages
+  useEffect(() => {
+    const decryptSecretMessages = async () => {
+      for (const msg of messages) {
+        if (msg.encryptedPayload && !decryptedMessages[msg.id]) {
+          try {
+            const plaintext = await signalProtocol.decrypt(msg.chatId, msg.encryptedPayload);
+            setDecryptedMessages((prev) => ({ ...prev, [msg.id]: plaintext }));
+          } catch (err) {
+            console.error('Failed to decrypt message:', err);
+            setDecryptedMessages((prev) => ({ ...prev, [msg.id]: '🔒 Зашифрованное сообщение' }));
+          }
+        }
+      }
+    };
+    decryptSecretMessages();
+  }, [messages, signalProtocol, decryptedMessages]);
+
   // Recording timer
   useEffect(() => {
     if (isRecording) {
@@ -219,13 +240,26 @@ export default function DesktopMain() {
   const handleSend = useCallback(async () => {
     const text = inputText.trim();
     if (!text || !activeChatId) return;
-    await sendMessage(text, 'text', replyTo?.id, undefined, isSilent);
+
+    // For secret chats, encrypt the message
+    let encryptedPayload: string | undefined;
+    if (activeChat?.isSecret) {
+      try {
+        encryptedPayload = await signalProtocol.encrypt(activeChatId, text);
+      } catch (err) {
+        console.error('Encryption failed:', err);
+        alert('Не удалось зашифровать сообщение. Убедитесь, что сессия установлена.');
+        return;
+      }
+    }
+
+    await sendMessage(text, 'text', replyTo?.id, undefined, isSilent, encryptedPayload);
     setInputText('');
     setReplyTo(null);
     setShowEmojiPanel(false);
     setIsSilent(false);
     if (activeChatId) socket.stopTyping(activeChatId);
-  }, [inputText, activeChatId, replyTo, sendMessage, setReplyTo, socket]);
+  }, [inputText, activeChatId, activeChat, replyTo, sendMessage, setReplyTo, socket, isSilent, signalProtocol]);
 
   const wrapSelection = (before: string, after: string = before) => {
     const input = inputRef.current;
@@ -549,8 +583,37 @@ export default function DesktopMain() {
           <h1 className="font-semibold text-[16px] flex-1" style={{ color: bg.text }}>Telegram</h1>
           <div className="flex items-center gap-2" style={{ color: bg.textSec }}>
             <Search className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
-            <button onClick={() => setShowCreateModal(true)}>
+            <button onClick={() => setShowCreateModal(true)} title="Новый чат">
               <Edit3 className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
+            </button>
+            <button
+              onClick={async () => {
+                const username = prompt('Введите username для секретного чата:');
+                if (!username) return;
+                try {
+                  const users = await api.searchUsers(username);
+                  if (users.length === 0) {
+                    alert('Пользователь не найден');
+                    return;
+                  }
+                  const targetUser = users[0];
+                  const chat = await api.createChat({
+                    type: 'secret',
+                    participantIds: [targetUser.id],
+                  });
+                  // Establish Signal session
+                  const signal = useSignalProtocol();
+                  await signal.establishSession(chat.id, targetUser.id);
+                  await refreshChats();
+                  openChat(chat.id);
+                } catch (err) {
+                  console.error('Failed to create secret chat:', err);
+                  alert('Ошибка создания секретного чата');
+                }
+              }}
+              title="Секретный чат"
+            >
+              <Lock className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
             </button>
           </div>
         </div>
@@ -640,7 +703,10 @@ export default function DesktopMain() {
                   </div>
                   <div className="flex-1 min-w-0 py-1" style={{ borderBottom: isActive ? 'none' : `1px solid ${bg.panelBorder}` }}>
                     <div className="flex justify-between items-baseline mb-0.5">
-                      <h3 className="font-semibold text-[14px] truncate pr-1" style={{ color: isActive ? 'white' : bg.text }}>{chat.name || 'Unknown'}</h3>
+                      <div className="flex items-center gap-1 truncate">
+                        {chat.isSecret && <Lock className="w-3 h-3" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : '#4DCA65' }} />}
+                        <h3 className="font-semibold text-[14px] truncate pr-1" style={{ color: isActive ? 'white' : bg.text }}>{chat.name || 'Unknown'}</h3>
+                      </div>
                       <div className="flex items-center gap-1">
                         {chat.pinnedAt && (
                           <Pin className="w-3 h-3 rotate-45" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : bg.textSec }} />
@@ -681,7 +747,10 @@ export default function DesktopMain() {
             </div>
           ) : (
             <button className="flex flex-col text-left hover:opacity-70 transition-opacity" onClick={(e) => { e.stopPropagation(); setShowProfile(!showProfile); }}>
-              <h2 className="font-semibold text-[14px] leading-tight" style={{ color: bg.text }}>{activeChat?.name || 'Выберите чат'}</h2>
+              <div className="flex items-center gap-1.5">
+                {activeChat?.isSecret && <Lock className="w-3.5 h-3.5 text-[#4DCA65]" />}
+                <h2 className="font-semibold text-[14px] leading-tight" style={{ color: bg.text }}>{activeChat?.name || 'Выберите чат'}</h2>
+              </div>
               <span className="text-[12px] leading-tight" style={{ color: typingUsers.size > 0 ? '#4DCA65' : bg.textSec }}>
                 {typingUsers.size > 0 ? (
                   <span className="flex items-center gap-1">
@@ -842,7 +911,13 @@ export default function DesktopMain() {
                                   </div>
                                 ) : (
                                   <p className="leading-relaxed pr-14" style={{ fontSize, color: msg.senderId === user?.id ? 'white' : bg.text }}>
-                                    {msg.isDeleted ? <span className="italic opacity-50">Сообщение удалено</span> : <MessageText content={msg.content} entities={msg.entities} darkMode={darkMode} />}
+                                    {msg.isDeleted ? (
+                                      <span className="italic opacity-50">Сообщение удалено</span>
+                                    ) : activeChat?.isSecret ? (
+                                      <span>{decryptedMessages[msg.id] || '🔒 Расшифровка...'}</span>
+                                    ) : (
+                                      <MessageText content={msg.content} entities={msg.entities} darkMode={darkMode} />
+                                    )}
                                   </p>
                                 )}
                                 {/* Reactions */}
