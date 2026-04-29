@@ -1,5 +1,5 @@
-appId: com.workspace.app
-productName: MyApp
+appId: com.m4chat.app
+productName: M4Chat
 copyright: Copyright © 2026
 
 directories:
@@ -21,11 +21,17 @@ extraResources:
     filter:
       - "**/*"
 
+protocols:
+  - name: M4Chat Protocol
+    schemes:
+      - m4chat
+
 mac:
-  category: public.app-category.productivity
+  category: public.app-category.social-networking
   target:
     - dmg
     - zip
+  icon: build-resources/icon.icns
 
 win:
   target:
@@ -35,4 +41,15 @@ win:
 linux:
   target:
     - AppImage
-  category: Utility
+  category: Network
+  icon: build-resources/icon.png
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+
+publish:
+  provider: generic
+  url: https://updates.m4chat.com/

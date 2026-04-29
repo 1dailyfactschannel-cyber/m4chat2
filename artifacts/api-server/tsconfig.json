@@ -3,9 +3,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "types": ["node", "vitest/globals"],
+    "noImplicitReturns": false
   },
   "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/test"],
   "references": [
     {
       "path": "../../lib/db"

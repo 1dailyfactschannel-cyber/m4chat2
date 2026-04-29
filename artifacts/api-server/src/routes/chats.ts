@@ -8,8 +8,9 @@ import {
   messagesTable,
   messageReadsTable,
   sessionsTable,
+  reactionsTable,
 } from "@workspace/db/schema";
-import { eq, and, or, desc, sql, count } from "drizzle-orm";
+import { eq, and, or, desc, sql, count, ne } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -43,6 +44,8 @@ router.get("/chats", requireAuth, async (req: any, res) => {
         id: chatsTable.id,
         name: chatsTable.name,
         type: chatsTable.type,
+        photo: chatsTable.photo,
+        isArchived: chatsTable.isArchived,
         createdAt: chatsTable.createdAt,
         role: chatMembersTable.role,
       })
@@ -50,7 +53,6 @@ router.get("/chats", requireAuth, async (req: any, res) => {
       .innerJoin(chatsTable, eq(chatMembersTable.chatId, chatsTable.id))
       .where(eq(chatMembersTable.userId, userId));
 
-    // Get last message for each chat
     const chatsWithLastMessage = await Promise.all(
       userChats.map(async (chat) => {
         const [lastMessage] = await db
@@ -62,18 +64,22 @@ router.get("/chats", requireAuth, async (req: any, res) => {
             createdAt: messagesTable.createdAt,
           })
           .from(messagesTable)
-          .where(eq(messagesTable.chatId, chat.id))
+          .where(
+            and(
+              eq(messagesTable.chatId, chat.id),
+              eq(messagesTable.isDeleted, false)
+            )
+          )
           .orderBy(desc(messagesTable.createdAt))
           .limit(1);
 
         const [sender] = lastMessage?.senderId
           ? await db
-              .select({ username: usersTable.username })
+              .select({ username: usersTable.username, avatarUrl: usersTable.avatarUrl })
               .from(usersTable)
               .where(eq(usersTable.id, lastMessage.senderId))
           : [];
 
-        // Count unread messages
         const [unread] = await db
           .select({ count: count() })
           .from(messagesTable)
@@ -87,7 +93,9 @@ router.get("/chats", requireAuth, async (req: any, res) => {
           .where(
             and(
               eq(messagesTable.chatId, chat.id),
-              sql`${messageReadsTable.id} IS NULL`
+              eq(messagesTable.isDeleted, false),
+              sql`${messageReadsTable.id} IS NULL`,
+              ne(messagesTable.senderId, userId)
             )
           );
 
@@ -117,7 +125,6 @@ router.post("/chats", requireAuth, async (req: any, res) => {
     const { name, type, participantIds } = req.body;
 
     if (type === "private" && participantIds?.length === 1) {
-      // Check if private chat already exists
       const existingChat = await db
         .select({ id: chatsTable.id })
         .from(chatMembersTable)
@@ -154,14 +161,13 @@ router.post("/chats", requireAuth, async (req: any, res) => {
       })
       .returning();
 
-    // Add creator as admin
+    // Add creator as admin/creator
     await db.insert(chatMembersTable).values({
       chatId: chat.id,
       userId: userId,
-      role: "admin",
+      role: "creator",
     });
 
-    // Add participants
     if (participantIds && Array.isArray(participantIds)) {
       for (const pid of participantIds) {
         if (pid !== userId) {
@@ -186,7 +192,6 @@ router.get("/chats/:chatId", requireAuth, async (req: any, res) => {
     const { chatId } = req.params;
     const userId = req.userId;
 
-    // Verify membership
     const [membership] = await db
       .select()
       .from(chatMembersTable)
@@ -210,13 +215,14 @@ router.get("/chats/:chatId", requireAuth, async (req: any, res) => {
       return res.status(404).json({ error: "Chat not found" });
     }
 
-    // Get members
     const members = await db
       .select({
         id: chatMembersTable.id,
         userId: chatMembersTable.userId,
         username: usersTable.username,
         avatarUrl: usersTable.avatarUrl,
+        isOnline: usersTable.isOnline,
+        lastSeenAt: usersTable.lastSeenAt,
         role: chatMembersTable.role,
         joinedAt: chatMembersTable.joinedAt,
       })
@@ -230,15 +236,12 @@ router.get("/chats/:chatId", requireAuth, async (req: any, res) => {
   }
 });
 
-// Get messages for a chat
-router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
+// Delete / leave chat
+router.delete("/chats/:chatId", requireAuth, async (req: any, res) => {
   try {
     const { chatId } = req.params;
     const userId = req.userId;
-    const limit = Number(req.query.limit) || 50;
-    const offset = Number(req.query.offset) || 0;
 
-    // Verify membership
     const [membership] = await db
       .select()
       .from(chatMembersTable)
@@ -253,55 +256,74 @@ router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
       return res.status(403).json({ error: "Not a member of this chat" });
     }
 
-    const messages = await db
+    if (membership.role === "creator") {
+      // Delete entire chat
+      await db.delete(chatsTable).where(eq(chatsTable.id, Number(chatId)));
+    } else {
+      // Just leave
+      await db.delete(chatMembersTable)
+        .where(
+          and(
+            eq(chatMembersTable.chatId, Number(chatId)),
+            eq(chatMembersTable.userId, userId)
+          )
+        );
+    }
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get chat members
+router.get("/chats/:chatId/members", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this chat" });
+    }
+
+    const members = await db
       .select({
-        id: messagesTable.id,
-        chatId: messagesTable.chatId,
-        senderId: messagesTable.senderId,
-        content: messagesTable.content,
-        messageType: messagesTable.messageType,
-        mediaUrl: messagesTable.mediaUrl,
-        replyTo: messagesTable.replyTo,
-        isEdited: messagesTable.isEdited,
-        createdAt: messagesTable.createdAt,
-        senderName: usersTable.username,
-        senderAvatar: usersTable.avatarUrl,
+        id: chatMembersTable.id,
+        userId: chatMembersTable.userId,
+        username: usersTable.username,
+        avatarUrl: usersTable.avatarUrl,
+        isOnline: usersTable.isOnline,
+        lastSeenAt: usersTable.lastSeenAt,
+        role: chatMembersTable.role,
+        joinedAt: chatMembersTable.joinedAt,
       })
-      .from(messagesTable)
-      .leftJoin(usersTable, eq(messagesTable.senderId, usersTable.id))
-      .where(eq(messagesTable.chatId, Number(chatId)))
-      .orderBy(desc(messagesTable.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .from(chatMembersTable)
+      .innerJoin(usersTable, eq(chatMembersTable.userId, usersTable.id))
+      .where(eq(chatMembersTable.chatId, Number(chatId)));
 
-    // Mark messages as read
-    for (const msg of messages) {
-      if (msg.senderId !== userId) {
-        await db
-          .insert(messageReadsTable)
-          .values({ messageId: msg.id, userId })
-          .onConflictDoNothing();
-      }
-    }
-
-    res.json(messages.reverse());
+    res.json(members);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Send message
-router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
+// Add member
+router.post("/chats/:chatId/members", requireAuth, async (req: any, res) => {
   try {
     const { chatId } = req.params;
     const userId = req.userId;
-    const { content, messageType, mediaUrl, replyTo } = req.body;
+    const { userId: targetUserId } = req.body;
 
-    if (!content && !mediaUrl) {
-      return res.status(400).json({ error: "Content or media required" });
-    }
-
-    // Verify membership
     const [membership] = await db
       .select()
       .from(chatMembersTable)
@@ -312,52 +334,192 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         )
       );
 
-    if (!membership) {
-      return res.status(403).json({ error: "Not a member of this chat" });
+    if (!membership || !["creator", "admin"].includes(membership.role || "")) {
+      return res.status(403).json({ error: "Not allowed to add members" });
     }
 
-    const [message] = await db
-      .insert(messagesTable)
-      .values({
-        chatId: Number(chatId),
-        senderId: userId,
-        content: content || null,
-        messageType: messageType || "text",
-        mediaUrl: mediaUrl || null,
-        replyTo: replyTo || null,
-      })
-      .returning();
+    const [existing] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, targetUserId)
+        )
+      );
 
-    const [sender] = await db
-      .select({ username: usersTable.username, avatarUrl: usersTable.avatarUrl })
-      .from(usersTable)
-      .where(eq(usersTable.id, userId));
+    if (existing) {
+      return res.status(409).json({ error: "User already in chat" });
+    }
 
-    res.status(201).json({
-      ...message,
-      senderName: sender?.username,
-      senderAvatar: sender?.avatarUrl,
+    await db.insert(chatMembersTable).values({
+      chatId: Number(chatId),
+      userId: targetUserId,
+      role: "member",
     });
+
+    res.status(201).json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Search users (for adding to chats)
-router.get("/users/search", requireAuth, async (req: any, res) => {
+// Remove / kick member
+router.delete("/chats/:chatId/members/:targetUserId", requireAuth, async (req: any, res) => {
   try {
-    const { q } = req.query;
-    if (!q || String(q).length < 2) {
-      return res.json([]);
+    const { chatId, targetUserId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership || !["creator", "admin"].includes(membership.role || "")) {
+      return res.status(403).json({ error: "Not allowed to remove members" });
     }
 
-    const users = await db
-      .select({ id: usersTable.id, username: usersTable.username, avatarUrl: usersTable.avatarUrl })
-      .from(usersTable)
-      .where(sql`${usersTable.username} ILIKE ${"%" + q + "%"}`)
-      .limit(20);
+    const [targetMember] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, Number(targetUserId))
+        )
+      );
 
-    res.json(users);
+    if (!targetMember) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    if (targetMember.role === "creator") {
+      return res.status(403).json({ error: "Cannot remove creator" });
+    }
+
+    await db.delete(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, Number(targetUserId))
+        )
+      );
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate invite link
+router.post("/chats/:chatId/invite", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership || !["creator", "admin"].includes(membership.role || "")) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const inviteLink = crypto.randomUUID();
+
+    await db.update(chatsTable)
+      .set({ inviteLink })
+      .where(eq(chatsTable.id, Number(chatId)));
+
+    res.json({ inviteLink });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Join by invite link
+router.post("/chats/join/:inviteLink", requireAuth, async (req: any, res) => {
+  try {
+    const { inviteLink } = req.params;
+    const userId = req.userId;
+
+    const [chat] = await db
+      .select()
+      .from(chatsTable)
+      .where(eq(chatsTable.inviteLink, inviteLink));
+
+    if (!chat) {
+      return res.status(404).json({ error: "Invalid invite link" });
+    }
+
+    const [existing] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, chat.id),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (existing) {
+      return res.json(chat);
+    }
+
+    await db.insert(chatMembersTable).values({
+      chatId: chat.id,
+      userId,
+      role: "member",
+    });
+
+    res.json(chat);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update member role
+router.put("/chats/:chatId/members/:targetUserId/role", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId, targetUserId } = req.params;
+    const userId = req.userId;
+    const { role } = req.body;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (membership?.role !== "creator") {
+      return res.status(403).json({ error: "Only creator can change roles" });
+    }
+
+    await db.update(chatMembersTable)
+      .set({ role })
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, Number(targetUserId))
+        )
+      );
+
+    res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

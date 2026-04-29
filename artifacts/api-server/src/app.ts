@@ -1,11 +1,19 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import adminRouter from "./routes/admin";
 import { logger } from "./lib/logger";
+import { apiRateLimiter } from "./middleware/rateLimit";
 
 const app: Express = express();
+
+// Security headers
+app.use(helmet());
+
+// Rate limiting
+app.use(apiRateLimiter);
 
 app.use(
   pinoHttp({
@@ -29,6 +37,9 @@ app.use(
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static uploads (RustFS presigned URLs preferred, but local fallback)
+app.use("/uploads", express.static(process.env.UPLOAD_DIR || "uploads"));
 
 app.use("/api", router);
 app.use("/admin", adminRouter);

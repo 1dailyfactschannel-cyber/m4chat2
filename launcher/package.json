@@ -1,0 +1,16 @@
+{
+  "name": "m4chat2-launcher",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run api\" \"npm run web\" \"npm run electron\"",
+    "api": "cd ../api-server && cross-env PORT=8080 node --enable-source-maps ./dist/index.mjs",
+    "web": "cd ../mockup-sandbox && vite dev --port 8081 --base /",
+    "electron": "cd ../electron-app && wait-on http://localhost:8081 && cross-env NODE_ENV=development electron ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^10.1.0",
+    "wait-on": "^8.0.3",
+    "electron": "^36.4.0"
+  }
+}

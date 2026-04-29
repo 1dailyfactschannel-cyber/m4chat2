@@ -1,5 +1,5 @@
 # ==========================================
-# M4Chat - Repository Method Docker Compose
+# M4Chat - Production Docker Compose
 # ==========================================
 #
 # ДЛЯ ДЕПЛОЯ ЧЕРЕЗ PORTAINER REPOSITORY:
@@ -16,6 +16,8 @@
 # - 5446: PostgreSQL (внешний доступ)
 # - 8083: API (напрямую)
 # - 8082: Web интерфейс (Nginx с прокси)
+# - 9000: RustFS S3 API
+# - 9001: RustFS Console (опционально)
 
 services:
   # ==========================================
@@ -27,7 +29,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: XYL9zWCqwjACdnm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-XYL9zWCqwjACdnm}
       POSTGRES_DB: m4chat_pg
     ports:
       - "5446:5432"
@@ -42,7 +44,29 @@ services:
       - m4chat-network
 
   # ==========================================
-  # 2. API Backend (сборка из локального кода репозитория)
+  # 2. RustFS Object Storage
+  # ==========================================
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: m4chat-rustfs
+    restart: unless-stopped
+    environment:
+      - RUSTFS_ROOT_USER=${S3_ACCESS_KEY:-m4chat}
+      - RUSTFS_ROOT_PASSWORD=${S3_SECRET_KEY:-changeme}
+    ports:
+      - "9000:9000"
+    volumes:
+      - rustfs_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - m4chat-network
+
+  # ==========================================
+  # 3. API Backend
   # ==========================================
   api:
     build:
@@ -52,22 +76,34 @@ services:
     container_name: m4chat-api
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:XYL9zWCqwjACdnm@db:5432/m4chat_pg
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-XYL9zWCqwjACdnm}@db:5432/m4chat_pg
       PORT: 8080
       NODE_ENV: production
-      ADMIN_TOKEN: m4chat-secret-admin-token-2024
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-m4chat-secret-admin-token-2024}
+      JWT_SECRET: ${JWT_SECRET:-m4chat-jwt-secret-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      UPLOAD_DIR: /app/uploads
+      S3_ENDPOINT: http://rustfs:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-m4chat}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-changeme}
+      S3_BUCKET: ${S3_BUCKET:-m4chat}
+      S3_REGION: ${S3_REGION:-us-east-1}
     ports:
       - "8083:8080"
     expose:
       - "8080"
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       db:
+        condition: service_healthy
+      rustfs:
         condition: service_healthy
     networks:
       - m4chat-network
 
   # ==========================================
-  # 3. Frontend Web (nginx с проксированием)
+  # 4. Frontend Web (nginx с проксированием)
   # ==========================================
   web:
     image: nginx:alpine
@@ -96,6 +132,8 @@ services:
             proxy_http_version 1.1;
             proxy_set_header Host \$$host;
             proxy_set_header X-Real-IP \$$remote_addr;
+            proxy_set_header Upgrade \$$http_upgrade;
+            proxy_set_header Connection \"upgrade\";
           }
           
           location /admin/ {
@@ -103,6 +141,15 @@ services:
             proxy_http_version 1.1;
             proxy_set_header Host \$$host;
             proxy_set_header X-Real-IP \$$remote_addr;
+          }
+          
+          location /socket/ {
+            proxy_pass http://api:8080/socket/;
+            proxy_http_version 1.1;
+            proxy_set_header Host \$$host;
+            proxy_set_header X-Real-IP \$$remote_addr;
+            proxy_set_header Upgrade \$$http_upgrade;
+            proxy_set_header Connection \"upgrade\";
           }
           
           location /health {
@@ -114,6 +161,10 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  rustfs_data:
+    driver: local
+  uploads_data:
     driver: local
 
 networks:
