@@ -35,10 +35,14 @@ CMD ["sh", "-c", "pnpm --filter @workspace/db run migrate && pnpm --filter @work
 # Образ для Frontend (Nginx)
 # ==========================================
 FROM nginx:alpine AS web
+# Удаляем дефолтный nginx welcome page
+RUN rm -rf /usr/share/nginx/html/* /etc/nginx/conf.d/default.conf
 # Копируем собранные статические файлы фронтенда
 COPY --from=builder /app/artifacts/mockup-sandbox/dist /usr/share/nginx/html
 # Копируем конфигурацию Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Проверяем конфигурацию nginx на валидность
+RUN nginx -t
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
