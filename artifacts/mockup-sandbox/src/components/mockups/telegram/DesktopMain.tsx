@@ -95,7 +95,7 @@ export default function DesktopMain() {
   const [showSettings, setShowSettings] = useState(false);
   const [isSilent, setIsSilent] = useState(false);
   const [decryptedMessages, setDecryptedMessages] = useState<Record<number, string>>({});
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
@@ -420,7 +420,9 @@ export default function DesktopMain() {
   }, [activeChatId, replyTo, sendMessage, setReplyTo]);
 
   const openLightbox = (url: string) => {
-    setLightbox(url);
+    const mediaMessages = messages.filter((m) => m.messageType === 'image' || m.messageType === 'video');
+    const index = mediaMessages.findIndex((m) => m.mediaUrl === url);
+    setLightboxIndex(index >= 0 ? index : null);
   };
 
   const handleVoiceSend = useCallback(async (blob: Blob, duration: number) => {
@@ -900,7 +902,7 @@ export default function DesktopMain() {
                                 style={{ background: msg.senderId === user?.id ? bg.msgOut : bg.msgIn }}
                               >
                                 {isMedia && msg.mediaUrl ? (
-                                  <div className="cursor-pointer" onClick={() => msg.messageType === 'image' && openLightbox(msg.mediaUrl!)}>
+                                  <div className="cursor-pointer" onClick={() => (msg.messageType === 'image' || msg.messageType === 'video') && msg.mediaUrl && openLightbox(msg.mediaUrl)}>
                                     {msg.messageType === 'audio' ? (
                                       <VoiceMessage
                                         url={msg.mediaUrl}
@@ -1244,22 +1246,50 @@ export default function DesktopMain() {
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightbox && (
+        {lightboxIndex !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
-            onClick={() => setLightbox(null)}
+            onClick={() => setLightboxIndex(null)}
           >
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={lightbox}
-              className="max-w-[90%] max-h-[90%] rounded-lg"
-              alt="Preview"
-            />
+            {(() => {
+              const mediaMessages = messages.filter((m) => m.messageType === 'image' || m.messageType === 'video');
+              const currentMsg = mediaMessages[lightboxIndex];
+              if (!currentMsg) return null;
+              return (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(Math.max(0, lightboxIndex - 1)); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors disabled:opacity-30"
+                    disabled={lightboxIndex <= 0}
+                  >
+                    <ChevronRight className="w-6 h-6 rotate-180" />
+                  </button>
+                  <motion.img
+                    key={currentMsg.id}
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0.9 }}
+                    src={currentMsg.mediaUrl!}
+                    className="max-w-[90%] max-h-[90%] rounded-lg"
+                    alt="Preview"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(Math.min(mediaMessages.length - 1, lightboxIndex + 1)); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors disabled:opacity-30"
+                    disabled={lightboxIndex >= mediaMessages.length - 1}
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+                    {lightboxIndex + 1} / {mediaMessages.length}
+                  </div>
+                </>
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>
