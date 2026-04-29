@@ -13,8 +13,8 @@ COPY lib/api-spec/package.json ./lib/api-spec/
 COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
-# Устанавливаем зависимости
-RUN pnpm install --frozen-lockfile
+# Устанавливаем зависимости (без --frozen-lockfile для адаптации под Linux)
+RUN pnpm install
 
 # Копируем остальные файлы
 COPY . .
