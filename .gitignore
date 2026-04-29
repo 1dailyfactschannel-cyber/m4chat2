@@ -55,3 +55,10 @@ Thumbs.db
 
 # OpenCode agent
 .opencode/
+
+# Tauri (we use Electron)
+src-tauri/
+*.icns
+*.ico
+*.png
+src-tauri/icons/
