@@ -210,6 +210,14 @@ class ApiClient {
     return this.request(`/api/chats/${chatId}/unpin`, { method: 'POST' });
   }
 
+  async archiveChat(chatId: number) {
+    return this.request(`/api/chats/${chatId}/archive`, { method: 'POST' });
+  }
+
+  async unarchiveChat(chatId: number) {
+    return this.request(`/api/chats/${chatId}/unarchive`, { method: 'POST' });
+  }
+
   // Messages
   async getMessages(chatId: number, limit = 50, offset = 0) {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);

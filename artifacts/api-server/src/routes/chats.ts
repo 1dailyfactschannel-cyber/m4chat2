@@ -49,6 +49,7 @@ router.get("/chats", requireAuth, async (req: any, res) => {
         createdAt: chatsTable.createdAt,
         role: chatMembersTable.role,
         pinnedAt: chatMembersTable.pinnedAt,
+        archivedAt: chatMembersTable.archivedAt,
       })
       .from(chatMembersTable)
       .innerJoin(chatsTable, eq(chatMembersTable.chatId, chatsTable.id))
@@ -522,6 +523,78 @@ router.post("/chats/:chatId/pin", requireAuth, async (req: any, res) => {
       );
 
     res.json({ success: true, pinned: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Archive chat
+router.post("/chats/:chatId/archive", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this chat" });
+    }
+
+    await db
+      .update(chatMembersTable)
+      .set({ archivedAt: new Date() })
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    res.json({ success: true, archived: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Unarchive chat
+router.post("/chats/:chatId/unarchive", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not a member of this chat" });
+    }
+
+    await db
+      .update(chatMembersTable)
+      .set({ archivedAt: null })
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    res.json({ success: true, archived: false });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -88,6 +88,7 @@ export default function DesktopMain() {
   const [showFontSlider, setShowFontSlider] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msgId: number } | null>(null);
   const [chatCtxMenu, setChatCtxMenu] = useState<{ x: number; y: number; chatId: number } | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -275,6 +276,26 @@ export default function DesktopMain() {
     }
   };
 
+  const handleArchiveChat = async (chatId: number) => {
+    try {
+      await api.archiveChat(chatId);
+      await refreshChats();
+      setChatCtxMenu(null);
+    } catch (err) {
+      console.error('Failed to archive chat:', err);
+    }
+  };
+
+  const handleUnarchiveChat = async (chatId: number) => {
+    try {
+      await api.unarchiveChat(chatId);
+      await refreshChats();
+      setChatCtxMenu(null);
+    } catch (err) {
+      console.error('Failed to unarchive chat:', err);
+    }
+  };
+
   const openChat = (id: number) => {
     setActiveChatId(id);
     setShowProfile(false);
@@ -311,7 +332,10 @@ export default function DesktopMain() {
     setCallSeconds(0);
   };
 
-  const filteredChats = chats.filter((c) => {
+  const activeChats = chats.filter((c) => !c.archivedAt);
+  const archivedChats = chats.filter((c) => c.archivedAt);
+
+  const filteredChats = (showArchived ? archivedChats : activeChats).filter((c) => {
     if (searchText) return c.name?.toLowerCase().includes(searchText.toLowerCase());
     if (activeFolder === 'Личные') return c.type === 'private';
     if (activeFolder === 'Работа') return c.name?.toLowerCase().includes('работа');
@@ -506,6 +530,28 @@ export default function DesktopMain() {
             <div className="flex justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin" style={{ color: bg.textSec }} />
             </div>
+          )}
+          {/* Archive toggle */}
+          {!showArchived && archivedChats.length > 0 && (
+            <button
+              onClick={() => setShowArchived(true)}
+              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] hover:bg-[#2481CC]/10 transition-colors"
+              style={{ color: bg.textSec, borderBottom: `1px solid ${bg.panelBorder}` }}
+            >
+              <Archive className="w-4 h-4" />
+              <span className="flex-1 text-left">Архив</span>
+              <span className="text-[11px] bg-[#2481CC] text-white px-1.5 rounded-full">{archivedChats.length}</span>
+            </button>
+          )}
+          {showArchived && (
+            <button
+              onClick={() => setShowArchived(false)}
+              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] hover:bg-[#2481CC]/10 transition-colors"
+              style={{ color: bg.textSec, borderBottom: `1px solid ${bg.panelBorder}` }}
+            >
+              <ArrowDown className="w-4 h-4" />
+              <span className="flex-1 text-left">Назад к чатам</span>
+            </button>
           )}
           <AnimatePresence>
             {filteredChats.map((chat) => {
@@ -972,9 +1018,10 @@ export default function DesktopMain() {
             {(() => {
               const chat = chats.find((c) => c.id === chatCtxMenu.chatId);
               const isPinned = !!chat?.pinnedAt;
+              const isArchived = !!chat?.archivedAt;
               return [
                 { label: isPinned ? 'Открепить' : 'Закрепить', icon: Pin, action: () => isPinned ? handleUnpinChat(chatCtxMenu.chatId) : handlePinChat(chatCtxMenu.chatId) },
-                { label: 'Архивировать', icon: Archive, action: () => { setChatCtxMenu(null); /* TODO: archive */ } },
+                { label: isArchived ? 'Разархивировать' : 'Архивировать', icon: Archive, action: () => isArchived ? handleUnarchiveChat(chatCtxMenu.chatId) : handleArchiveChat(chatCtxMenu.chatId) },
                 { label: 'Удалить чат', icon: Trash2, action: () => { setChatCtxMenu(null); /* TODO: delete */ } },
               ].map(({ label, icon: Icon, action }) => (
                 <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === 'Удалить чат' ? '#EF4444' : bg.text }}>

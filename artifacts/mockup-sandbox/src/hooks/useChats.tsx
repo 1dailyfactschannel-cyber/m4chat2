@@ -30,6 +30,7 @@ export type ChatItem = {
   createdAt: string;
   role?: string;
   pinnedAt?: string | null;
+  archivedAt?: string | null;
   lastMessage?: {
     id: number;
     content: string;
