@@ -15,7 +15,7 @@
 # Порты:
 # - 5446: PostgreSQL (внешний доступ)
 # - 8083: API (напрямую)
-# - 8082: Web интерфейс (Nginx с прокси)
+# - 8084: Web интерфейс (Nginx, избегаем конфликта с внешним nginx на 8082)
 # - 9010: RustFS S3 API (внешний, внутри сети rustfs:9000)
 # - 9001: RustFS Console (опционально)
 
@@ -108,7 +108,7 @@ services:
     container_name: m4chat-web
     restart: unless-stopped
     ports:
-      - "8082:80"
+      - "8084:80"
     expose:
       - "80"
     depends_on:
