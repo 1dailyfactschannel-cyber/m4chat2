@@ -419,9 +419,40 @@ export default function DesktopMain() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-5 pt-5 pb-4" style={{ background: bg.nav }}>
-                <div className={`w-[52px] h-[52px] rounded-full bg-gradient-to-br ${getAvatarGradient(user?.username || 'U')} flex items-center justify-center text-white font-bold text-[18px] mb-3`}>
-                  {getInitials(user?.username || 'U')}
-                </div>
+                <label className="cursor-pointer group relative inline-block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !user) return;
+                      try {
+                        const result = await api.uploadFile(file, 0);
+                        await api.updateProfile({ avatarUrl: result.url });
+                        // Refresh user data
+                        const updated = await api.getMe();
+                        if (updated) {
+                          localStorage.setItem('user', JSON.stringify(updated));
+                          window.location.reload();
+                        }
+                      } catch (err) {
+                        console.error('Avatar upload failed:', err);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="avatar" className="w-[52px] h-[52px] rounded-full object-cover mb-3 group-hover:opacity-80 transition-opacity" />
+                  ) : (
+                    <div className={`w-[52px] h-[52px] rounded-full bg-gradient-to-br ${getAvatarGradient(user?.username || 'U')} flex items-center justify-center text-white font-bold text-[18px] mb-3 group-hover:opacity-80 transition-opacity`}>
+                      {getInitials(user?.username || 'U')}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera className="w-5 h-5 text-white drop-shadow-md" />
+                  </div>
+                </label>
                 <div className="font-bold text-[16px] text-white">{user?.username || 'User'}</div>
                 <div className="text-white/60 text-[13px]">@{user?.username?.toLowerCase() || 'user'}</div>
               </div>
@@ -578,9 +609,13 @@ export default function DesktopMain() {
                   whileHover={{ backgroundColor: isActive ? '#2481CC' : (d ? '#21262d' : '#F5F5F5') }}
                 >
                   <div className="relative shrink-0 mr-2.5">
-                    <div className={`w-[42px] h-[42px] rounded-full bg-gradient-to-br ${getAvatarGradient(chat.name || '?')} flex items-center justify-center text-white font-semibold text-[13px]`}>
-                      {getInitials(chat.name || '?')}
-                    </div>
+                    {chat.photo ? (
+                      <img src={chat.photo} alt={chat.name} className="w-[42px] h-[42px] rounded-full object-cover" />
+                    ) : (
+                      <div className={`w-[42px] h-[42px] rounded-full bg-gradient-to-br ${getAvatarGradient(chat.name || '?')} flex items-center justify-center text-white font-semibold text-[13px]`}>
+                        {getInitials(chat.name || '?')}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0 py-1" style={{ borderBottom: isActive ? 'none' : `1px solid ${bg.panelBorder}` }}>
                     <div className="flex justify-between items-baseline mb-0.5">
@@ -925,9 +960,35 @@ export default function DesktopMain() {
               <span className="font-semibold text-[15px]" style={{ color: bg.text }}>Информация</span>
             </div>
             <div className="p-6 flex flex-col items-center">
-              <div className={`w-[80px] h-[80px] rounded-full bg-gradient-to-br ${getAvatarGradient(activeChat.name || '?')} flex items-center justify-center text-white font-bold text-[28px] mb-3`}>
-                {getInitials(activeChat.name || '?')}
-              </div>
+              <label className="cursor-pointer group relative inline-block mb-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !activeChat) return;
+                    try {
+                      const result = await api.uploadFile(file, activeChat.id);
+                      await api.updateChatPhoto(activeChat.id, result.url);
+                      await refreshChats();
+                    } catch (err) {
+                      console.error('Chat photo upload failed:', err);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+                {activeChat.photo ? (
+                  <img src={activeChat.photo} alt="chat" className="w-[80px] h-[80px] rounded-full object-cover group-hover:opacity-80 transition-opacity" />
+                ) : (
+                  <div className={`w-[80px] h-[80px] rounded-full bg-gradient-to-br ${getAvatarGradient(activeChat.name || '?')} flex items-center justify-center text-white font-bold text-[28px] group-hover:opacity-80 transition-opacity`}>
+                    {getInitials(activeChat.name || '?')}
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              </label>
               <h3 className="font-bold text-[18px]" style={{ color: bg.text }}>{activeChat.name}</h3>
               <span className="text-[13px]" style={{ color: bg.textSec }}>{activeChat.type === 'private' ? 'онлайн' : `${activeChat.type}`}</span>
             </div>

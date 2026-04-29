@@ -636,6 +636,39 @@ router.post("/chats/:chatId/unpin", requireAuth, async (req: any, res) => {
   }
 });
 
+// Update chat photo
+router.put("/chats/:chatId/photo", requireAuth, async (req: any, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.userId;
+    const { photo } = req.body;
+
+    const [membership] = await db
+      .select()
+      .from(chatMembersTable)
+      .where(
+        and(
+          eq(chatMembersTable.chatId, Number(chatId)),
+          eq(chatMembersTable.userId, userId)
+        )
+      );
+
+    if (!membership || !["creator", "admin"].includes(membership.role || "")) {
+      return res.status(403).json({ error: "Not allowed to change chat photo" });
+    }
+
+    const [updated] = await db
+      .update(chatsTable)
+      .set({ photo })
+      .where(eq(chatsTable.id, Number(chatId)))
+      .returning();
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Update member role
 router.put("/chats/:chatId/members/:targetUserId/role", requireAuth, async (req: any, res) => {
   try {

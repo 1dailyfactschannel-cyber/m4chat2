@@ -218,6 +218,13 @@ class ApiClient {
     return this.request(`/api/chats/${chatId}/unarchive`, { method: 'POST' });
   }
 
+  async updateChatPhoto(chatId: number, photo: string) {
+    return this.request(`/api/chats/${chatId}/photo`, {
+      method: 'PUT',
+      body: JSON.stringify({ photo }),
+    });
+  }
+
   // Messages
   async getMessages(chatId: number, limit = 50, offset = 0) {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);
