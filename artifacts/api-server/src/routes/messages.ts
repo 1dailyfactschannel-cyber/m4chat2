@@ -10,6 +10,7 @@ import {
   reactionsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, sql, count } from "drizzle-orm";
+import { parseMarkdown } from "../lib/parseMarkdown.js";
 
 const router: IRouter = Router();
 
@@ -60,6 +61,7 @@ router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         chatId: messagesTable.chatId,
         senderId: messagesTable.senderId,
         content: messagesTable.content,
+        entities: messagesTable.entities,
         messageType: messagesTable.messageType,
         mediaUrl: messagesTable.mediaUrl,
         replyTo: messagesTable.replyTo,
@@ -161,12 +163,22 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
       return res.status(403).json({ error: "Not a member of this chat" });
     }
 
+    // Parse Telegram-style Markdown into entities
+    let parsedText = content || "";
+    let messageEntities = null;
+    if (content && (!messageType || messageType === "text")) {
+      const parsed = parseMarkdown(content);
+      parsedText = parsed.text;
+      messageEntities = parsed.entities.length > 0 ? parsed.entities : null;
+    }
+
     const [message] = await db
       .insert(messagesTable)
       .values({
         chatId: Number(chatId),
         senderId: userId,
-        content: content || null,
+        content: parsedText || null,
+        entities: messageEntities,
         messageType: messageType || "text",
         mediaUrl: mediaUrl || null,
         replyTo: replyTo || null,
@@ -219,9 +231,18 @@ router.put("/messages/:messageId", requireAuth, async (req: any, res) => {
       return res.status(403).json({ error: "Can only edit own messages" });
     }
 
+    // Re-parse Markdown on edit
+    let editedText = content;
+    let editedEntities = null;
+    if (content) {
+      const parsed = parseMarkdown(content);
+      editedText = parsed.text;
+      editedEntities = parsed.entities.length > 0 ? parsed.entities : null;
+    }
+
     const [updated] = await db
       .update(messagesTable)
-      .set({ content, isEdited: true })
+      .set({ content: editedText, entities: editedEntities, isEdited: true })
       .where(eq(messagesTable.id, Number(messageId)))
       .returning();
 
@@ -432,6 +453,7 @@ router.post("/messages/:messageId/forward", requireAuth, async (req: any, res) =
         chatId: Number(targetChatId),
         senderId: userId,
         content: message.content,
+        entities: message.entities,
         messageType: message.messageType,
         mediaUrl: message.mediaUrl,
       })

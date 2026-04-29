@@ -22,6 +22,8 @@ import { VoiceRecorder } from '../../VoiceRecorder';
 import { FileUploadZone, Lightbox, FileMessage } from '../../MediaComponents';
 import { useWebRTC } from '../../../hooks/useWebRTC';
 import { cacheDB } from '../../../lib/cache';
+import { MessageText } from '../../MessageText';
+import { FormatToolbar } from '../../FormatToolbar';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -203,9 +205,32 @@ export default function DesktopMain() {
     if (activeChatId) socket.stopTyping(activeChatId);
   }, [inputText, activeChatId, replyTo, sendMessage, setReplyTo, socket]);
 
+  const wrapSelection = (before: string, after: string = before) => {
+    const input = inputRef.current;
+    if (!input) return;
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const selected = inputText.slice(start, end);
+    const newText = inputText.slice(0, start) + before + selected + after + inputText.slice(end);
+    setInputText(newText);
+    // Restore selection after symbols
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(start + before.length, end + before.length);
+    });
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
     if (e.key === 'Escape') { setReplyTo(null); setShowEmojiPanel(false); setSelectMode(false); clearSelectedMsgs(); }
+    // Formatting shortcuts
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); wrapSelection('*'); }
+      if (e.key === 'i') { e.preventDefault(); wrapSelection('_'); }
+      if (e.key === 'u') { e.preventDefault(); wrapSelection('~'); }
+      if (e.key === 'k') { e.preventDefault(); wrapSelection('||'); }
+      if (e.shiftKey && e.key === 'M') { e.preventDefault(); wrapSelection('`'); }
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -683,7 +708,7 @@ export default function DesktopMain() {
                                   </div>
                                 ) : (
                                   <p className="leading-relaxed pr-14" style={{ fontSize, color: msg.senderId === user?.id ? 'white' : bg.text }}>
-                                    {msg.isDeleted ? <span className="italic opacity-50">Сообщение удалено</span> : msg.content}
+                                    {msg.isDeleted ? <span className="italic opacity-50">Сообщение удалено</span> : <MessageText content={msg.content} entities={msg.entities} darkMode={darkMode} />}
                                   </p>
                                 )}
                                 {/* Reactions */}
@@ -721,7 +746,24 @@ export default function DesktopMain() {
 
         {/* Input Area */}
         {activeChatId && (
-          <div className="px-3 py-2 flex items-end gap-2 shrink-0 relative" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
+          <div className="px-3 py-2 flex flex-col gap-1 shrink-0 relative" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
+            <div className="flex items-center justify-center">
+              <FormatToolbar
+                darkMode={darkMode}
+                onFormat={(type) => {
+                  const map: Record<string, { before: string; after: string }> = {
+                    bold: { before: '*', after: '*' },
+                    italic: { before: '_', after: '_' },
+                    strikethrough: { before: '~', after: '~' },
+                    code: { before: '`', after: '`' },
+                    spoiler: { before: '||', after: '||' },
+                  };
+                  const fmt = map[type];
+                  if (fmt) wrapSelection(fmt.before, fmt.after);
+                }}
+              />
+            </div>
+            <div className="flex items-end gap-2">
             {replyTo && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -784,6 +826,7 @@ export default function DesktopMain() {
                 />
               )}
             </AnimatePresence>
+            </div>
           </div>
         )}
       </div>

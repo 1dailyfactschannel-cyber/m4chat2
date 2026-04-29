@@ -8,10 +8,34 @@ import {
   varchar,
   primaryKey,
   index,
+  jsonb,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// ==========================================
+// Типы для entities в сообщениях
+// ==========================================
+export type MessageEntityType =
+  | "bold"
+  | "italic"
+  | "code"
+  | "pre"
+  | "spoiler"
+  | "strikethrough"
+  | "text_link"
+  | "mention"
+  | "hashtag"
+  | "bot_command";
+
+export interface MessageEntity {
+  offset: number;
+  length: number;
+  type: MessageEntityType;
+  url?: string; // for text_link
+  language?: string; // for pre
+}
 
 // ==========================================
 // 1. Таблица пользователей
@@ -126,6 +150,7 @@ export const messagesTable = pgTable(
     content: text("content"),
     messageType: varchar("message_type", { length: 50 }).default("text"), // text, image, file, voice, video, poll
     mediaUrl: varchar("media_url", { length: 500 }),
+    entities: jsonb("entities").$type<MessageEntity[]>(),
   replyTo: integer("reply_to").references((): AnyPgColumn => messagesTable.id, {
     onDelete: "set null",
   }),

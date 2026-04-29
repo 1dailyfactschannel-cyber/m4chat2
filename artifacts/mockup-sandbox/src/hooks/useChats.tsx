@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useSocket } from './useSocket';
 import { cacheDB } from '../lib/cache';
+import type { MessageEntity } from '../types/entities';
 
 export type ChatMessage = {
   id: number;
@@ -10,6 +11,7 @@ export type ChatMessage = {
   senderName?: string;
   senderAvatar?: string;
   content: string;
+  entities?: MessageEntity[] | null;
   messageType: string;
   mediaUrl?: string;
   replyTo?: number;
