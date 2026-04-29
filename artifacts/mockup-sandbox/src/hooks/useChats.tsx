@@ -32,6 +32,7 @@ export type ChatItem = {
   pinnedAt?: string | null;
   archivedAt?: string | null;
   isSelfChat?: boolean;
+  autoDeleteTimer?: number | null;
   lastMessage?: {
     id: number;
     content: string;

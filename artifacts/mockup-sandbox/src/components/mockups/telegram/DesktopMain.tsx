@@ -1046,6 +1046,32 @@ export default function DesktopMain() {
                 )}
               </div>
             )}
+            {/* Auto-delete timer */}
+            {activeChat?.type !== 'private' && (
+              <div className="px-4 py-2" style={{ borderTop: `1px solid ${bg.panelBorder}` }}>
+                <div className="text-[12px] font-medium mb-1" style={{ color: bg.textSec }}>Автоудаление сообщений</div>
+                <select
+                  value={activeChat.autoDeleteTimer || ''}
+                  onChange={async (e) => {
+                    const timer = e.target.value ? Number(e.target.value) : null;
+                    try {
+                      await api.updateAutoDeleteTimer(activeChat.id, timer);
+                      await refreshChats();
+                    } catch (err) {
+                      console.error('Failed to update auto-delete timer:', err);
+                    }
+                  }}
+                  className="w-full text-[13px] border rounded-lg px-2 py-1.5 outline-none"
+                  style={{ background: darkMode ? '#0d1117' : '#fff', color: bg.text, borderColor: bg.panelBorder }}
+                >
+                  <option value="">Отключено</option>
+                  <option value="86400">24 часа</option>
+                  <option value="604800">7 дней</option>
+                  <option value="2592000">1 месяц</option>
+                </select>
+              </div>
+            )}
+
             {/* Members button */}
             {activeChat?.type !== 'private' && (
               <div className="px-4 py-2" style={{ borderTop: `1px solid ${bg.panelBorder}` }}>

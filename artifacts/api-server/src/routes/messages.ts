@@ -191,6 +191,29 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
       .from(usersTable)
       .where(eq(usersTable.id, userId));
 
+    // Schedule auto-delete if timer is set
+    const [chat] = await db
+      .select({ autoDeleteTimer: chatsTable.autoDeleteTimer })
+      .from(chatsTable)
+      .where(eq(chatsTable.id, Number(chatId)));
+
+    if (chat?.autoDeleteTimer) {
+      setTimeout(async () => {
+        try {
+          await db
+            .update(messagesTable)
+            .set({ isDeleted: true, deletedAt: new Date() })
+            .where(eq(messagesTable.id, message.id));
+          const io2 = req.app.get("io");
+          if (io2) {
+            io2.to(`chat:${chatId}`).emit("message:deleted", { id: message.id });
+          }
+        } catch (err) {
+          console.error("Auto-delete failed:", err);
+        }
+      }, chat.autoDeleteTimer * 1000);
+    }
+
     const io = req.app.get("io");
     if (io) {
       io.to(`chat:${chatId}`).emit("message:new", {

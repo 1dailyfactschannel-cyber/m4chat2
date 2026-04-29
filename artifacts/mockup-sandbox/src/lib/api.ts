@@ -225,6 +225,13 @@ class ApiClient {
     });
   }
 
+  async updateAutoDeleteTimer(chatId: number, timer: number | null) {
+    return this.request(`/api/chats/${chatId}/auto-delete`, {
+      method: 'PUT',
+      body: JSON.stringify({ timer }),
+    });
+  }
+
   // Messages
   async getMessages(chatId: number, limit = 50, offset = 0) {
     return this.request(`/api/chats/${chatId}/messages?limit=${limit}&offset=${offset}`);
