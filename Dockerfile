@@ -1,9 +1,8 @@
 FROM node:22-slim AS builder
-RUN corepack enable
 WORKDIR /app
 
-# Копируем package.json с packageManager first для кеширования слоёв
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# Копируем package.json first для кеширования слоёв
+COPY package.json package-lock.json* pnpm-workspace.yaml .npmrc ./
 COPY artifacts/mockup-sandbox/package.json ./artifacts/mockup-sandbox/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 COPY artifacts/electron-app/package.json ./artifacts/electron-app/
@@ -13,16 +12,15 @@ COPY lib/api-spec/package.json ./lib/api-spec/
 COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
-# Устанавливаем зависимости (без --frozen-lockfile для адаптации под Linux)
-RUN pnpm install
+# Устанавливаем зависимости через npm (избегаем проблем pnpm lockfile на разных платформах)
+RUN npm install
 
 # Копируем остальные файлы
 COPY . .
 
 # Билдим только artifacts напрямую без общего typecheck
-# NODE_ENV=production ставим ПОСЛЕ install, чтобы devDeps (drizzle-kit, tsx) были доступны
-RUN pnpm --filter @workspace/api-server run build && \
-    pnpm --filter @workspace/frontend run build
+RUN npm run build --workspace=@workspace/api-server && \
+    npm run build --workspace=@workspace/frontend
 
 ENV NODE_ENV=production
 ENV BASE_PATH=/
@@ -31,7 +29,6 @@ ENV BASE_PATH=/
 # Образ для API-сервера
 # ==========================================
 FROM node:22-slim AS api
-RUN corepack enable
 WORKDIR /app
 
 # Копируем собранное приложение из builder
@@ -42,7 +39,7 @@ COPY --from=builder /app/artifacts/api-server/src /app/artifacts/api-server/src
 
 EXPOSE 8080
 # Запускаем миграции БД перед стартом API
-CMD ["sh", "-c", "pnpm --filter @workspace/db run migrate && pnpm --filter @workspace/api-server run start"]
+CMD ["sh", "-c", "npm run migrate --workspace=@workspace/db && npm start --workspace=@workspace/api-server"]
 
 # ==========================================
 # Образ для Frontend (Nginx)
