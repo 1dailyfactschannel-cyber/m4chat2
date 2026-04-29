@@ -10,6 +10,7 @@ import {
   reactionsTable,
   pollsTable,
   pollVotesTable,
+  botsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 import { parseMarkdown } from "../lib/parseMarkdown.js";
@@ -168,7 +169,7 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
 
     // Check if chat is secret
     const [chatInfo] = await db
-      .select({ isSecret: chatsTable.isSecret })
+      .select({ isSecret: chatsTable.isSecret, type: chatsTable.type })
       .from(chatsTable)
       .where(eq(chatsTable.id, Number(chatId)));
 
@@ -260,6 +261,41 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
             });
           }
         }
+      }
+    }
+
+    // Bot webhook: if message starts with / in a private chat, try to forward to bot
+    if (parsedText.startsWith("/") && chatInfo?.type === "private") {
+      try {
+        const members = await db
+          .select({ userId: chatMembersTable.userId })
+          .from(chatMembersTable)
+          .where(eq(chatMembersTable.chatId, Number(chatId)));
+        const otherMember = members.find((m) => m.userId !== userId);
+        if (otherMember) {
+          const [bot] = await db
+            .select()
+            .from(botsTable)
+            .where(eq(botsTable.userId, otherMember.userId));
+          if (bot && bot.webhookUrl) {
+            fetch(bot.webhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                update_id: Date.now(),
+                message: {
+                  message_id: message.id,
+                  from: { id: userId, username: sender?.username },
+                  chat: { id: Number(chatId), type: "private" },
+                  text: parsedText,
+                  date: Math.floor(Date.now() / 1000),
+                },
+              }),
+            }).catch((err) => console.error("Bot webhook failed:", err));
+          }
+        }
+      } catch (err) {
+        console.error("Bot webhook error:", err);
       }
     }
 

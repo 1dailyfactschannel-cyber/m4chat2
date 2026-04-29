@@ -554,3 +554,119 @@ export const insertPollVoteSchema = createInsertSchema(pollVotesTable).omit({
 export const selectPollVoteSchema = createSelectSchema(pollVotesTable);
 export type InsertPollVote = z.infer<typeof insertPollVoteSchema>;
 export type PollVote = z.infer<typeof selectPollVoteSchema>;
+
+// ==========================================
+// 17. Sticker Packs
+// ==========================================
+export const stickerPacksTable = pgTable(
+  "sticker_packs",
+  {
+    id: serial("id").primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    thumbnail: varchar("thumbnail", { length: 500 }),
+    createdBy: integer("created_by").references(() => usersTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    createdByIdx: index("sticker_packs_created_by_idx").on(table.createdBy),
+  }),
+);
+
+export const insertStickerPackSchema = createInsertSchema(stickerPacksTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectStickerPackSchema = createSelectSchema(stickerPacksTable);
+export type InsertStickerPack = z.infer<typeof insertStickerPackSchema>;
+export type StickerPack = z.infer<typeof selectStickerPackSchema>;
+
+// ==========================================
+// 18. Stickers
+// ==========================================
+export const stickersTable = pgTable(
+  "stickers",
+  {
+    id: serial("id").primaryKey(),
+    packId: integer("pack_id")
+      .references(() => stickerPacksTable.id, { onDelete: "cascade" })
+      .notNull(),
+    emoji: varchar("emoji", { length: 50 }).notNull(),
+    imageUrl: varchar("image_url", { length: 1000 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    packIdIdx: index("stickers_pack_id_idx").on(table.packId),
+  }),
+);
+
+export const insertStickerSchema = createInsertSchema(stickersTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const selectStickerSchema = createSelectSchema(stickersTable);
+export type InsertSticker = z.infer<typeof insertStickerSchema>;
+export type Sticker = z.infer<typeof selectStickerSchema>;
+
+// ==========================================
+// 19. Bots
+// ==========================================
+export const botsTable = pgTable(
+  "bots",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .references(() => usersTable.id, { onDelete: "cascade" })
+      .notNull(),
+    username: varchar("username", { length: 100 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    avatarUrl: varchar("avatar_url", { length: 500 }),
+    webhookUrl: varchar("webhook_url", { length: 1000 }),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("bots_user_id_idx").on(table.userId),
+    tokenIdx: index("bots_token_idx").on(table.token),
+  }),
+);
+
+export const insertBotSchema = createInsertSchema(botsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectBotSchema = createSelectSchema(botsTable);
+export type InsertBot = z.infer<typeof insertBotSchema>;
+export type Bot = z.infer<typeof selectBotSchema>;
+
+// ==========================================
+// 20. Bot Commands
+// ==========================================
+export const botCommandsTable = pgTable(
+  "bot_commands",
+  {
+    id: serial("id").primaryKey(),
+    botId: integer("bot_id")
+      .references(() => botsTable.id, { onDelete: "cascade" })
+      .notNull(),
+    command: varchar("command", { length: 100 }).notNull(),
+    description: text("description").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    botIdIdx: index("bot_commands_bot_id_idx").on(table.botId),
+  }),
+);
+
+export const insertBotCommandSchema = createInsertSchema(botCommandsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const selectBotCommandSchema = createSelectSchema(botCommandsTable);
+export type InsertBotCommand = z.infer<typeof insertBotCommandSchema>;
+export type BotCommand = z.infer<typeof selectBotCommandSchema>;

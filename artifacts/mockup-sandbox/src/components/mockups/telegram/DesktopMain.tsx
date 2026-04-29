@@ -29,6 +29,8 @@ import { DesktopSettings } from './DesktopSettings';
 import { VoiceMessage } from '../../VoiceMessage';
 import { PollMessage } from '../../PollMessage';
 import { GifPicker } from '../../GifPicker';
+import { StickerPicker } from '../../StickerPicker';
+import { VideoNoteRecorder } from '../../VideoNoteRecorder';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
@@ -96,6 +98,8 @@ export default function DesktopMain() {
   const [showArchived, setShowArchived] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showGifPanel, setShowGifPanel] = useState(false);
+  const [showStickerPanel, setShowStickerPanel] = useState(false);
+  const [showVideoNoteRecorder, setShowVideoNoteRecorder] = useState(false);
   const [isSilent, setIsSilent] = useState(false);
   const [decryptedMessages, setDecryptedMessages] = useState<Record<number, string>>({});
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -793,7 +797,7 @@ export default function DesktopMain() {
                     </div>
                     <div className="flex justify-between items-center">
                       <p className="text-[12px] truncate pr-1" style={{ color: isActive ? 'rgba(255,255,255,0.75)' : bg.textSec }}>
-                        {lastMsg?.messageType === 'image' ? 'Фото' : lastMsg?.content || 'Нет сообщений'}
+                        {lastMsg?.messageType === 'image' ? 'Фото' : lastMsg?.messageType === 'sticker' ? 'Стикер' : lastMsg?.messageType === 'video_note' ? 'Видеосообщение' : lastMsg?.content || 'Нет сообщений'}
                       </p>
                       <div className="flex items-center gap-1 shrink-0">
                         {(chat.unreadCount ?? 0) > 0 && (
@@ -908,7 +912,7 @@ export default function DesktopMain() {
                     const isSelected = selectedMsgs.has(msg.id);
                     const highlighted = searchMsg && msg.content?.toLowerCase().includes(searchMsg.toLowerCase());
                     const replyMsg = msg.replyTo ? messages.find((m) => m.id === msg.replyTo) : null;
-                    const isMedia = ['image', 'video', 'audio', 'file'].includes(msg.messageType);
+                    const isMedia = ['image', 'video', 'audio', 'file', 'sticker', 'poll'].includes(msg.messageType);
 
                     return (
                       <div
@@ -988,6 +992,28 @@ export default function DesktopMain() {
                                         darkMode={darkMode}
                                         outgoing={msg.senderId === user?.id}
                                       />
+                                    ) : msg.messageType === 'sticker' ? (
+                                      <div className="flex flex-col items-center">
+                                        <img
+                                          src={msg.mediaUrl}
+                                          alt={msg.content || 'sticker'}
+                                          className="max-w-[180px] max-h-[180px] object-contain rounded-lg"
+                                          loading="lazy"
+                                        />
+                                      </div>
+                                    ) : msg.messageType === 'video_note' ? (
+                                      <div className="flex flex-col items-center">
+                                        <video
+                                          src={msg.mediaUrl}
+                                          className="w-[200px] h-[200px] object-cover rounded-full"
+                                          controls
+                                          playsInline
+                                          preload="metadata"
+                                        />
+                                        <span className="text-[11px] mt-1" style={{ color: msg.senderId === user?.id ? 'rgba(255,255,255,0.8)' : bg.textSec }}>
+                                          {msg.content}
+                                        </span>
+                                      </div>
                                     ) : (
                                       <FileMessage
                                         fileName={msg.content || 'file'}
@@ -1054,6 +1080,34 @@ export default function DesktopMain() {
                   setShowGifPanel(false);
                 }}
                 onClose={() => setShowGifPanel(false)}
+              />
+            )}
+            {showStickerPanel && (
+              <StickerPicker
+                darkMode={darkMode}
+                onSelect={(sticker) => {
+                  sendMessage(sticker.emoji, 'sticker', replyTo?.id, sticker.imageUrl);
+                  setShowStickerPanel(false);
+                }}
+                onClose={() => setShowStickerPanel(false)}
+              />
+            )}
+            {showVideoNoteRecorder && (
+              <VideoNoteRecorder
+                darkMode={darkMode}
+                onSend={async (blob, duration) => {
+                  if (!activeChatId) return;
+                  try {
+                    const file = new File([blob], `video_note_${Date.now()}.webm`, { type: 'video/webm' });
+                    const result = await api.uploadFile(file, activeChatId);
+                    await sendMessage(`${Math.round(duration)}с`, 'video_note', replyTo?.id, result.url);
+                  } catch (e) {
+                    console.error('Video note upload failed:', e);
+                  }
+                  setShowVideoNoteRecorder(false);
+                  setReplyTo(null);
+                }}
+                onCancel={() => setShowVideoNoteRecorder(false)}
               />
             )}
             <div className="flex items-center justify-between px-1">
@@ -1133,6 +1187,14 @@ export default function DesktopMain() {
             <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-full hover:bg-[#F1F1F1]/10 transition-colors shrink-0" style={{ color: bg.textSec }}>
               <Paperclip className="w-5 h-5" />
             </button>
+            <button
+              onClick={() => { setShowVideoNoteRecorder(true); setShowGifPanel(false); setShowStickerPanel(false); }}
+              className="p-2 rounded-full hover:bg-[#F1F1F1]/10 transition-colors shrink-0"
+              style={{ color: bg.textSec }}
+              title="Видеосообщение"
+            >
+              <Video className="w-5 h-5" />
+            </button>
             <div className="flex-1 rounded-full flex items-center px-3 gap-2" style={{ background: bg.inputField }}>
               <input
                 ref={inputRef}
@@ -1147,9 +1209,16 @@ export default function DesktopMain() {
               <button
                 className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
                 style={{ color: bg.textSec }}
-                onClick={() => setShowGifPanel((prev) => !prev)}
+                onClick={() => { setShowGifPanel((prev) => !prev); setShowStickerPanel(false); }}
               >
                 GIF
+              </button>
+              <button
+                className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
+                style={{ color: bg.textSec }}
+                onClick={() => { setShowStickerPanel((prev) => !prev); setShowGifPanel(false); }}
+              >
+                sticker
               </button>
               <button className="p-1.5 hover:opacity-70 transition-opacity shrink-0" style={{ color: bg.textSec }}>
                 <Smile className="w-5 h-5" />

@@ -294,6 +294,83 @@ class ApiClient {
     return this.request('/api/gifs/trending');
   }
 
+  // Stickers
+  async getStickerPacks() {
+    return this.request('/api/sticker-packs');
+  }
+
+  async createStickerPack(data: { name: string; thumbnail?: string }) {
+    return this.request('/api/sticker-packs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteStickerPack(packId: number) {
+    return this.request(`/api/sticker-packs/${packId}`, { method: 'DELETE' });
+  }
+
+  async getStickers(packId: number) {
+    return this.request(`/api/sticker-packs/${packId}/stickers`);
+  }
+
+  async addSticker(packId: number, data: { emoji: string; imageUrl: string }) {
+    return this.request(`/api/sticker-packs/${packId}/stickers`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSticker(stickerId: number) {
+    return this.request(`/api/stickers/${stickerId}`, { method: 'DELETE' });
+  }
+
+  async getRecentStickers() {
+    return this.request('/api/stickers/recent');
+  }
+
+  // Bots
+  async getBots() {
+    return this.request('/api/bots');
+  }
+
+  async createBot(data: { username: string; name: string; description?: string }) {
+    return this.request('/api/bots', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBot(botId: number) {
+    return this.request(`/api/bots/${botId}`, { method: 'DELETE' });
+  }
+
+  async updateBot(botId: number, data: { name?: string; description?: string; avatarUrl?: string; webhookUrl?: string; isActive?: boolean }) {
+    return this.request(`/api/bots/${botId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async regenerateBotToken(botId: number) {
+    return this.request(`/api/bots/${botId}/regenerate-token`, { method: 'POST' });
+  }
+
+  async getBotCommands(botId: number) {
+    return this.request(`/api/bots/${botId}/commands`);
+  }
+
+  async setBotCommands(botId: number, commands: { command: string; description: string }[]) {
+    return this.request(`/api/bots/${botId}/commands`, {
+      method: 'POST',
+      body: JSON.stringify({ commands }),
+    });
+  }
+
+  async getBotByUsername(username: string) {
+    return this.request(`/api/bots/username/${username}`);
+  }
+
   // Polls
   async createPoll(messageId: number, question: string, options: string[], isAnonymous = true, allowsMultiple = false) {
     return this.request(`/api/messages/${messageId}/poll`, {

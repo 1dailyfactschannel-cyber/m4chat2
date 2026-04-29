@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MessageCircle, Phone, Bookmark, Settings, Users, Search, Edit3,
   Bell, Shield, Database, Palette, Globe, Star, Monitor, HelpCircle,
   LogOut, ChevronRight, Camera, Check, X, Smartphone, Laptop, Tablet,
   Moon, Sun, Volume2, VolumeX, Image, Type, Smile, Eye, EyeOff,
   Lock, Key, UserX, Wifi, HardDrive, Trash2, Download, Upload,
-  AlertCircle, Plus, Crown, Zap, Clock, MapPin,
+  AlertCircle, Plus, Crown, Zap, Clock, MapPin, Bot, Copy, RefreshCw,
 } from 'lucide-react';
+import { api } from '../../../lib/api';
 
 // ─── Toggle Component ─────────────────────────────────────────────────────────
 const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
@@ -38,7 +39,7 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
   <div className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDEDED] ${className}`}>{children}</div>
 );
 
-type Section = 'account' | 'notifications' | 'privacy' | 'data' | 'appearance' | 'language' | 'premium' | 'devices';
+type Section = 'account' | 'notifications' | 'privacy' | 'data' | 'appearance' | 'language' | 'premium' | 'devices' | 'bots';
 
 // ─── Account Section ──────────────────────────────────────────────────────────
 const AccountSection = () => {
@@ -541,6 +542,245 @@ const DevicesSection = () => {
   );
 };
 
+// ─── Bots Section ─────────────────────────────────────────────────────────────
+const BotsSection = () => {
+  const [bots, setBots] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newBotName, setNewBotName] = useState("");
+  const [newBotUsername, setNewBotUsername] = useState("");
+  const [newBotDesc, setNewBotDesc] = useState("");
+  const [editingBot, setEditingBot] = useState<any | null>(null);
+  const [commands, setCommands] = useState<{ command: string; description: string }[]>([]);
+  const [newCommand, setNewCommand] = useState("");
+  const [newCommandDesc, setNewCommandDesc] = useState("");
+
+  const loadBots = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getBots();
+      setBots(data);
+    } catch (err) {
+      console.error("Failed to load bots:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBots();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!newBotName.trim() || !newBotUsername.trim()) return;
+    try {
+      await api.createBot({
+        name: newBotName.trim(),
+        username: newBotUsername.trim(),
+        description: newBotDesc.trim() || undefined,
+      });
+      setShowCreate(false);
+      setNewBotName("");
+      setNewBotUsername("");
+      setNewBotDesc("");
+      loadBots();
+    } catch (err: any) {
+      alert(err.message || "Failed to create bot");
+    }
+  };
+
+  const handleDelete = async (botId: number) => {
+    if (!confirm("Удалить бота? Это действие нельзя отменить.")) return;
+    try {
+      await api.deleteBot(botId);
+      loadBots();
+    } catch (err) {
+      console.error("Failed to delete bot:", err);
+    }
+  };
+
+  const handleRegenerateToken = async (botId: number) => {
+    if (!confirm("Пересоздать токен? Старый токен перестанет работать.")) return;
+    try {
+      await api.regenerateBotToken(botId);
+      loadBots();
+    } catch (err) {
+      console.error("Failed to regenerate token:", err);
+    }
+  };
+
+  const loadCommands = async (botId: number) => {
+    try {
+      const data = await api.getBotCommands(botId);
+      setCommands(data.map((c: any) => ({ command: c.command, description: c.description })));
+    } catch (err) {
+      console.error("Failed to load commands:", err);
+      setCommands([]);
+    }
+  };
+
+  const handleAddCommand = async () => {
+    if (!editingBot || !newCommand.trim() || !newCommandDesc.trim()) return;
+    const updated = [...commands, { command: newCommand.trim(), description: newCommandDesc.trim() }];
+    try {
+      await api.setBotCommands(editingBot.id, updated);
+      setCommands(updated);
+      setNewCommand("");
+      setNewCommandDesc("");
+    } catch (err) {
+      console.error("Failed to set commands:", err);
+    }
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5">
+      <div className="max-w-[520px] mx-auto space-y-4">
+        <Card>
+          <div className="flex items-center justify-between px-5 py-3">
+            <span className="text-[14px] font-bold text-[#1C1C1E]">Мои боты</span>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#2481CC] text-white text-[12px] font-medium hover:bg-[#1f73b8] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Создать бота
+            </button>
+          </div>
+
+          {showCreate && (
+            <div className="px-5 pb-4 space-y-2">
+              <input
+                type="text"
+                placeholder="Имя бота"
+                value={newBotName}
+                onChange={(e) => setNewBotName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[#EDEDED] text-[13px] outline-none focus:border-[#2481CC]"
+              />
+              <input
+                type="text"
+                placeholder="Username (без @)"
+                value={newBotUsername}
+                onChange={(e) => setNewBotUsername(e.target.value.replace(/[^a-z0-9_]/gi, "").toLowerCase())}
+                className="w-full px-3 py-2 rounded-xl border border-[#EDEDED] text-[13px] outline-none focus:border-[#2481CC]"
+              />
+              <input
+                type="text"
+                placeholder="Описание (необязательно)"
+                value={newBotDesc}
+                onChange={(e) => setNewBotDesc(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[#EDEDED] text-[13px] outline-none focus:border-[#2481CC]"
+              />
+              <div className="flex gap-2">
+                <button onClick={handleCreate} className="px-4 py-2 rounded-xl bg-[#2481CC] text-white text-[12px] font-medium hover:bg-[#1f73b8]">Создать</button>
+                <button onClick={() => setShowCreate(false)} className="px-4 py-2 rounded-xl bg-[#F1F1F1] text-[#8E8E93] text-[12px] font-medium">Отмена</button>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="px-5 py-8 text-center text-[13px] text-[#8E8E93]">Загрузка...</div>
+          ) : bots.length === 0 ? (
+            <div className="px-5 py-8 text-center text-[13px] text-[#8E8E93]">
+              У вас пока нет ботов. Создайте первого!
+            </div>
+          ) : (
+            <div className="divide-y divide-[#F0F0F0]">
+              {bots.map((bot) => (
+                <div key={bot.id} className="px-5 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#F1F1F1] flex items-center justify-center">
+                        <Bot className="w-5 h-5 text-[#8E8E93]" />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-medium text-[#1C1C1E]">{bot.name}</div>
+                        <div className="text-[12px] text-[#8E8E93]">@{bot.username}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => { setEditingBot(bot); loadCommands(bot.id); }}
+                        className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#8E8E93]"
+                        title="Команды"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRegenerateToken(bot.id)}
+                        className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#8E8E93]"
+                        title="Новый токен"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(bot.id)}
+                        className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#EF4444]"
+                        title="Удалить"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {bot.description && (
+                    <div className="mt-1 text-[12px] text-[#8E8E93]">{bot.description}</div>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="text-[11px] bg-[#F1F1F1] px-2 py-1 rounded text-[#8E8E93] truncate flex-1">{bot.token}</code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(bot.token); }}
+                      className="p-1 rounded hover:bg-[#F5F5F5] text-[#8E8E93]"
+                      title="Копировать токен"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Commands editor */}
+        {editingBot && (
+          <Card>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+              <span className="text-[14px] font-bold text-[#1C1C1E]">Команды @{editingBot.username}</span>
+              <button onClick={() => setEditingBot(null)} className="text-[12px] text-[#8E8E93]">Закрыть</button>
+            </div>
+            <div className="px-5 py-3 space-y-2">
+              {commands.map((cmd, idx) => (
+                <div key={idx} className="flex items-center justify-between text-[13px]">
+                  <span className="font-mono text-[#2481CC]">/{cmd.command}</span>
+                  <span className="text-[#8E8E93]">{cmd.description}</span>
+                </div>
+              ))}
+              <div className="flex gap-2 pt-2">
+                <input
+                  type="text"
+                  placeholder="команда"
+                  value={newCommand}
+                  onChange={(e) => setNewCommand(e.target.value.replace(/^\//, ""))}
+                  className="flex-1 px-3 py-2 rounded-xl border border-[#EDEDED] text-[13px] outline-none focus:border-[#2481CC]"
+                />
+                <input
+                  type="text"
+                  placeholder="описание"
+                  value={newCommandDesc}
+                  onChange={(e) => setNewCommandDesc(e.target.value)}
+                  className="flex-[2] px-3 py-2 rounded-xl border border-[#EDEDED] text-[13px] outline-none focus:border-[#2481CC]"
+                />
+                <button onClick={handleAddCommand} className="px-3 py-2 rounded-xl bg-[#2481CC] text-white text-[12px] font-medium hover:bg-[#1f73b8]">
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function DesktopSettings() {
   const [active, setActive] = useState<Section>('account');
@@ -553,13 +793,14 @@ export function DesktopSettings() {
     { id:'data', icon:Database, label:'Data and Storage' },
     { id:'appearance', icon:Palette, label:'Appearance' },
     { id:'language', icon:Globe, label:'Language', badge:'English' },
+    { id:'bots', icon:Bot, label:'Bots' },
     { id:'premium', icon:Crown, label:'Telegram Premium', color:'text-[#8B5CF6]' },
     { id:'devices', icon:Monitor, label:'Devices', badge:'4' },
   ];
 
   const SECTION_TITLES: Record<Section,string> = {
     account:'My Account', notifications:'Notifications and Sounds', privacy:'Privacy and Security',
-    data:'Data and Storage', appearance:'Appearance', language:'Language', premium:'Telegram Premium', devices:'Active Sessions',
+    data:'Data and Storage', appearance:'Appearance', language:'Language', bots:'Bot Management', premium:'Telegram Premium', devices:'Active Sessions',
   };
 
   return (
@@ -640,6 +881,7 @@ export function DesktopSettings() {
         {active==='data'&&<DataSection/>}
         {active==='appearance'&&<AppearanceSection/>}
         {active==='language'&&<LanguageSection/>}
+        {active==='bots'&&<BotsSection/>}
         {active==='premium'&&<PremiumSection/>}
         {active==='devices'&&<DevicesSection/>}
       </div>

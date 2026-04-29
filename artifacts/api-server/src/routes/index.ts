@@ -8,6 +8,8 @@ import filesRouter from "./files";
 import signalRouter from "./signal";
 import linkPreviewRouter from "./linkPreview";
 import gifsRouter from "./gifs";
+import stickersRouter from "./stickers";
+import botsRouter from "./bots";
 
 const router: IRouter = Router();
 
@@ -20,5 +22,7 @@ router.use(filesRouter);
 router.use(signalRouter);
 router.use(linkPreviewRouter);
 router.use(gifsRouter);
+router.use(stickersRouter);
+router.use(botsRouter);
 
 export default router;

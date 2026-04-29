@@ -139,5 +139,64 @@ psql $DATABASE_URL -f db_changes.sql
 
 ---
 
+### ✅ 6.2 Стикеры
+**Таблицы:** `sticker_packs`, `stickers`
+```sql
+CREATE TABLE "sticker_packs" (
+  "id" serial PRIMARY KEY,
+  "name" varchar(255) NOT NULL,
+  "thumbnail" varchar(500),
+  "created_by" integer REFERENCES "users"("id") ON DELETE CASCADE,
+  "created_at" timestamp with time zone DEFAULT NOW(),
+  "updated_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "sticker_packs_created_by_idx" ON "sticker_packs" ("created_by");
+
+CREATE TABLE "stickers" (
+  "id" serial PRIMARY KEY,
+  "pack_id" integer NOT NULL REFERENCES "sticker_packs"("id") ON DELETE CASCADE,
+  "emoji" varchar(50) NOT NULL,
+  "image_url" varchar(1000) NOT NULL,
+  "created_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "stickers_pack_id_idx" ON "stickers" ("pack_id");
+```
+
+---
+
+### ✅ 6.4 Круглые видео (Video Notes)
+**Изменений не требуется** — используется поле `message_type` = `video_note`.
+
+### ✅ 6.5 Боты
+**Таблицы:** `bots`, `bot_commands`
+```sql
+CREATE TABLE "bots" (
+  "id" serial PRIMARY KEY,
+  "user_id" integer NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+  "username" varchar(100) NOT NULL UNIQUE,
+  "name" varchar(255) NOT NULL,
+  "token" varchar(255) NOT NULL UNIQUE,
+  "description" text,
+  "avatar_url" varchar(500),
+  "webhook_url" varchar(1000),
+  "is_active" boolean DEFAULT true,
+  "created_at" timestamp with time zone DEFAULT NOW(),
+  "updated_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "bots_user_id_idx" ON "bots" ("user_id");
+CREATE INDEX "bots_token_idx" ON "bots" ("token");
+
+CREATE TABLE "bot_commands" (
+  "id" serial PRIMARY KEY,
+  "bot_id" integer NOT NULL REFERENCES "bots"("id") ON DELETE CASCADE,
+  "command" varchar(100) NOT NULL,
+  "description" text NOT NULL,
+  "created_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX "bot_commands_bot_id_idx" ON "bot_commands" ("bot_id");
+```
+
+---
+
 **Последнее обновление:** Текущая дата
-**Статус:** Этап 1 ✅ | Этап 2 ✅ | Этап 3 ✅ | Этап 4 ✅ | Этап 5 ✅
+**Статус:** Этап 1 ✅ | Этап 2 ✅ | Этап 3 ✅ | Этап 4 ✅ | Этап 5 ✅ | Этап 6.2 ✅ | Этап 6.4 ✅ | Этап 6.5 ✅
