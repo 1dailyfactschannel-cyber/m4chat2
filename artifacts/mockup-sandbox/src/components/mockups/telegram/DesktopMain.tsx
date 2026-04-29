@@ -175,6 +175,23 @@ export default function DesktopMain() {
     return () => { unsub?.off(); };
   }, [socket.socket, chats]);
 
+  // Listen for mentions
+  useEffect(() => {
+    const unsub = socket.onMention(({ senderName, chatId }) => {
+      const chat = chats.find((c) => c.id === chatId);
+      addToast({
+        chatName: senderName || 'Unknown',
+        text: 'Упомянул(а) вас в чате',
+        avatar: chat?.name?.slice(0, 2) || '??',
+        color: 'from-blue-400 to-blue-600',
+      });
+      // Play notification sound
+      const audio = new Audio('/notification.mp3');
+      audio.play().catch(() => {});
+    });
+    return () => { unsub(); };
+  }, [socket, addToast, chats]);
+
   // Recording timer
   useEffect(() => {
     if (isRecording) {

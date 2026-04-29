@@ -96,6 +96,11 @@ export function useSocket() {
     return () => { socketRef.current?.off('user:offline', handler); };
   }, []);
 
+  const onMention = useCallback((handler: (data: { messageId: number; chatId: number; senderName: string; text: string }) => void) => {
+    socketRef.current?.on('mention', handler);
+    return () => { socketRef.current?.off('mention', handler); };
+  }, []);
+
   return {
     socket: socketRef.current,
     joinChat,
@@ -110,5 +115,6 @@ export function useSocket() {
     onTypingStop,
     onUserOnline,
     onUserOffline,
+    onMention,
   };
 }

@@ -198,6 +198,26 @@ router.post("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
         senderAvatar: sender?.avatarUrl,
         reactions: [],
       });
+
+      // Send mention notifications
+      if (messageEntities) {
+        const mentions = messageEntities.filter((e: any) => e.type === "mention");
+        for (const mention of mentions) {
+          const username = parsedText.slice(mention.offset + 1, mention.offset + mention.length);
+          const [mentionedUser] = await db
+            .select({ id: usersTable.id })
+            .from(usersTable)
+            .where(eq(usersTable.username, username));
+          if (mentionedUser && mentionedUser.id !== userId) {
+            io.to(`user:${mentionedUser.id}`).emit("mention", {
+              messageId: message.id,
+              chatId: Number(chatId),
+              senderName: sender?.username,
+              text: parsedText,
+            });
+          }
+        }
+      }
     }
 
     res.status(201).json({
