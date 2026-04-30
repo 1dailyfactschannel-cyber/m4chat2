@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS "chat_members" (
   "joined_at" timestamp with time zone DEFAULT NOW(),
   "pinned_at" timestamp with time zone,
   "archived_at" timestamp with time zone,
-  CONSTRAINT "chat_members_chat_id_user_id_pk" PRIMARY KEY("chat_id","user_id")
+  UNIQUE("chat_id","user_id")
 );
 CREATE INDEX IF NOT EXISTS "chat_members_chat_id_idx" ON "chat_members" ("chat_id");
 CREATE INDEX IF NOT EXISTS "chat_members_user_id_idx" ON "chat_members" ("user_id");
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS "message_reads" (
   "message_id" integer NOT NULL REFERENCES "messages"("id") ON DELETE CASCADE,
   "user_id" integer NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
   "read_at" timestamp with time zone DEFAULT NOW(),
-  CONSTRAINT "message_reads_message_id_user_id_pk" PRIMARY KEY("message_id","user_id")
+  UNIQUE("message_id","user_id")
 );
 
 CREATE TABLE IF NOT EXISTS "sessions" (
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS "reactions" (
   "user_id" integer NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
   "emoji" varchar(50) NOT NULL,
   "created_at" timestamp with time zone DEFAULT NOW(),
-  CONSTRAINT "reactions_message_id_user_id_emoji_pk" PRIMARY KEY("message_id","user_id","emoji")
+  UNIQUE("message_id","user_id","emoji")
 );
 CREATE INDEX IF NOT EXISTS "reactions_message_id_idx" ON "reactions" ("message_id");
 
