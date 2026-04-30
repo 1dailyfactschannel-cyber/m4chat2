@@ -34,9 +34,10 @@ RUN corepack enable
 WORKDIR /app
 
 COPY --from=builder /app /app
+RUN chmod +x /app/scripts/entrypoint.sh
 
 EXPOSE 8080
-CMD ["sh", "-c", "pnpm --filter @workspace/db run migrate && pnpm --filter @workspace/api-server run start"]
+CMD ["/app/scripts/entrypoint.sh"]
 
 # ==========================================
 # Образ для Frontend (Nginx)
