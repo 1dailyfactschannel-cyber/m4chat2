@@ -14,7 +14,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=6
+ARG CACHE_BUST=7
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
@@ -44,7 +44,10 @@ COPY --from=builder /app /app
 
 # Восстанавливаем workspace-линки (hardlinks из builder ломаются)
 WORKDIR /app
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
+
+# Устанавливаем pg для миграций (pnpm workspace links могут не работать в Docker)
+RUN npm install pg
 
 # Гарантированно свежие файлы (инвалидируют кэш)
 COPY artifacts/api-server/src/app.ts /app/artifacts/api-server/src/app.ts
