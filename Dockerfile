@@ -14,7 +14,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=5
+ARG CACHE_BUST=6
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
@@ -39,21 +39,12 @@ FROM node:22-slim AS api
 RUN corepack enable
 WORKDIR /app
 
-# Копируем необходимые файлы из builder
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
-COPY --from=builder /app/.npmrc /app/.npmrc
-COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
+# Копируем все файлы из builder
+COPY --from=builder /app /app
 
-# Workspace packages
-COPY --from=builder /app/lib /app/lib
-COPY --from=builder /app/artifacts/api-server /app/artifacts/api-server
-COPY --from=builder /app/artifacts/mockup-sandbox /app/artifacts/mockup-sandbox
-COPY --from=builder /app/scripts /app/scripts
-
-# Восстанавливаем workspace-линки pnpm (node_modules из builder могут быть битыми)
-RUN pnpm install
+# Восстанавливаем workspace-линки (hardlinks из builder ломаются)
+WORKDIR /app
+RUN pnpm install --frozen-lockfile
 
 # Гарантированно свежие файлы (инвалидируют кэш)
 COPY artifacts/api-server/src/app.ts /app/artifacts/api-server/src/app.ts
