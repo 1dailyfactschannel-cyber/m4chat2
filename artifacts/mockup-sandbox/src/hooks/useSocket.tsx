@@ -11,7 +11,8 @@ export function useSocket() {
     const token = api.getToken();
     if (!token) return;
 
-    const socket = io(import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:8080'), {
+    const socketUrl = import.meta.env.VITE_API_URL || '';
+    const socket = io(socketUrl, {
       path: SOCKET_PATH,
       auth: { token },
       transports: ['websocket', 'polling'],

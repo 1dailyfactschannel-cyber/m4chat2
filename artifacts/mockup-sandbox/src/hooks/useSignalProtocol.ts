@@ -35,6 +35,12 @@ export function useSignalProtocol() {
 
     const init = async () => {
       try {
+        // Web Crypto API requires secure context (HTTPS or localhost)
+        if (!window.crypto?.subtle) {
+          console.warn('Signal Protocol unavailable: Web Crypto API requires HTTPS or localhost');
+          return;
+        }
+
         // Check if keys already registered
         const me = await api.getMe();
         if (!me) return;
