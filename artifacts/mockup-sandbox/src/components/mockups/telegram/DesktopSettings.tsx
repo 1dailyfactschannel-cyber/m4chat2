@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   MessageCircle, Phone, Bookmark, Settings, Users, Search, Edit3,
   Bell, Shield, Database, Palette, Globe, Star, Monitor, HelpCircle,
@@ -8,6 +8,8 @@ import {
   AlertCircle, Plus, Crown, Zap, Clock, MapPin, Bot, Copy, RefreshCw,
 } from 'lucide-react';
 import { api } from '../../../lib/api';
+import { useSettings } from '../../../hooks/useSettings';
+import { useUserProfile } from '../../../hooks/useUserProfile';
 
 // ─── Toggle Component ─────────────────────────────────────────────────────────
 const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
@@ -42,19 +44,65 @@ const Card = ({ children, className = '' }: { children: React.ReactNode; classNa
 type Section = 'account' | 'notifications' | 'privacy' | 'data' | 'appearance' | 'language' | 'premium' | 'devices' | 'bots';
 
 // ─── Account Section ──────────────────────────────────────────────────────────
-const AccountSection = () => {
-  const [editName, setEditName] = useState(false);
-  const [name, setName] = useState('John Doe');
+const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
+  const { profile, loading, updateProfile, uploadAvatar } = useUserProfile();
+  const [editPhone, setEditPhone] = useState(false);
+  const [editPhoneValue, setEditPhoneValue] = useState('');
+  const [editEmail, setEditEmail] = useState(false);
+  const [editEmailValue, setEditEmailValue] = useState('');
   const [editBio, setEditBio] = useState(false);
-  const [bio, setBio] = useState('Software Engineer. Tech enthusiast. ☕');
+  const [editBioValue, setEditBioValue] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setEditPhoneValue(profile.phone || '');
+      setEditEmailValue(profile.email || '');
+      setEditBioValue(profile.bio || '');
+    }
+  }, [profile]);
+
+  const handleAvatarClick = () => fileInputRef.current?.click();
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await uploadAvatar(file);
+  };
+
+  const savePhone = async () => {
+    await updateProfile({ phone: editPhoneValue });
+    setEditPhone(false);
+  };
+  const saveEmail = async () => {
+    await updateProfile({ email: editEmailValue });
+    setEditEmail(false);
+  };
+  const saveBio = async () => {
+    await updateProfile({ bio: editBioValue });
+    setEditBio(false);
+  };
+
+  const initials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : '??';
+
+  if (loading || !profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading profile...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Profile card */}
         <Card>
           <div className="flex flex-col items-center pt-8 pb-6 px-6 border-b border-[#F0F0F0]">
-            <div className="relative group cursor-pointer mb-4">
-              <div className="w-[96px] h-[96px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-4xl">JD</div>
+            <div onClick={handleAvatarClick} className="relative group cursor-pointer mb-4">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="avatar" className="w-[96px] h-[96px] rounded-full object-cover"/>
+              ) : (
+                <div className="w-[96px] h-[96px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-4xl">{initials}</div>
+              )}
               <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Camera className="w-7 h-7 text-white"/>
               </div>
@@ -62,48 +110,66 @@ const AccountSection = () => {
                 <Camera className="w-4 h-4 text-white"/>
               </div>
             </div>
-            <h2 className="font-bold text-[20px] text-[#1C1C1E]">{name}</h2>
-            <p className="text-[13px] text-[#4DCA65] font-medium">online</p>
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange}/>
+            <h2 className="font-bold text-[20px] text-[#1C1C1E]">{profile.username}</h2>
+            <p className="text-[13px] text-[#4DCA65] font-medium">
+              {profile.isOnline ? 'online' : profile.lastSeenAt ? `last seen ${new Date(profile.lastSeenAt).toLocaleString()}` : 'offline'}
+            </p>
           </div>
           {/* Name */}
           <div className="border-b border-[#F0F0F0]">
-            {editName ? (
-              <div className="px-5 py-3 flex items-center gap-3">
-                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Name</div><input autoFocus value={name} onChange={e=>setName(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
-                <button onClick={()=>setEditName(false)} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button>
-                <button onClick={()=>setEditName(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button>
-              </div>
-            ) : (
-              <div className="flex items-center px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditName(true)}>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{name}</div><div className="text-[12px] text-[#8E8E93]">Name</div></div>
-                <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 transition-opacity"/>
-              </div>
-            )}
+            <div className="flex items-center px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]">
+              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.username}</div><div className="text-[12px] text-[#8E8E93]">Name</div></div>
+              <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 transition-opacity"/>
+            </div>
           </div>
           {/* Username */}
           <div className="border-b border-[#F0F0F0]">
             <div className="flex items-center px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]">
-              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">@johndoe</div><div className="text-[12px] text-[#8E8E93]">Username</div></div>
+              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">@{profile.username}</div><div className="text-[12px] text-[#8E8E93]">Username</div></div>
               <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 transition-opacity"/>
             </div>
           </div>
           {/* Phone */}
           <div className="border-b border-[#F0F0F0]">
-            <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5]">
-              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">+1 (555) 012-3456</div><div className="text-[12px] text-[#8E8E93]">Phone (tap to change)</div></div>
-              <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
-            </div>
+            {editPhone ? (
+              <div className="px-5 py-3 flex items-center gap-3">
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Phone</div><input autoFocus value={editPhoneValue} onChange={e=>setEditPhoneValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
+                <button onClick={savePhone} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button>
+                <button onClick={()=>setEditPhone(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button>
+              </div>
+            ) : (
+              <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditPhone(true)}>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.phone || 'Not set'}</div><div className="text-[12px] text-[#8E8E93]">Phone (tap to change)</div></div>
+                <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
+              </div>
+            )}
+          </div>
+          {/* Email */}
+          <div className="border-b border-[#F0F0F0]">
+            {editEmail ? (
+              <div className="px-5 py-3 flex items-center gap-3">
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Email</div><input autoFocus value={editEmailValue} onChange={e=>setEditEmailValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
+                <button onClick={saveEmail} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button>
+                <button onClick={()=>setEditEmail(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button>
+              </div>
+            ) : (
+              <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditEmail(true)}>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.email || 'Not set'}</div><div className="text-[12px] text-[#8E8E93]">Email (tap to change)</div></div>
+                <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
+              </div>
+            )}
           </div>
           {/* Bio */}
           <div>
             {editBio ? (
               <div className="px-5 py-3 flex items-start gap-3">
-                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Bio</div><textarea autoFocus value={bio} onChange={e=>setBio(e.target.value)} rows={3} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent resize-none"/></div>
-                <div className="flex flex-col gap-1.5 pt-3"><button onClick={()=>setEditBio(false)} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button><button onClick={()=>setEditBio(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button></div>
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Bio</div><textarea autoFocus value={editBioValue} onChange={e=>setEditBioValue(e.target.value)} rows={3} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent resize-none"/></div>
+                <div className="flex flex-col gap-1.5 pt-3"><button onClick={saveBio} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button><button onClick={()=>setEditBio(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button></div>
               </div>
             ) : (
               <div className="flex items-start px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditBio(true)}>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E] mb-0.5">{bio}</div><div className="text-[12px] text-[#8E8E93]">Bio</div><div className="text-[11px] text-[#C7C7CC] mt-1">Any details such as age, occupation or city</div></div>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E] mb-0.5">{profile.bio || 'No bio yet'}</div><div className="text-[12px] text-[#8E8E93]">Bio</div><div className="text-[11px] text-[#C7C7CC] mt-1">Any details such as age, occupation or city</div></div>
                 <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 mt-1 shrink-0"/>
               </div>
             )}
@@ -118,7 +184,7 @@ const AccountSection = () => {
         </Card>
         {/* Log out */}
         <Card>
-          <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors">
+          <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors" onClick={onLogout}>
             <div className="w-9 h-9 rounded-full bg-[#FEE2E2] flex items-center justify-center mr-4 shrink-0"><LogOut className="w-5 h-5 text-[#EF4444]"/></div>
             <span className="text-[14px] font-medium text-[#EF4444]">Log Out</span>
           </div>
@@ -130,13 +196,16 @@ const AccountSection = () => {
 
 // ─── Notifications Section ────────────────────────────────────────────────────
 const NotificationsSection = () => {
-  const [s, setS] = useState({
-    privateChats: true, privateSound: true, privatePreview: true, privateBadge: true,
-    groups: true, groupSound: false, groupPreview: true, groupBadge: true,
-    channels: true, channelSound: false, channelPreview: false, channelBadge: true,
-    countUnread: true, includeArchived: false,
-  });
-  const t = (k: keyof typeof s) => setS(prev=>({...prev,[k]:!prev[k]}));
+  const { settings, loading, updateSettings } = useSettings();
+  if (loading || !settings?.notifications) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading notifications...</div>
+      </div>
+    );
+  }
+  const s = settings.notifications;
+  const t = (k: keyof typeof s) => updateSettings('notifications', { [k]: !s[k] } as any);
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
@@ -184,15 +253,18 @@ const NotificationsSection = () => {
 // ─── Privacy Section ──────────────────────────────────────────────────────────
 const PrivacySection = () => {
   const [twoStep, setTwoStep] = useState(false);
+  const { settings, loading, updateSettings } = useSettings();
+  if (loading || !settings?.privacy) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading privacy...</div>
+      </div>
+    );
+  }
+  const p = settings.privacy;
   const opts = ['Everyone','My Contacts','Nobody'];
-  const [lastSeen, setLastSeen] = useState('Everyone');
-  const [profilePhoto, setProfilePhoto] = useState('Everyone');
-  const [forwardedFrom, setForwardedFrom] = useState('Everyone');
-  const [phoneNumber, setPhoneNumber] = useState('My Contacts');
-  const [calls, setCalls] = useState('Everyone');
-  const [groupAdd, setGroupAdd] = useState('My Contacts');
-  const Select = ({value, onChange}: {value:string; onChange:(v:string)=>void}) => (
-    <select value={value} onChange={e=>onChange(e.target.value)} className="text-[13px] text-[#8E8E93] bg-transparent border-none outline-none cursor-pointer" onClick={e=>e.stopPropagation()}>
+  const Select = ({value, settingKey}: {value:string; settingKey: string}) => (
+    <select value={value} onChange={e=>updateSettings('privacy', {[settingKey]: e.target.value})} className="text-[13px] text-[#8E8E93] bg-transparent border-none outline-none cursor-pointer" onClick={e=>e.stopPropagation()}>
       {opts.map(o=><option key={o}>{o}</option>)}
     </select>
   );
@@ -201,17 +273,17 @@ const PrivacySection = () => {
       <div className="max-w-[520px] mx-auto space-y-4">
         <Card>
           <SectionTitle label="Privacy"/>
-          <Row label="Last Seen & Online" sub="Who can see when you were last online"><Select value={lastSeen} onChange={setLastSeen}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Last Seen & Online" sub="Who can see when you were last online"><Select value={p.lastSeen} settingKey="lastSeen"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Profile Photo" sub="Who can see your profile photo"><Select value={profilePhoto} onChange={setProfilePhoto}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Profile Photo" sub="Who can see your profile photo"><Select value={p.profilePhoto} settingKey="profilePhoto"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Forwarded Messages" sub="Who can forward your messages"><Select value={forwardedFrom} onChange={setForwardedFrom}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Forwarded Messages" sub="Who can forward your messages"><Select value={p.forwardedFrom} settingKey="forwardedFrom"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Phone Number" sub="Who can see your phone number"><Select value={phoneNumber} onChange={setPhoneNumber}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Phone Number" sub="Who can see your phone number"><Select value={p.phoneNumber} settingKey="phoneNumber"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Calls" sub="Who can call you"><Select value={calls} onChange={setCalls}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Calls" sub="Who can call you"><Select value={p.calls} settingKey="calls"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Group Chats & Channels" sub="Who can add you to groups"><Select value={groupAdd} onChange={setGroupAdd}/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label="Group Chats & Channels" sub="Who can add you to groups"><Select value={p.groupAdd} settingKey="groupAdd"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
         </Card>
         <Card>
           <SectionTitle label="Security"/>
@@ -240,14 +312,16 @@ const PrivacySection = () => {
 
 // ─── Data & Storage Section ───────────────────────────────────────────────────
 const DataSection = () => {
-  const [dlPhotoPrivate, setDlPhotoPrivate] = useState(true);
-  const [dlVideoPrivate, setDlVideoPrivate] = useState(false);
-  const [dlFilePrivate, setDlFilePrivate] = useState(false);
-  const [dlPhotoGroup, setDlPhotoGroup] = useState(true);
-  const [dlVideoGroup, setDlVideoGroup] = useState(false);
-  const [dlFileGroup, setDlFileGroup] = useState(false);
-  const [proxyOn, setProxyOn] = useState(false);
+  const { settings, loading, updateSettings } = useSettings();
   const usedGB = 1.42; const totalGB = 8;
+  if (loading || !settings?.data) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading data settings...</div>
+      </div>
+    );
+  }
+  const d = settings.data;
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
@@ -282,8 +356,12 @@ const DataSection = () => {
           <div className="px-5 py-3">
             <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">PRIVATE CHATS</div>
             <div className="flex gap-4">
-              {[['Photos',dlPhotoPrivate,setDlPhotoPrivate],['Videos',dlVideoPrivate,setDlVideoPrivate],['Files',dlFilePrivate,setDlFilePrivate]].map(([label,val,fn])=>(
-                <button key={label as string} onClick={()=>(fn as React.Dispatch<React.SetStateAction<boolean>>)(v=>!v)}
+              {[
+                ['Photos', d.dlPhotoPrivate, 'dlPhotoPrivate'],
+                ['Videos', d.dlVideoPrivate, 'dlVideoPrivate'],
+                ['Files', d.dlFilePrivate, 'dlFilePrivate'],
+              ].map(([label, val, key])=>(
+                <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
@@ -294,8 +372,12 @@ const DataSection = () => {
           <div className="px-5 py-3">
             <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">GROUP CHATS</div>
             <div className="flex gap-4">
-              {[['Photos',dlPhotoGroup,setDlPhotoGroup],['Videos',dlVideoGroup,setDlVideoGroup],['Files',dlFileGroup,setDlFileGroup]].map(([label,val,fn])=>(
-                <button key={label as string} onClick={()=>(fn as React.Dispatch<React.SetStateAction<boolean>>)(v=>!v)}
+              {[
+                ['Photos', d.dlPhotoGroup, 'dlPhotoGroup'],
+                ['Videos', d.dlVideoGroup, 'dlVideoGroup'],
+                ['Files', d.dlFileGroup, 'dlFileGroup'],
+              ].map(([label, val, key])=>(
+                <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
@@ -314,8 +396,8 @@ const DataSection = () => {
         {/* Proxy */}
         <Card>
           <SectionTitle label="Connection Type"/>
-          <Row label="Use Proxy" onClick={()=>setProxyOn(p=>!p)}><Toggle value={proxyOn} onChange={setProxyOn}/></Row>
-          {proxyOn && <><Divider/><Row label="Add Proxy" chevron onClick={()=>{}}/></>}
+          <Row label="Use Proxy" onClick={()=>updateSettings('data', {proxyOn: !d.proxyOn})}><Toggle value={d.proxyOn} onChange={()=>updateSettings('data', {proxyOn: !d.proxyOn})}/></Row>
+          {d.proxyOn && <><Divider/><Row label="Add Proxy" chevron onClick={()=>{}}/></>}
         </Card>
       </div>
     </div>
@@ -324,14 +406,17 @@ const DataSection = () => {
 
 // ─── Appearance Section ───────────────────────────────────────────────────────
 const AppearanceSection = () => {
-  const [theme, setTheme] = useState<'day'|'night'|'system'>('day');
-  const [chatBg, setChatBg] = useState('default');
-  const [fontSize, setFontSize] = useState(15);
-  const [bigEmoji, setBigEmoji] = useState(true);
-  const [bubbles, setBubbles] = useState(true);
-  const [animateEmoji, setAnimateEmoji] = useState(true);
+  const { settings, loading, updateSettings } = useSettings();
   const THEMES = [{id:'day',label:'Day',icon:Sun,color:'#FDB022'},{id:'night',label:'Night',icon:Moon,color:'#8E8E93'},{id:'system',label:'System',icon:Monitor,color:'#2481CC'}] as const;
   const BGOPTS = [{id:'default',color:'#F0F2F5'},{id:'pattern',color:'#dfe6e9'},{id:'gradient',color:'linear-gradient(135deg,#667eea,#764ba2)'},{id:'nature',color:'linear-gradient(135deg,#56ab2f,#a8e063)'},{id:'dark',color:'#1a1a2e'}];
+  if (loading || !settings?.appearance) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading appearance...</div>
+      </div>
+    );
+  }
+  const a = settings.appearance;
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
@@ -340,10 +425,10 @@ const AppearanceSection = () => {
           <SectionTitle label="Color Theme"/>
           <div className="flex gap-3 px-5 py-4">
             {THEMES.map(t=>(
-              <button key={t.id} onClick={()=>setTheme(t.id)}
-                className={`flex-1 py-3 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${theme===t.id?'border-[#2481CC] bg-[#E8F4FF]':'border-transparent bg-[#F5F5F5] hover:bg-[#EBEBEB]'}`}>
+              <button key={t.id} onClick={()=>updateSettings('appearance', {theme: t.id})}
+                className={`flex-1 py-3 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${a.theme===t.id?'border-[#2481CC] bg-[#E8F4FF]':'border-transparent bg-[#F5F5F5] hover:bg-[#EBEBEB]'}`}>
                 <t.icon className="w-6 h-6" style={{color:t.color}}/>
-                <span className={`text-[12px] font-semibold ${theme===t.id?'text-[#2481CC]':'text-[#8E8E93]'}`}>{t.label}</span>
+                <span className={`text-[12px] font-semibold ${a.theme===t.id?'text-[#2481CC]':'text-[#8E8E93]'}`}>{t.label}</span>
               </button>
             ))}
           </div>
@@ -351,8 +436,8 @@ const AppearanceSection = () => {
           <Row label="Chat Background" chevron onClick={()=>{}}>
             <div className="flex gap-1 mr-2">
               {BGOPTS.map(b=>(
-                <button key={b.id} onClick={e=>{e.stopPropagation();setChatBg(b.id);}}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${chatBg===b.id?'border-[#2481CC] scale-110':'border-transparent'}`}
+                <button key={b.id} onClick={e=>{e.stopPropagation();updateSettings('appearance', {chatBg: b.id});}}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${a.chatBg===b.id?'border-[#2481CC] scale-110':'border-transparent'}`}
                   style={b.color.startsWith('linear')?{background:b.color}:{backgroundColor:b.color}}/>
               ))}
             </div>
@@ -364,28 +449,28 @@ const AppearanceSection = () => {
           <div className="px-5 py-4">
             <div className="flex justify-between items-baseline mb-3">
               <span className="text-[13px] text-[#8E8E93]">Text Size</span>
-              <span className="text-[13px] font-semibold text-[#2481CC]">{fontSize}px</span>
+              <span className="text-[13px] font-semibold text-[#2481CC]">{a.fontSize}px</span>
             </div>
-            <input type="range" min={12} max={20} value={fontSize} onChange={e=>setFontSize(Number(e.target.value))} className="w-full accent-[#2481CC]"/>
+            <input type="range" min={12} max={20} value={a.fontSize} onChange={e=>updateSettings('appearance', {fontSize: Number(e.target.value)})} className="w-full accent-[#2481CC]"/>
             <div className="flex justify-between mt-2 px-1">
               <span style={{fontSize:12}} className="text-[#8E8E93]">Aa</span>
-              <p className="text-[#1C1C1E] leading-relaxed" style={{fontSize}}>The quick brown fox…</p>
+              <p className="text-[#1C1C1E] leading-relaxed" style={{fontSize: a.fontSize}}>The quick brown fox…</p>
               <span style={{fontSize:20}} className="text-[#8E8E93]">Aa</span>
             </div>
           </div>
           <Divider/>
-          <Row label="Large Emoji" sub="Show larger emoji in messages without text" onClick={()=>setBigEmoji(v=>!v)}><Toggle value={bigEmoji} onChange={setBigEmoji}/></Row>
+          <Row label="Large Emoji" sub="Show larger emoji in messages without text" onClick={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}><Toggle value={a.bigEmoji} onChange={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}/></Row>
           <Divider/>
-          <Row label="Animate Emoji" sub="Show animated stickers and emoji" onClick={()=>setAnimateEmoji(v=>!v)}><Toggle value={animateEmoji} onChange={setAnimateEmoji}/></Row>
+          <Row label="Animate Emoji" sub="Show animated stickers and emoji" onClick={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}><Toggle value={a.animateEmoji} onChange={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}/></Row>
           <Divider/>
-          <Row label="Message Bubbles" sub="Show colored bubbles for outgoing messages" onClick={()=>setBubbles(v=>!v)}><Toggle value={bubbles} onChange={setBubbles}/></Row>
+          <Row label="Message Bubbles" sub="Show colored bubbles for outgoing messages" onClick={()=>updateSettings('appearance', {bubbles: !a.bubbles})}><Toggle value={a.bubbles} onChange={()=>updateSettings('appearance', {bubbles: !a.bubbles})}/></Row>
         </Card>
         {/* Accessibility */}
         <Card>
           <SectionTitle label="Accessibility"/>
-          <Row label="Reduce Motion" sub="Disable animations throughout the app" onClick={()=>{}}><Toggle value={false} onChange={()=>{}}/></Row>
+          <Row label="Reduce Motion" sub="Disable animations throughout the app" onClick={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}><Toggle value={a.reduceMotion} onChange={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}/></Row>
           <Divider/>
-          <Row label="Increase Contrast" onClick={()=>{}}><Toggle value={false} onChange={()=>{}}/></Row>
+          <Row label="Increase Contrast" onClick={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}><Toggle value={a.increaseContrast} onChange={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}/></Row>
         </Card>
       </div>
     </div>
@@ -394,7 +479,7 @@ const AppearanceSection = () => {
 
 // ─── Language Section ─────────────────────────────────────────────────────────
 const LanguageSection = () => {
-  const [lang, setLang] = useState('English');
+  const { settings, loading, updateSettings } = useSettings();
   const LANGS = [
     {code:'🇺🇸',name:'English',native:'English'},
     {code:'🇷🇺',name:'Russian',native:'Русский'},
@@ -409,26 +494,36 @@ const LanguageSection = () => {
     {code:'🇸🇦',name:'Arabic',native:'العربية'},
     {code:'🇹🇷',name:'Turkish',native:'Türkçe'},
   ];
+  if (loading || !settings?.language) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading language...</div>
+      </div>
+    );
+  }
+  const l = settings.language;
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         <Card>
           <SectionTitle label="Interface Language"/>
-          {LANGS.map((l,i)=>(
-            <React.Fragment key={l.name}>
+          {LANGS.map((lang,i)=>(
+            <React.Fragment key={lang.name}>
               {i>0&&<Divider/>}
-              <div onClick={()=>setLang(l.name)} className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
-                <span className="text-[20px] mr-4">{l.code}</span>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{l.name}</div><div className="text-[12px] text-[#8E8E93]">{l.native}</div></div>
-                {lang===l.name&&<div className="w-5 h-5 rounded-full bg-[#2481CC] flex items-center justify-center"><Check className="w-3 h-3 text-white"/></div>}
+              <div onClick={()=>updateSettings('language', {lang: lang.name})} className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
+                <span className="text-[20px] mr-4">{lang.code}</span>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{lang.name}</div><div className="text-[12px] text-[#8E8E93]">{lang.native}</div></div>
+                {l.lang===lang.name&&<div className="w-5 h-5 rounded-full bg-[#2481CC] flex items-center justify-center"><Check className="w-3 h-3 text-white"/></div>}
               </div>
             </React.Fragment>
           ))}
         </Card>
         <Card>
-          <Row label="Translate Messages" sub="Translate incoming messages automatically" chevron onClick={()=>{}}/>
+          <Row label="Translate Messages" sub="Translate incoming messages automatically" onClick={()=>updateSettings('language', {translateMessages: !l.translateMessages})}>
+            <Toggle value={l.translateMessages} onChange={()=>updateSettings('language', {translateMessages: !l.translateMessages})}/>
+          </Row>
           <Divider/>
-          <Row label="Show Translate Button" onClick={()=>{}}><Toggle value={true} onChange={()=>{}}/></Row>
+          <Row label="Show Translate Button" onClick={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}><Toggle value={l.showTranslateButton} onChange={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}/></Row>
         </Card>
       </div>
     </div>
@@ -476,59 +571,131 @@ const PremiumSection = () => (
 
 // ─── Devices Section ──────────────────────────────────────────────────────────
 const DevicesSection = () => {
-  const [sessions, setSessions] = useState([
-    {id:1,icon:Laptop,device:'MacBook Pro 14"',app:'Telegram macOS 10.3.1',location:'San Francisco, US',time:'This device',current:true},
-    {id:2,icon:Smartphone,device:'iPhone 15 Pro',app:'Telegram iOS 10.2.3',location:'San Francisco, US',time:'2 hours ago',current:false},
-    {id:3,icon:Tablet,device:'iPad Air',app:'Telegram iOS 10.1.0',location:'New York, US',time:'3 days ago',current:false},
-    {id:4,icon:Laptop,device:'Windows PC',app:'Telegram Desktop 4.11.1',location:'Chicago, US',time:'1 week ago',current:false},
-  ]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadDevices = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getDevices();
+      setSessions(data || []);
+    } catch (err) {
+      console.error('Failed to load devices:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDevices();
+  }, []);
+
+  const getDeviceIcon = (ua: string) => {
+    const s = (ua || '').toLowerCase();
+    if (s.includes('iphone') || s.includes('android') || s.includes('mobile')) return Smartphone;
+    if (s.includes('ipad') || s.includes('tablet')) return Tablet;
+    return Laptop;
+  };
+
+  const getDeviceName = (session: any) => {
+    if (session.deviceInfo) return session.deviceInfo;
+    const ua = session.userAgent || '';
+    if (ua.includes('Mac')) return 'Mac';
+    if (ua.includes('Windows')) return 'Windows PC';
+    if (ua.includes('iPhone')) return 'iPhone';
+    if (ua.includes('iPad')) return 'iPad';
+    if (ua.includes('Android')) return 'Android';
+    return 'Unknown Device';
+  };
+
+  const getAppName = (session: any) => {
+    const ua = session.userAgent || '';
+    if (ua.includes('Telegram')) return ua;
+    return `Telegram Web / ${ua.slice(0, 40)}`;
+  };
+
+  const handleRevoke = async (id: number) => {
+    try {
+      await api.revokeDevice(id);
+      loadDevices();
+    } catch (err) {
+      console.error('Failed to revoke device:', err);
+    }
+  };
+
+  const handleRevokeAll = async () => {
+    const others = sessions.filter(s => !s.current);
+    for (const s of others) {
+      try {
+        await api.revokeDevice(s.id);
+      } catch (err) {
+        console.error('Failed to revoke device:', err);
+      }
+    }
+    loadDevices();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-5">
+        <div className="text-[14px] text-[#8E8E93]">Loading sessions...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Current */}
         <Card>
           <SectionTitle label="Current Session"/>
-          {sessions.filter(s=>s.current).map(s=>(
-            <div key={s.id} className="flex items-start px-5 py-4 gap-4">
-              <div className="w-10 h-10 rounded-xl bg-[#E8F4FF] flex items-center justify-center shrink-0"><s.icon className="w-5 h-5 text-[#2481CC]"/></div>
-              <div className="flex-1">
-                <div className="font-semibold text-[14px] text-[#1C1C1E]">{s.device}</div>
-                <div className="text-[12px] text-[#8E8E93]">{s.app}</div>
-                <div className="flex items-center gap-1 mt-1"><div className="w-2 h-2 rounded-full bg-[#4DCA65]"/><span className="text-[12px] text-[#4DCA65] font-medium">Online</span></div>
+          {sessions.filter(s=>s.current).map(s=>{
+            const Icon = getDeviceIcon(s.userAgent);
+            return (
+              <div key={s.id} className="flex items-start px-5 py-4 gap-4">
+                <div className="w-10 h-10 rounded-xl bg-[#E8F4FF] flex items-center justify-center shrink-0"><Icon className="w-5 h-5 text-[#2481CC]"/></div>
+                <div className="flex-1">
+                  <div className="font-semibold text-[14px] text-[#1C1C1E]">{getDeviceName(s)}</div>
+                  <div className="text-[12px] text-[#8E8E93]">{getAppName(s)}</div>
+                  <div className="flex items-center gap-1 mt-1"><div className="w-2 h-2 rounded-full bg-[#4DCA65]"/><span className="text-[12px] text-[#4DCA65] font-medium">Online</span></div>
+                </div>
+                <div className="text-right"><div className="text-[11px] text-[#8E8E93]">{s.location || s.ipAddress || ''}</div></div>
               </div>
-              <div className="text-right"><div className="text-[11px] text-[#8E8E93]">{s.location}</div></div>
-            </div>
-          ))}
+            );
+          })}
         </Card>
         {/* Other */}
         <Card>
           <SectionTitle label="Other Sessions"/>
-          {sessions.filter(s=>!s.current).map((s,i,arr)=>(
-            <React.Fragment key={s.id}>
-              <div className="flex items-start px-5 py-3.5 gap-4 group hover:bg-[#F5F5F5] cursor-pointer transition-colors">
-                <div className="w-9 h-9 rounded-xl bg-[#F1F1F1] flex items-center justify-center shrink-0"><s.icon className="w-4.5 h-4.5 text-[#8E8E93]"/></div>
-                <div className="flex-1">
-                  <div className="font-semibold text-[13px] text-[#1C1C1E]">{s.device}</div>
-                  <div className="text-[11px] text-[#8E8E93]">{s.app}</div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <MapPin className="w-3 h-3 text-[#C7C7CC]"/>
-                    <span className="text-[11px] text-[#8E8E93]">{s.location}</span>
-                    <span className="text-[#C7C7CC]">·</span>
-                    <Clock className="w-3 h-3 text-[#C7C7CC]"/>
-                    <span className="text-[11px] text-[#8E8E93]">{s.time}</span>
+          {sessions.filter(s=>!s.current).map((s,i,arr)=>{
+            const Icon = getDeviceIcon(s.userAgent);
+            return (
+              <React.Fragment key={s.id}>
+                <div className="flex items-start px-5 py-3.5 gap-4 group hover:bg-[#F5F5F5] cursor-pointer transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-[#F1F1F1] flex items-center justify-center shrink-0"><Icon className="w-4.5 h-4.5 text-[#8E8E93]"/></div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-[13px] text-[#1C1C1E]">{getDeviceName(s)}</div>
+                    <div className="text-[11px] text-[#8E8E93]">{getAppName(s)}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <MapPin className="w-3 h-3 text-[#C7C7CC]"/>
+                      <span className="text-[11px] text-[#8E8E93]">{s.location || s.ipAddress || ''}</span>
+                      <span className="text-[#C7C7CC]">·</span>
+                      <Clock className="w-3 h-3 text-[#C7C7CC]"/>
+                      <span className="text-[11px] text-[#8E8E93]">{s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}</span>
+                    </div>
                   </div>
+                  <button onClick={e=>{e.stopPropagation();handleRevoke(s.id);}} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#EF4444] hover:text-red-600">
+                    <X className="w-4 h-4"/>
+                  </button>
                 </div>
-                <button onClick={e=>{e.stopPropagation();setSessions(prev=>prev.filter(x=>x.id!==s.id));}} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#EF4444] hover:text-red-600">
-                  <X className="w-4 h-4"/>
-                </button>
-              </div>
-              {i<arr.length-1&&<Divider/>}
-            </React.Fragment>
-          ))}
+                {i<arr.length-1&&<Divider/>}
+              </React.Fragment>
+            );
+          })}
         </Card>
         {sessions.filter(s=>!s.current).length>0 && (
           <Card>
-            <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors" onClick={()=>setSessions(prev=>prev.filter(s=>s.current))}>
+            <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors" onClick={handleRevokeAll}>
               <UserX className="w-4 h-4 text-[#EF4444] mr-3 shrink-0"/>
               <span className="text-[14px] font-medium text-[#EF4444]">Terminate All Other Sessions</span>
             </div>
@@ -785,6 +952,18 @@ const BotsSection = () => {
 export function DesktopSettings() {
   const [active, setActive] = useState<Section>('account');
   const [search, setSearch] = useState('');
+  const { profile, loading: profileLoading } = useUserProfile();
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+      window.location.reload();
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  const initials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : '??';
 
   const NAV_ITEMS: {id:Section; icon:React.ComponentType<{className?:string}>; label:string; badge?:string; color?:string}[] = [
     { id:'account', icon:Settings, label:'My Account' },
@@ -818,7 +997,13 @@ export function DesktopSettings() {
             </div>
           ))}
         </div>
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm cursor-pointer mb-1 ring-2 ring-[#2481CC] ring-offset-2 ring-offset-[#17212B]">JD</div>
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm cursor-pointer mb-1 ring-2 ring-[#2481CC] ring-offset-2 ring-offset-[#17212B]">
+          {profile?.avatarUrl ? (
+            <img src={profile.avatarUrl} className="w-full h-full rounded-full object-cover" alt=""/>
+          ) : (
+            initials
+          )}
+        </div>
       </div>
 
       {/* Settings list column */}
@@ -836,12 +1021,16 @@ export function DesktopSettings() {
         {/* User card */}
         <div className="flex items-center px-4 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors border-b border-[#EDEDED]" onClick={()=>setActive('account')}>
           <div className="relative shrink-0 mr-3">
-            <div className="w-[46px] h-[46px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-[16px]">JD</div>
+            {profile?.avatarUrl ? (
+              <img src={profile.avatarUrl} className="w-[46px] h-[46px] rounded-full object-cover" alt=""/>
+            ) : (
+              <div className="w-[46px] h-[46px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-[16px]">{initials}</div>
+            )}
             <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#4DCA65] border-2 border-white"/>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[14px] text-[#1C1C1E] truncate">John Doe</h3>
-            <p className="text-[12px] text-[#8E8E93] truncate">+1 (555) 012-3456</p>
+            <h3 className="font-bold text-[14px] text-[#1C1C1E] truncate">{profile?.username || 'Loading...'}</h3>
+            <p className="text-[12px] text-[#8E8E93] truncate">{profile?.phone || ''}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-[#C7C7CC] shrink-0"/>
         </div>
@@ -875,7 +1064,7 @@ export function DesktopSettings() {
           {active==='account'&&<Edit3 className="w-5 h-5 text-[#8E8E93] cursor-pointer hover:text-[#1C1C1E] transition-colors"/>}
           {active==='devices'&&<button className="text-[13px] text-[#2481CC] hover:opacity-70 font-medium">Refresh</button>}
         </div>
-        {active==='account'&&<AccountSection/>}
+        {active==='account'&&<AccountSection onLogout={handleLogout}/>}
         {active==='notifications'&&<NotificationsSection/>}
         {active==='privacy'&&<PrivacySection/>}
         {active==='data'&&<DataSection/>}
