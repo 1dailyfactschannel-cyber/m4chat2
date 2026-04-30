@@ -62,3 +62,6 @@ src-tauri/
 *.ico
 *.png
 src-tauri/icons/
+
+# Electron builds
+artifacts/electron-app/release/

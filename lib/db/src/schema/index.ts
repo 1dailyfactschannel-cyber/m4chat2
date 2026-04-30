@@ -670,3 +670,36 @@ export const insertBotCommandSchema = createInsertSchema(botCommandsTable).omit(
 export const selectBotCommandSchema = createSelectSchema(botCommandsTable);
 export type InsertBotCommand = z.infer<typeof insertBotCommandSchema>;
 export type BotCommand = z.infer<typeof selectBotCommandSchema>;
+
+// ==========================================
+// 21. User Settings
+// ==========================================
+export const userSettingsTable = pgTable(
+  "user_settings",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .references(() => usersTable.id, { onDelete: "cascade" })
+      .notNull()
+      .unique(),
+    notifications: jsonb("notifications").$type<Record<string, any>>().default({}),
+    privacy: jsonb("privacy").$type<Record<string, any>>().default({}),
+    appearance: jsonb("appearance").$type<Record<string, any>>().default({}),
+    language: jsonb("language").$type<Record<string, any>>().default({}),
+    data: jsonb("data").$type<Record<string, any>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("user_settings_user_id_idx").on(table.userId),
+  }),
+);
+
+export const insertUserSettingsSchema = createInsertSchema(userSettingsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectUserSettingsSchema = createSelectSchema(userSettingsTable);
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
+export type UserSettings = z.infer<typeof selectUserSettingsSchema>;

@@ -464,6 +464,24 @@ class ApiClient {
 
     return res.json();
   }
+
+  // Settings
+  async getSettings() {
+    return this.request('/api/settings');
+  }
+
+  async updateSettings(data: {
+    notifications?: Record<string, any>;
+    privacy?: Record<string, any>;
+    appearance?: Record<string, any>;
+    language?: Record<string, any>;
+    data?: Record<string, any>;
+  }) {
+    return this.request('/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();

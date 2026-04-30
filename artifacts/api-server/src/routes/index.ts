@@ -10,6 +10,7 @@ import linkPreviewRouter from "./linkPreview";
 import gifsRouter from "./gifs";
 import stickersRouter from "./stickers";
 import botsRouter from "./bots";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(linkPreviewRouter);
 router.use(gifsRouter);
 router.use(stickersRouter);
 router.use(botsRouter);
+router.use(settingsRouter);
 
 export default router;

@@ -253,4 +253,17 @@ CREATE TABLE IF NOT EXISTS "bot_commands" (
   "created_at" timestamp with time zone DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS "bot_commands_bot_id_idx" ON "bot_commands" ("bot_id");
+
+CREATE TABLE IF NOT EXISTS "user_settings" (
+  "id" serial PRIMARY KEY,
+  "user_id" integer NOT NULL UNIQUE REFERENCES "users"("id") ON DELETE CASCADE,
+  "notifications" jsonb DEFAULT '{}',
+  "privacy" jsonb DEFAULT '{}',
+  "appearance" jsonb DEFAULT '{}',
+  "language" jsonb DEFAULT '{}',
+  "data" jsonb DEFAULT '{}',
+  "created_at" timestamp with time zone DEFAULT NOW(),
+  "updated_at" timestamp with time zone DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS "user_settings_user_id_idx" ON "user_settings" ("user_id");
 `;
