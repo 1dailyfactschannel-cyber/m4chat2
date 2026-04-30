@@ -14,7 +14,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=3
+ARG CACHE_BUST=4
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
@@ -36,16 +36,24 @@ FROM node:22-slim AS api
 RUN corepack enable
 WORKDIR /app
 
-COPY --from=builder /app /app
+# Копируем необходимые файлы из builder (без кэшированных старых скриптов)
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
+COPY --from=builder /app/.npmrc /app/.npmrc
 
-# Ensure fresh scripts/database files (bypass builder cache issues)
-COPY scripts/entrypoint.sh /app/scripts/entrypoint.sh
+# Workspace packages
+COPY --from=builder /app/lib /app/lib
+COPY --from=builder /app/artifacts/api-server /app/artifacts/api-server
+COPY --from=builder /app/artifacts/mockup-sandbox /app/artifacts/mockup-sandbox
+COPY --from=builder /app/scripts /app/scripts
+
+# Скрипт миграций и SQL
 COPY scripts/apply-migrations.mjs /app/scripts/apply-migrations.mjs
 COPY database/migrations.sql /app/database/migrations.sql
-RUN chmod +x /app/scripts/entrypoint.sh
 
 EXPOSE 8080
-CMD ["/app/scripts/entrypoint.sh"]
+CMD ["sh", "-c", "sleep 5 && echo '[entrypoint] Applying schema updates...' && node /app/scripts/apply-migrations.mjs || echo '[entrypoint] Schema updates skipped.' && exec pnpm --filter @workspace/api-server run start"]
 
 # ==========================================
 # Образ для Frontend (Nginx)
