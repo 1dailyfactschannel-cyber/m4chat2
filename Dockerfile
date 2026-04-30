@@ -14,10 +14,13 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=4
+ARG CACHE_BUST=5
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
+
+# Копируем build trigger (изменение этого файла инвалидирует Docker cache)
+COPY .build-trigger .build-trigger
 
 # Копируем остальные файлы
 COPY . .
@@ -48,7 +51,8 @@ COPY --from=builder /app/artifacts/api-server /app/artifacts/api-server
 COPY --from=builder /app/artifacts/mockup-sandbox /app/artifacts/mockup-sandbox
 COPY --from=builder /app/scripts /app/scripts
 
-# Скрипт миграций и SQL
+# Гарантированно свежие файлы (инвалидируют кэш)
+COPY artifacts/api-server/src/app.ts /app/artifacts/api-server/src/app.ts
 COPY scripts/apply-migrations.mjs /app/scripts/apply-migrations.mjs
 COPY database/migrations.sql /app/database/migrations.sql
 
