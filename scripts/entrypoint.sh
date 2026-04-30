@@ -5,7 +5,7 @@ echo "[entrypoint] Waiting for database..."
 sleep 5
 
 echo "[entrypoint] Running migrations..."
-pnpm --filter @workspace/db run migrate || {
+node ./lib/db/src/migrate.mjs || {
   echo "[entrypoint] WARNING: Migrations failed, continuing anyway..."
 }
 

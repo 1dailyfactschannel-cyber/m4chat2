@@ -13,6 +13,9 @@ COPY lib/api-spec/package.json ./lib/api-spec/
 COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
+# Инвалидируем кэш при изменении зависимостей
+ARG CACHE_BUST=2
+
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
 
