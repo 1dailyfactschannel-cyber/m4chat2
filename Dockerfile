@@ -14,7 +14,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=2
+ARG CACHE_BUST=3
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
@@ -37,6 +37,11 @@ RUN corepack enable
 WORKDIR /app
 
 COPY --from=builder /app /app
+
+# Ensure fresh scripts/database files (bypass builder cache issues)
+COPY scripts/entrypoint.sh /app/scripts/entrypoint.sh
+COPY scripts/apply-migrations.mjs /app/scripts/apply-migrations.mjs
+COPY database/migrations.sql /app/database/migrations.sql
 RUN chmod +x /app/scripts/entrypoint.sh
 
 EXPOSE 8080

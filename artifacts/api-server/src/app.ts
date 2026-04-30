@@ -9,6 +9,9 @@ import { apiRateLimiter } from "./middleware/rateLimit";
 
 const app: Express = express();
 
+// Trust proxy (required for rate-limit behind nginx)
+app.set("trust proxy", 1);
+
 // Security headers
 app.use(helmet());
 
