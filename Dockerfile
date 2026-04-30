@@ -14,7 +14,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY scripts/package.json ./scripts/
 
 # Инвалидируем кэш при изменении зависимостей
-ARG CACHE_BUST=7
+ARG CACHE_BUST=8
 
 # Удаляем Windows-specific lockfile и устанавливаем зависимости заново под Linux
 RUN rm -f pnpm-lock.yaml && pnpm install
@@ -49,7 +49,7 @@ RUN pnpm install
 # Гарантированно свежие файлы (инвалидируют кэш)
 COPY artifacts/api-server/src/app.ts /app/artifacts/api-server/src/app.ts
 COPY artifacts/api-server/src/index.ts /app/artifacts/api-server/src/index.ts
-COPY database/migrations.sql /app/database/migrations.sql
+COPY artifacts/api-server/src/migrations.ts /app/artifacts/api-server/src/migrations.ts
 
 # Пересобираем API с обновлённым кодом
 RUN pnpm --filter @workspace/api-server run build

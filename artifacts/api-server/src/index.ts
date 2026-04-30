@@ -1,10 +1,9 @@
 import { createServer } from "http";
-import fs from "fs";
-import path from "path";
 import app from "./app";
 import { createWebSocketServer } from "./websocket/server";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
+import { MIGRATIONS_SQL } from "./migrations";
 
 const rawPort = process.env["PORT"];
 
@@ -22,17 +21,7 @@ if (Number.isNaN(port) || port <= 0) {
 
 async function applyMigrations() {
   try {
-    // __dirname in bundle = /app/artifacts/api-server/dist
-    // migrations.sql is at /app/database/migrations.sql
-    const sqlPath = path.join(__dirname, "../../../database/migrations.sql");
-
-    if (!fs.existsSync(sqlPath)) {
-      logger.info("migrations.sql not found, skipping schema updates");
-      return;
-    }
-
-    const sql = fs.readFileSync(sqlPath, "utf-8");
-    const statements = sql
+    const statements = MIGRATIONS_SQL
       .split(/;\s*\n/)
       .map((s) => s.trim())
       .filter((s) => s.length > 0 && !s.startsWith("--"));
