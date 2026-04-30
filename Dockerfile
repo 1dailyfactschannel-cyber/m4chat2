@@ -45,7 +45,7 @@ FROM nginx:alpine AS web
 RUN rm -rf /usr/share/nginx/html/* /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/artifacts/mockup-sandbox/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-RUN nginx -t
+RUN mkdir -p /var/log/nginx /run/nginx
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
