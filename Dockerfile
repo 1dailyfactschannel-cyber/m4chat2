@@ -46,16 +46,16 @@ COPY --from=builder /app /app
 WORKDIR /app
 RUN pnpm install
 
-# Устанавливаем pg для миграций (pnpm workspace links могут не работать в Docker)
-RUN npm install pg
-
 # Гарантированно свежие файлы (инвалидируют кэш)
 COPY artifacts/api-server/src/app.ts /app/artifacts/api-server/src/app.ts
-COPY scripts/apply-migrations.mjs /app/scripts/apply-migrations.mjs
+COPY artifacts/api-server/src/index.ts /app/artifacts/api-server/src/index.ts
 COPY database/migrations.sql /app/database/migrations.sql
 
+# Пересобираем API с обновлённым кодом
+RUN pnpm --filter @workspace/api-server run build
+
 EXPOSE 8080
-CMD ["sh", "-c", "sleep 5 && echo '[entrypoint] Applying schema updates...' && node /app/scripts/apply-migrations.mjs || echo '[entrypoint] Schema updates skipped.' && exec pnpm --filter @workspace/api-server run start"]
+CMD ["sh", "-c", "sleep 5 && exec pnpm --filter @workspace/api-server run start"]
 
 # ==========================================
 # Образ для Frontend (Nginx)
