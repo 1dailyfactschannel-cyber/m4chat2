@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../lib/api";
+import { useSocket } from "./useSocket";
 
 export interface UserProfile {
   id: number;
@@ -16,6 +17,7 @@ export interface UserProfile {
 export function useUserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const socket = useSocket();
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
@@ -32,6 +34,20 @@ export function useUserProfile() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  // Listen for online status changes via WebSocket
+  useEffect(() => {
+    const unsubOnline = socket.onUserOnline(({ userId }: { userId: number }) => {
+      setProfile((prev) => (prev && prev.id === userId ? { ...prev, isOnline: true } : prev));
+    });
+    const unsubOffline = socket.onUserOffline(({ userId, lastSeenAt }: { userId: number; lastSeenAt: string }) => {
+      setProfile((prev) => (prev && prev.id === userId ? { ...prev, isOnline: false, lastSeenAt } : prev));
+    });
+    return () => {
+      unsubOnline();
+      unsubOffline();
+    };
+  }, [socket]);
 
   const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
     try {
