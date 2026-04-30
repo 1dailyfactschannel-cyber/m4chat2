@@ -4,9 +4,9 @@ set -e
 echo "[entrypoint] Waiting for database..."
 sleep 5
 
-echo "[entrypoint] Running migrations..."
-node ./lib/db/src/migrate.mjs || {
-  echo "[entrypoint] WARNING: Migrations failed, continuing anyway..."
+echo "[entrypoint] Applying schema updates..."
+node ./scripts/apply-migrations.mjs || {
+  echo "[entrypoint] WARNING: Schema updates failed, continuing anyway..."
 }
 
 echo "[entrypoint] Starting API server..."
