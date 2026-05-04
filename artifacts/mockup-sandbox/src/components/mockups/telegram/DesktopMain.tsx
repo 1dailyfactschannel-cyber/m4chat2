@@ -10,6 +10,7 @@ import {
   ArrowDown, Slash, AtSign, Type, Clock, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
   UserPlus, Download, ChevronRight, Loader2, Lock, Plus,
+  Inbox, User, Briefcase, Folder, Mail,
 } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useChats, useMessages } from '../../../hooks/useChats';
@@ -47,6 +48,17 @@ const CHAT_BACKGROUNDS = [
 ];
 
 const DEFAULT_FOLDERS = ['Все', 'Личные', 'Работа', 'Непрочитанные'] as const;
+
+const FOLDER_ICONS: Record<string, React.ElementType> = {
+  'Все': Inbox,
+  'Личные': User,
+  'Работа': Briefcase,
+  'Непрочитанные': Mail,
+};
+
+function getFolderIcon(name: string) {
+  return FOLDER_ICONS[name] || Folder;
+}
 
 const GRADIENTS = [
   'from-purple-400 to-pink-400', 'from-blue-400 to-cyan-400',
@@ -603,34 +615,6 @@ export default function DesktopMain() {
                   </button>
                 ))}
                 <div className="mx-4 my-1" style={{ borderTop: `1px solid ${bg.panelBorder}` }} />
-                <div className="px-5 py-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: bg.textSec }}>Папки</span>
-                </div>
-                {[...DEFAULT_FOLDERS, ...folders.map(f => f.name)].map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => { setActiveFolder(f); setShowBurger(false); }}
-                    className="w-full flex items-center gap-4 px-5 py-2.5 text-left hover:opacity-80 transition-colors"
-                    style={{ color: activeFolder === f ? '#2481CC' : bg.text }}
-                  >
-                    <ChevronRight className="w-4 h-4 shrink-0" style={{ color: activeFolder === f ? '#2481CC' : bg.textSec }} />
-                    <span className="text-[14px]">{f}</span>
-                  </button>
-                ))}
-                <button
-                  onClick={() => {
-                    const name = prompt('Название новой папки:');
-                    if (name) {
-                      api.createFolder({ name }).then(() => refreshChats());
-                    }
-                  }}
-                  className="w-full flex items-center gap-4 px-5 py-2.5 text-left hover:opacity-80 transition-colors"
-                  style={{ color: bg.textSec }}
-                >
-                  <Plus className="w-4 h-4 shrink-0" />
-                  <span className="text-[14px]">Создать папку</span>
-                </button>
-                <div className="mx-4 my-1" style={{ borderTop: `1px solid ${bg.panelBorder}` }} />
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
                   className="w-full flex items-center gap-4 px-5 py-3 text-left hover:opacity-80 transition-colors"
@@ -650,6 +634,53 @@ export default function DesktopMain() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Folder Sidebar */}
+      <div className="w-[72px] shrink-0 flex flex-col items-center py-2 gap-1" style={{ background: bg.nav, borderRight: `1px solid ${bg.panelBorder}` }}>
+        {[...DEFAULT_FOLDERS, ...folders.map(f => f.name)].map((f) => {
+          const Icon = getFolderIcon(f);
+          const isActive = activeFolder === f;
+          const folderUnreadCount = f === 'Непрочитанные'
+            ? chats.filter(c => (c.unreadCount ?? 0) > 0 && !c.isArchived).reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+            : f === 'Личные'
+              ? chats.filter(c => c.type === 'private' && !c.isArchived).reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+              : f === 'Работа'
+                ? chats.filter(c => c.type === 'group' && !c.isArchived).reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+                : chats.filter(c => !c.isArchived).reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
+          return (
+            <button
+              key={f}
+              onClick={() => setActiveFolder(f)}
+              className="relative w-12 h-12 rounded-xl flex items-center justify-center transition-all"
+              style={{
+                background: isActive ? '#2481CC' : 'transparent',
+                color: isActive ? 'white' : bg.textSec,
+              }}
+              title={f}
+            >
+              <Icon className="w-5 h-5" />
+              {folderUnreadCount > 0 && (
+                <div className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                  {folderUnreadCount > 99 ? '99+' : folderUnreadCount}
+                </div>
+              )}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => {
+            const name = prompt('Название новой папки:');
+            if (name) {
+              api.createFolder({ name }).then(() => refreshChats());
+            }
+          }}
+          className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:opacity-70"
+          style={{ color: bg.textSec }}
+          title="Создать папку"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
 
       {/* Chat List */}
       <div className="w-[300px] shrink-0 flex flex-col" style={{ background: bg.panel, borderRight: `1px solid ${bg.panelBorder}` }}>
@@ -695,20 +726,6 @@ export default function DesktopMain() {
               <Lock className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
             </button>
           </div>
-        </div>
-        {/* Folder tabs */}
-        <div className="flex shrink-0 overflow-x-auto" style={{ borderBottom: `1px solid ${bg.panelBorder}` }}>
-          {[...DEFAULT_FOLDERS, ...folders.map(f => f.name)].map((f) => (
-            <button
-              key={f}
-              onClick={() => setActiveFolder(f)}
-              className="px-3 py-2 text-[12px] font-medium whitespace-nowrap transition-colors relative"
-              style={{ color: activeFolder === f ? '#2481CC' : bg.textSec }}
-            >
-              {f}
-              {activeFolder === f && <motion.div layoutId="folderTab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2481CC] rounded-t" />}
-            </button>
-          ))}
         </div>
         {/* Search */}
         <div className="px-3 py-2 shrink-0">
@@ -1535,7 +1552,7 @@ export default function DesktopMain() {
       <CreateChatModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onCreated={() => { /* refresh chats */ }}
+        onCreated={() => refreshChats()}
         darkMode={darkMode}
       />
 
