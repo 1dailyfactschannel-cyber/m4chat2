@@ -143,7 +143,7 @@ export function VoiceRecorder({ onSend, onCancel, darkMode }: VoiceRecorderProps
   };
 
   return (
-    <div className="flex items-center gap-2 flex-1">
+    <div className="flex items-center gap-2">
       {!isRecording && !audioBlob && (
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -156,14 +156,14 @@ export function VoiceRecorder({ onSend, onCancel, darkMode }: VoiceRecorderProps
       )}
 
       {isRecording && (
-        <div className="flex items-center gap-3 flex-1 px-3 py-2 rounded-full" style={{ background: bg.input }}>
+        <div className="flex items-center gap-3 px-3 py-2 rounded-full min-w-[200px]" style={{ background: bg.input }}>
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 1, repeat: Infinity }}
             className="w-3 h-3 rounded-full bg-red-500 shrink-0"
           />
           <span className="text-[14px] font-medium text-red-500 shrink-0">{formatTime(duration)}</span>
-          
+
           {/* Waveform */}
           <div className="flex-1 flex items-center gap-[2px] h-8">
             {waveformData.map((value, i) => (
@@ -183,12 +183,12 @@ export function VoiceRecorder({ onSend, onCancel, darkMode }: VoiceRecorderProps
       )}
 
       {audioBlob && !isRecording && (
-        <div className="flex items-center gap-3 flex-1 px-3 py-2 rounded-full" style={{ background: bg.input }}>
+        <div className="flex items-center gap-3 px-3 py-2 rounded-full min-w-[200px]" style={{ background: bg.input }}>
           <button onClick={togglePlayback} className="p-2 rounded-full bg-[#2481CC] text-white hover:bg-[#1f73b8] transition-colors shrink-0">
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
           </button>
           <span className="text-[14px] font-medium" style={{ color: bg.text }}>{formatTime(duration)}</span>
-          
+
           {/* Preview waveform (static) */}
           <div className="flex-1 flex items-center gap-[2px] h-8">
             {Array.from({ length: 40 }, (_, i) => (

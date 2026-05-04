@@ -7,7 +7,7 @@ import {
   X, Reply, Trash2, Copy, Forward, Pin, Mic, BellOff, Bell, Star,
   Moon, Sun, Image, Info, Hash, Check, Camera,
   MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut, Monitor,
-  ArrowDown, Slash, AtSign, Type, Clock, BarChart2, Link,
+  ArrowDown, Slash, AtSign, Type, Clock, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
   UserPlus, Download, ChevronRight, Loader2, Lock, Plus,
 } from 'lucide-react';
@@ -24,7 +24,7 @@ import { FileUploadZone, Lightbox, FileMessage } from '../../MediaComponents';
 import { useWebRTC } from '../../../hooks/useWebRTC';
 import { cacheDB } from '../../../lib/cache';
 import { MessageText } from '../../MessageText';
-import { FormatToolbar } from '../../FormatToolbar';
+
 import { DesktopSettings } from './DesktopSettings';
 import { VoiceMessage } from '../../VoiceMessage';
 import { PollMessage } from '../../PollMessage';
@@ -116,7 +116,7 @@ export default function DesktopMain() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   const messagesScrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -329,7 +329,7 @@ export default function DesktopMain() {
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
     if (e.key === 'Escape') { setReplyTo(null); setShowEmojiPanel(false); setSelectMode(false); clearSelectedMsgs(); }
     // Formatting shortcuts
@@ -1071,7 +1071,7 @@ export default function DesktopMain() {
 
         {/* Input Area */}
         {activeChatId && (
-          <div className="px-3 py-2 flex flex-col gap-1 shrink-0 relative" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
+          <div className="px-3 py-2 flex flex-col gap-1 shrink-0" style={{ background: bg.input, borderTop: `1px solid ${bg.panelBorder}` }}>
             {showGifPanel && (
               <GifPicker
                 darkMode={darkMode}
@@ -1110,142 +1110,93 @@ export default function DesktopMain() {
                 onCancel={() => setShowVideoNoteRecorder(false)}
               />
             )}
-            <div className="flex items-center justify-between px-1">
-              <FormatToolbar
-                darkMode={darkMode}
-                onFormat={(type) => {
-                  const map: Record<string, { before: string; after: string }> = {
-                    bold: { before: '*', after: '*' },
-                    italic: { before: '_', after: '_' },
-                    strikethrough: { before: '~', after: '~' },
-                    code: { before: '`', after: '`' },
-                    spoiler: { before: '||', after: '||' },
-                  };
-                  const fmt = map[type];
-                  if (fmt) wrapSelection(fmt.before, fmt.after);
-                }}
-              />
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    const question = prompt('Вопрос опроса:');
-                    if (!question) return;
-                    const optionsStr = prompt('Варианты ответа (через запятую):');
-                    if (!optionsStr) return;
-                    const options = optionsStr.split(',').map((s) => s.trim()).filter(Boolean);
-                    if (options.length < 2) {
-                      alert('Нужно минимум 2 варианта');
-                      return;
-                    }
-                    // Send poll as message
-                    sendMessage(question, 'poll', replyTo?.id).then(async (msg) => {
-                      if (msg) {
-                        await api.createPoll(msg.id, question, options);
-                      }
-                    });
-                  }}
-                  className="text-[11px] flex items-center gap-1 hover:opacity-70 transition-opacity"
-                  style={{ color: bg.textSec }}
-                >
-                  <BarChart2 className="w-3.5 h-3.5" />
-                  Опрос
-                </button>
-                <label className="flex items-center gap-1.5 cursor-pointer select-none" style={{ color: bg.textSec }}>
-                  <input
-                    type="checkbox"
-                    checked={isSilent}
-                    onChange={(e) => setIsSilent(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded accent-[#2481CC]"
-                  />
-                  <span className="text-[11px]">Без звука</span>
-                </label>
-              </div>
-            </div>
-            <div className="flex items-end gap-2">
+
+            {/* Reply preview — in normal flow */}
             {replyTo && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-[60px] left-3 right-3 px-3 py-2 rounded-t-xl flex items-center justify-between"
+                exit={{ opacity: 0, y: 6 }}
+                className="px-3 py-2 rounded-lg flex items-center justify-between"
                 style={{ background: d ? '#21262d' : '#F5F5F5', borderLeft: '3px solid #2481CC' }}
               >
-                <div>
+                <div className="min-w-0">
                   <div className="text-[11px] font-semibold text-[#2481CC]">Ответить {replyTo.senderName}</div>
                   <div className="text-[12px] truncate" style={{ color: bg.textSec }}>{replyTo.text}</div>
                 </div>
-                <button onClick={() => setReplyTo(null)} className="p-1"><X className="w-4 h-4" style={{ color: bg.textSec }} /></button>
+                <button onClick={() => setReplyTo(null)} className="p-1 shrink-0 ml-2"><X className="w-4 h-4" style={{ color: bg.textSec }} /></button>
               </motion.div>
             )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => { if (e.target.files) handleFileSelect(e.target.files); e.target.value = ''; }}
-            />
-            <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-full hover:bg-[#F1F1F1]/10 transition-colors shrink-0" style={{ color: bg.textSec }}>
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => { setShowVideoNoteRecorder(true); setShowGifPanel(false); setShowStickerPanel(false); }}
-              className="p-2 rounded-full hover:bg-[#F1F1F1]/10 transition-colors shrink-0"
-              style={{ color: bg.textSec }}
-              title="Видеосообщение"
-            >
-              <Video className="w-5 h-5" />
-            </button>
-            <div className="flex-1 rounded-full flex items-center px-3 gap-2" style={{ background: bg.inputField }}>
+
+            <div className="flex items-end gap-2">
               <input
-                ref={inputRef}
-                type="text"
-                placeholder="Сообщение..."
-                value={inputText}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="bg-transparent border-none outline-none text-[14px] flex-1 py-2"
-                style={{ color: bg.text }}
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => { if (e.target.files) handleFileSelect(e.target.files); e.target.value = ''; }}
               />
-              <button
-                className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
-                style={{ color: bg.textSec }}
-                onClick={() => { setShowGifPanel((prev) => !prev); setShowStickerPanel(false); }}
-              >
-                GIF
+              <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0" style={{ color: bg.textSec }}>
+                <Paperclip className="w-5 h-5" />
               </button>
               <button
-                className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
+                onClick={() => { setShowVideoNoteRecorder(true); setShowGifPanel(false); setShowStickerPanel(false); }}
+                className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
                 style={{ color: bg.textSec }}
-                onClick={() => { setShowStickerPanel((prev) => !prev); setShowGifPanel(false); }}
+                title="Видеосообщение"
               >
-                sticker
+                <Video className="w-5 h-5" />
               </button>
-              <button className="p-1.5 hover:opacity-70 transition-opacity shrink-0" style={{ color: bg.textSec }}>
-                <Smile className="w-5 h-5" />
-              </button>
-            </div>
-            <AnimatePresence mode="wait">
-              {inputText.trim() ? (
-                <motion.button
-                  key="send"
-                  initial={{ scale: 0.8, rotate: -45, opacity: 0 }}
-                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  exit={{ scale: 0.8, rotate: -45, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
+              <div className="flex-1 rounded-xl flex items-end px-3 gap-2 py-1.5" style={{ background: bg.inputField }}>
+                <textarea
+                  ref={inputRef}
+                  rows={1}
+                  placeholder="Сообщение..."
+                  value={inputText}
+                  onChange={(e) => {
+                    handleInputChange(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+                  }}
+                  onKeyDown={handleKeyDown}
+                  className="bg-transparent border-none outline-none text-[14px] flex-1 py-1.5 resize-none overflow-y-auto max-h-[128px]"
+                  style={{ color: bg.text }}
+                />
+                <button
+                  className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
+                  style={{ color: bg.textSec }}
+                  onClick={() => { setShowGifPanel((prev) => !prev); setShowStickerPanel(false); }}
+                >
+                  GIF
+                </button>
+                <button
+                  className="p-1.5 hover:opacity-70 transition-opacity shrink-0 text-[11px] font-bold"
+                  style={{ color: bg.textSec }}
+                  onClick={() => { setShowStickerPanel((prev) => !prev); setShowGifPanel(false); }}
+                >
+                  sticker
+                </button>
+                <button className="p-1.5 hover:opacity-70 transition-opacity shrink-0" style={{ color: bg.textSec }}>
+                  <Smile className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Right side: send / mic toggle without layout shift */}
+              <div className="shrink-0 relative h-10 flex items-end">
+                <button
                   onClick={handleSend}
-                  className="w-10 h-10 rounded-full bg-[#2481CC] flex items-center justify-center text-white hover:bg-[#1f73b8] transition-colors shrink-0"
+                  className={`w-10 h-10 rounded-full bg-[#2481CC] flex items-center justify-center text-white hover:bg-[#1f73b8] transition-all duration-150 shrink-0 ${inputText.trim() ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-75 pointer-events-none'}`}
                 >
                   <Send className="w-5 h-5 ml-0.5" />
-                </motion.button>
-              ) : (
-                <VoiceRecorder
-                  key="recorder"
-                  onSend={handleVoiceSend}
-                  onCancel={() => {}}
-                  darkMode={darkMode}
-                />
-              )}
-            </AnimatePresence>
+                </button>
+                <div className={`absolute right-0 bottom-0 transition-all duration-150 ${inputText.trim() ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100 pointer-events-auto'}`}>
+                  <VoiceRecorder
+                    onSend={handleVoiceSend}
+                    onCancel={() => {}}
+                    darkMode={darkMode}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}
