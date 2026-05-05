@@ -11,8 +11,8 @@ function getClientIP(req: Request): string {
 }
 
 export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 requests per windowMs
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 30, // 30 requests per 5 minutes (6 per minute)
   message: { error: "Too many authentication attempts, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -21,7 +21,7 @@ export const authRateLimiter = rateLimit({
 
 export const apiRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 600, // 600 requests per minute
+  max: 1200, // 1200 requests per minute (20/sec)
   message: { error: "Too many requests, please slow down." },
   standardHeaders: true,
   legacyHeaders: false,
