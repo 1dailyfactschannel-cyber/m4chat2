@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api';
 import { useSocket } from './useSocket';
 import { cacheDB } from '../lib/cache';
@@ -61,8 +61,11 @@ export function useChats() {
   const [chats, setChats] = useState<ChatItem[]>([]);
   const [folders, setFolders] = useState<ChatFolder[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchingRef = useRef(false);
 
   const fetchChats = useCallback(async () => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     try {
       const [data, folderData] = await Promise.all([
         api.getChats(),
@@ -78,6 +81,7 @@ export function useChats() {
       if (cached.length > 0) setChats(cached);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, []);
 
@@ -109,9 +113,11 @@ export function useMessages(chatId: number | null) {
   const [loading, setLoading] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<number>>(new Set());
   const socket = useSocket();
+  const fetchingRef = useRef(false);
 
   const fetchMessages = useCallback(async () => {
-    if (!chatId) return;
+    if (!chatId || fetchingRef.current) return;
+    fetchingRef.current = true;
     setLoading(true);
     try {
       const data = await api.getMessages(chatId);
@@ -123,6 +129,7 @@ export function useMessages(chatId: number | null) {
       if (cached.length > 0) setMessages(cached);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, [chatId]);
 
