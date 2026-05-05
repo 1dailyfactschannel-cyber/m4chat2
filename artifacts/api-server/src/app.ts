@@ -5,8 +5,6 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import adminRouter from "./routes/admin";
 import { logger } from "./lib/logger";
-import { apiRateLimiter } from "./middleware/rateLimit";
-
 const app: Express = express();
 
 // Trust proxy (required for rate-limit behind nginx)
@@ -14,9 +12,6 @@ app.set("trust proxy", 1);
 
 // Security headers
 app.use(helmet());
-
-// Rate limiting
-app.use(apiRateLimiter);
 
 app.use(
   pinoHttp({

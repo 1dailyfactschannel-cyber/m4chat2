@@ -11,11 +11,13 @@ import gifsRouter from "./gifs";
 import stickersRouter from "./stickers";
 import botsRouter from "./bots";
 import settingsRouter from "./settings";
+import { apiRateLimiter } from "../middleware/rateLimit";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use(authRouter);
+router.use(authRouter); // auth has its own rate limiter
+router.use(apiRateLimiter); // apply to all subsequent routes
 router.use(usersRouter);
 router.use(chatsRouter);
 router.use(messagesRouter);
