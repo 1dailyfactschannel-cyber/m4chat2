@@ -91,7 +91,7 @@ export function useChats() {
       setLoading(false);
       await fetchChats();
     })();
-    const interval = setInterval(fetchChats, 10000);
+    const interval = setInterval(fetchChats, 30000);
     return () => { mounted = false; clearInterval(interval); };
   }, [fetchChats]);
 
@@ -185,7 +185,7 @@ export function useMessages(chatId: number | null) {
       }
     });
 
-    const interval = setInterval(fetchMessages, 10000);
+    const interval = setInterval(fetchMessages, 30000);
 
     return () => {
       socket.leaveChat(chatId);

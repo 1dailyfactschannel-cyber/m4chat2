@@ -11,7 +11,7 @@ export const authRateLimiter = rateLimit({
 
 export const apiRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute
+  max: 600, // 600 requests per minute
   message: { error: "Too many requests, please slow down." },
   standardHeaders: true,
   legacyHeaders: false,
