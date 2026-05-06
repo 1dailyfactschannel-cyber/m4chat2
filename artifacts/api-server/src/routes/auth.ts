@@ -6,7 +6,6 @@ import QRCode from "qrcode";
 import { db } from "@workspace/db";
 import { usersTable, sessionsTable, chatsTable, chatMembersTable } from "@workspace/db/schema";
 import { eq, and, gt, ne } from "drizzle-orm";
-import { authRateLimiter } from "../middleware/rateLimit";
 
 const router: IRouter = Router();
 
@@ -21,7 +20,7 @@ function generateTokens() {
 }
 
 // Register
-router.post("/auth/register", authRateLimiter, async (req, res) => {
+router.post("/auth/register", async (req, res) => {
   try {
     const { username, email, password, phone } = req.body;
 
@@ -83,7 +82,7 @@ router.post("/auth/register", authRateLimiter, async (req, res) => {
 });
 
 // Login
-router.post("/auth/login", authRateLimiter, async (req, res) => {
+router.post("/auth/login", async (req, res) => {
   try {
     const { username, password, twoFACode } = req.body;
 
