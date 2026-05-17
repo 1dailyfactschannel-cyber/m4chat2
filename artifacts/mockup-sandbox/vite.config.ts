@@ -41,12 +41,16 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
     proxy: {
+      "/socket": {
+        target: "http://91.227.68.138:8083",
+        ws: true,
+      },
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://91.227.68.138:8083",
         changeOrigin: true,
       },
       "/admin": {
-        target: "http://localhost:8080",
+        target: "http://91.227.68.138:8083",
         changeOrigin: true,
       },
     },

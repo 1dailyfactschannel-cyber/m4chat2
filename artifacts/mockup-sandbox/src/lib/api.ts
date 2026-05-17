@@ -456,7 +456,8 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const res = await fetch(`${API_URL}/api/files/upload`, {
+    const base = typeof import.meta !== 'undefined' ? import.meta.env.VITE_API_URL || '' : '';
+    const res = await fetch(`${base}/api/files/upload`, {
       method: 'POST',
       headers,
       body: formData,
