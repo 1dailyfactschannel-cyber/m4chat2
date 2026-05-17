@@ -4,7 +4,7 @@ class ApiClient {
   private token: string | null = localStorage.getItem('token');
   private refreshToken: string | null = localStorage.getItem('refreshToken');
 
-  private async request(path: string, options: RequestInit = {}) {
+  private async request(path: string, options: RequestInit = {}, retries = 3) {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...((options.headers as Record<string, string>) || {}),
@@ -15,6 +15,11 @@ class ApiClient {
     }
 
     const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+    if (res.status === 429 && retries > 0) {
+      await new Promise((r) => setTimeout(r, 2000));
+      return this.request(path, options, retries - 1);
+    }
 
     if (res.status === 401 && this.refreshToken && !path.includes('/auth/refresh')) {
       // Try to refresh token

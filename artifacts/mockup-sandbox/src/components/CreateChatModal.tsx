@@ -17,6 +17,7 @@ export function CreateChatModal({ isOpen, onClose, onCreated, darkMode }: Create
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [step, setStep] = useState<'type' | 'details'>('type');
 
   const bg = {
@@ -53,8 +54,9 @@ export function CreateChatModal({ isOpen, onClose, onCreated, darkMode }: Create
   const handleCreate = async () => {
     if (!name.trim()) return;
     setLoading(true);
+    setError('');
     try {
-      await api.createChat({
+      const chat = await api.createChat({
         name: name.trim(),
         type,
         participantIds: Array.from(selectedUsers),
@@ -66,7 +68,9 @@ export function CreateChatModal({ isOpen, onClose, onCreated, darkMode }: Create
       setSearchQuery('');
       setSearchResults([]);
       setStep('type');
-    } catch (error) {
+    } catch (error: any) {
+      const msg = error?.message || 'Ошибка при создании';
+      setError(msg);
       console.error('Failed to create chat:', error);
     } finally {
       setLoading(false);
@@ -197,6 +201,11 @@ export function CreateChatModal({ isOpen, onClose, onCreated, darkMode }: Create
                 )}
 
                 {/* Actions */}
+                {error && (
+                  <div className="text-[13px] text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+                    {error}
+                  </div>
+                )}
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setStep('type')}

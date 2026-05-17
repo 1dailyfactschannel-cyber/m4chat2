@@ -37,7 +37,7 @@ export function FileUploadZone({ onFileSelect, darkMode, children }: FileUploadZ
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative"
+      className="relative flex-1 flex flex-col overflow-hidden"
     >
       <AnimatePresence>
         {isDragging && (

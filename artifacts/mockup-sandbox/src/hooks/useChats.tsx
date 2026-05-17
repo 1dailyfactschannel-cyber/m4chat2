@@ -63,8 +63,8 @@ export function useChats() {
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false);
 
-  const fetchChats = useCallback(async () => {
-    if (fetchingRef.current) return;
+  const fetchChats = useCallback(async (force?: boolean) => {
+    if (!force && fetchingRef.current) return;
     fetchingRef.current = true;
     try {
       const [data, folderData] = await Promise.all([

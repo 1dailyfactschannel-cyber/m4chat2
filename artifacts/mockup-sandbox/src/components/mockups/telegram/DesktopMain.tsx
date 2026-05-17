@@ -521,9 +521,12 @@ export default function DesktopMain() {
     overscan: 10,
   });
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom only if user is already near bottom
   useEffect(() => {
-    if (messages.length > 0) {
+    const el = messagesScrollRef.current;
+    if (!el || messages.length === 0) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    if (nearBottom) {
       messageVirtualizer.scrollToIndex(messages.length - 1, { align: 'end' });
     }
   }, [messages.length, messageVirtualizer]);
@@ -1552,7 +1555,7 @@ export default function DesktopMain() {
       <CreateChatModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onCreated={() => refreshChats()}
+              onCreated={() => refreshChats(true)}
         darkMode={darkMode}
       />
 
