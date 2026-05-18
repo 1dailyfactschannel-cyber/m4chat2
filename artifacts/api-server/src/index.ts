@@ -4,6 +4,7 @@ import { createWebSocketServer } from "./websocket/server";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
 import { MIGRATIONS_SQL } from "./migrations";
+import { ensureBucket } from "./lib/s3";
 
 const rawPort = process.env["PORT"];
 
@@ -51,6 +52,12 @@ async function applyMigrations() {
 
 async function startServer() {
   await applyMigrations();
+
+  try {
+    await ensureBucket();
+  } catch (err: any) {
+    logger.warn({ err: err.message }, "S3 bucket setup");
+  }
 
   const httpServer = createServer(app);
   const io = createWebSocketServer(httpServer);

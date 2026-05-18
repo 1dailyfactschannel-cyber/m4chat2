@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, CreateBucketCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://localhost:9000";
@@ -51,6 +51,14 @@ export async function deleteFile(key: string): Promise<void> {
       Key: key,
     }),
   );
+}
+
+export async function ensureBucket() {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: S3_BUCKET }));
+  } catch {
+    await s3.send(new CreateBucketCommand({ Bucket: S3_BUCKET }));
+  }
 }
 
 export { S3_BUCKET };
