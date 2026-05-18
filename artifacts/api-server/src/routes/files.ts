@@ -3,7 +3,8 @@ import { db } from "@workspace/db";
 import { filesTable, sessionsTable, chatsTable } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { uploadSingle } from "../middleware/upload";
-import { uploadFile, S3_BUCKET, s3 } from "../lib/s3";
+import { uploadFile, getPresignedUrl, S3_BUCKET, s3 } from "../lib/s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
 import path from "path";
 
@@ -59,10 +60,37 @@ router.post("/files/upload", requireAuth, uploadSingle, async (req: any, res) =>
       })
       .returning();
 
+    // Return proxy download URL instead of raw S3 URL
+    fileRecord.url = `/api/files/download/${fileRecord.id}`;
+
     // Clean up local temp file
     fs.unlinkSync(file.path);
 
     res.status(201).json(fileRecord);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Download file by ID — proxies from S3 with fresh presigned URL
+router.get("/files/download/:id", requireAuth, async (req: any, res) => {
+  try {
+    const fileId = Number(req.params.id);
+    const [file] = await db.select().from(filesTable).where(eq(filesTable.id, fileId));
+    if (!file) return res.status(404).json({ error: "File not found" });
+
+    const presignedUrl = await getPresignedUrl(file.fileKey);
+    const response = await fetch(presignedUrl);
+
+    if (!response.ok) {
+      return res.status(500).json({ error: "Failed to fetch file from storage" });
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `inline; filename="${file.fileName || "file"}"`);
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
