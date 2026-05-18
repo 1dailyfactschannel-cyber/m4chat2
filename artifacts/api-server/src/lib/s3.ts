@@ -33,7 +33,7 @@ export async function uploadFile(
 
   // Return a presigned URL (30 day expiry) instead of raw S3 URL
   const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
-  return getSignedUrl(s3, command, { expiresIn: 2592000 });
+  return getSignedUrl(s3, command, { expiresIn: 604800 });
 }
 
 export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
