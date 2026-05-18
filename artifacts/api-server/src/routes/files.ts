@@ -5,10 +5,23 @@ import { eq, and, sql } from "drizzle-orm";
 import { uploadSingle } from "../middleware/upload";
 import { uploadFile, getPresignedUrl, S3_BUCKET, s3 } from "../lib/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
 const router: IRouter = Router();
+
+const DOWNLOAD_SECRET = process.env.JWT_SECRET || "m4chat-download-secret";
+
+function signFileToken(fileId: number): string {
+  const hmac = crypto.createHmac("sha256", DOWNLOAD_SECRET);
+  hmac.update(String(fileId));
+  return hmac.digest("hex");
+}
+
+function verifyFileToken(fileId: number, token: string): boolean {
+  return token === signFileToken(fileId);
+}
 
 async function requireAuth(req: any, res: any, next: any) {
   const token = req.headers.authorization?.replace("Bearer ", "");
@@ -60,8 +73,9 @@ router.post("/files/upload", requireAuth, uploadSingle, async (req: any, res) =>
       })
       .returning();
 
-    // Return proxy download URL instead of raw S3 URL
-    fileRecord.url = `/api/files/download/${fileRecord.id}`;
+    // Return proxy download URL with signed token (works in <img> tags)
+    const token = signFileToken(fileRecord.id);
+    fileRecord.url = `/api/files/download/${fileRecord.id}?token=${token}`;
 
     // Clean up local temp file
     fs.unlinkSync(file.path);
@@ -73,9 +87,15 @@ router.post("/files/upload", requireAuth, uploadSingle, async (req: any, res) =>
 });
 
 // Download file by ID — proxies from S3 with fresh presigned URL
-router.get("/files/download/:id", requireAuth, async (req: any, res) => {
+router.get("/files/download/:id", async (req: any, res) => {
   try {
     const fileId = Number(req.params.id);
+    const token = req.query.token as string;
+
+    if (!token || !verifyFileToken(fileId, token)) {
+      return res.status(403).json({ error: "Invalid or missing download token" });
+    }
+
     const [file] = await db.select().from(filesTable).where(eq(filesTable.id, fileId));
     if (!file) return res.status(404).json({ error: "File not found" });
 
