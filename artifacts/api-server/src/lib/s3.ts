@@ -17,8 +17,6 @@ export const s3 = new S3Client({
   forcePathStyle: true,
 });
 
-const S3_PUBLIC_ENDPOINT = process.env.S3_PUBLIC_ENDPOINT || S3_ENDPOINT;
-
 export async function uploadFile(
   key: string,
   body: Buffer,
@@ -33,7 +31,9 @@ export async function uploadFile(
     }),
   );
 
-  return `${S3_PUBLIC_ENDPOINT}/${S3_BUCKET}/${key}`;
+  // Return a presigned URL (30 day expiry) instead of raw S3 URL
+  const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
+  return getSignedUrl(s3, command, { expiresIn: 2592000 });
 }
 
 export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
