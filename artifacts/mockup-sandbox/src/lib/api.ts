@@ -240,9 +240,9 @@ class ApiClient {
   // Signal Protocol
   async registerSignalKeys(keys: {
     registrationId: number;
-    identityKey: string;
+    identityPublicKey: string;
     signedPreKey: { keyId: number; publicKey: string; signature: string };
-    preKeys: { keyId: number; publicKey: string }[];
+    oneTimePreKeys: { keyId: number; publicKey: string }[];
   }) {
     return this.request('/api/keys/register', {
       method: 'POST',

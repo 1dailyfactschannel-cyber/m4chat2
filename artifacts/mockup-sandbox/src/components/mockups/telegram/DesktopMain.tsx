@@ -521,15 +521,27 @@ export default function DesktopMain() {
     overscan: 10,
   });
 
-  // Auto-scroll to bottom only if user is already near bottom
+  const scrollToBottom = useCallback(() => {
+    messageVirtualizer.scrollToIndex(messages.length - 1, { align: 'end' });
+  }, [messageVirtualizer, messages.length]);
+
+  // Scroll to bottom when switching to a new chat or when messages load
+  const lastScrolledChatId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!activeChatId) return;
+    lastScrolledChatId.current = null;
+  }, [activeChatId]);
+
   useEffect(() => {
     const el = messagesScrollRef.current;
-    if (!el || messages.length === 0) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-    if (nearBottom) {
-      messageVirtualizer.scrollToIndex(messages.length - 1, { align: 'end' });
-    }
-  }, [messages.length, messageVirtualizer]);
+    if (!el || messages.length === 0 || !activeChatId) return;
+    if (lastScrolledChatId.current === activeChatId) return;
+    lastScrolledChatId.current = activeChatId;
+    const t = setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+    }, 150);
+    return () => clearTimeout(t);
+  }, [messages.length, activeChatId]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -762,22 +774,19 @@ export default function DesktopMain() {
               <span className="flex-1 text-left">Назад к чатам</span>
             </button>
           )}
-          <AnimatePresence>
+
             {filteredChats.map((chat) => {
               const isActive = chat.id === activeChatId;
               const lastMsg = chat.lastMessage;
               return (
-                <motion.div
+                <div
                   key={chat.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
                   onClick={() => openChat(chat.id)}
                   onContextMenu={(e) => handleChatCtx(e, chat.id)}
                   className="flex items-center px-3 py-[6px] cursor-pointer transition-colors"
                   style={{ background: isActive ? '#2481CC' : 'transparent' }}
-                  whileHover={{ backgroundColor: isActive ? '#2481CC' : (d ? '#21262d' : '#F5F5F5') }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = d ? '#21262d' : '#F5F5F5'; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                 >
                   <div className="relative shrink-0 mr-2.5">
                     {chat.photo ? (
@@ -816,10 +825,10 @@ export default function DesktopMain() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+</div>
               );
             })}
-          </AnimatePresence>
+
         </div>
       </div>
 

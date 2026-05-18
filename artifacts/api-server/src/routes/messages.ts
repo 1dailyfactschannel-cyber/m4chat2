@@ -87,12 +87,12 @@ router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
     // Fetch sender info and reactions for each message
     const messagesWithDetails = await Promise.all(
       messages.map(async (msg) => {
-        const [sender] = msg.senderId
+        const sender = msg.senderId
           ? await db
               .select({ username: usersTable.username, avatarUrl: usersTable.avatarUrl })
               .from(usersTable)
               .where(eq(usersTable.id, msg.senderId))
-          : [];
+          : null;
 
         const reactions = await db
           .select({
@@ -129,8 +129,8 @@ router.get("/chats/:chatId/messages", requireAuth, async (req: any, res) => {
 
         return {
           ...msg,
-          senderName: sender?.username || "Unknown",
-          senderAvatar: sender?.avatarUrl,
+          senderName: sender?.[0]?.username || "Unknown",
+          senderAvatar: sender?.[0]?.avatarUrl,
           reactions: reactionList,
         };
       })

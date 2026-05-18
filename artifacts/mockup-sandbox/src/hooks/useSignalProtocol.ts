@@ -59,13 +59,13 @@ export function useSignalProtocol() {
           // Register keys on server
           await api.registerSignalKeys({
             registrationId,
-            identityKey: keyPair.publicKey,
+            identityPublicKey: keyPair.publicKey,
             signedPreKey: {
               keyId: signedPreKey.keyId,
               publicKey: signedPreKey.publicKey,
               signature: signedPreKey.signature,
             },
-            preKeys: preKeys.map((pk) => ({
+            oneTimePreKeys: preKeys.map((pk) => ({
               keyId: pk.keyId,
               publicKey: pk.publicKey,
             })),
