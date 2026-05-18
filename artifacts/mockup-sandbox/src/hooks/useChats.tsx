@@ -115,18 +115,23 @@ export function useMessages(chatId: number | null) {
   const socket = useSocket();
   const fetchingRef = useRef(false);
 
+  const dedup = (msgs: ChatMessage[]) => {
+    const seen = new Set<number>();
+    return msgs.filter((m) => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+  };
+
   const fetchMessages = useCallback(async () => {
     if (!chatId || fetchingRef.current) return;
     fetchingRef.current = true;
     setLoading(true);
     try {
       const data = await api.getMessages(chatId);
-      setMessages(data);
+      setMessages(dedup(data));
       await cacheDB.saveMessages(chatId, data);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
       const cached = await cacheDB.getMessages(chatId);
-      if (cached.length > 0) setMessages(cached);
+      if (cached.length > 0) setMessages(dedup(cached));
     } finally {
       setLoading(false);
       fetchingRef.current = false;
@@ -139,7 +144,7 @@ export function useMessages(chatId: number | null) {
       await cacheDB.open();
       if (!mounted || !chatId) return;
       const cached = await cacheDB.getMessages(chatId);
-      if (cached.length > 0) setMessages(cached);
+      if (cached.length > 0) setMessages(dedup(cached));
       await fetchMessages();
     })();
     if (!chatId) return;
@@ -149,7 +154,8 @@ export function useMessages(chatId: number | null) {
     const unsubNew = socket.onMessageNew((msg) => {
       if (msg.chatId === chatId) {
         setMessages((prev) => {
-          const next = [...prev, msg];
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          const next = dedup([...prev, msg]);
           cacheDB.saveMessages(chatId, next).catch(() => {});
           return next;
         });
@@ -159,8 +165,8 @@ export function useMessages(chatId: number | null) {
     const unsubEdited = socket.onMessageEdited((msg) => {
       setMessages((prev) => {
         const next = prev.map((m) => (m.id === msg.id ? { ...m, ...msg } : m));
-        if (chatId) cacheDB.saveMessages(chatId, next).catch(() => {});
-        return next;
+        if (chatId) cacheDB.saveMessages(chatId, dedup(next)).catch(() => {});
+        return dedup(next);
       });
     });
 
@@ -171,8 +177,8 @@ export function useMessages(chatId: number | null) {
     const unsubReactions = socket.onMessageReactions(({ messageId, reactions }) => {
       setMessages((prev) => {
         const next = prev.map((m) => (m.id === messageId ? { ...m, reactions } : m));
-        if (chatId) cacheDB.saveMessages(chatId, next).catch(() => {});
-        return next;
+        if (chatId) cacheDB.saveMessages(chatId, dedup(next)).catch(() => {});
+        return dedup(next);
       });
     });
 

@@ -50,13 +50,16 @@ class CacheDB {
 
   // Messages
   async saveMessages(chatId: number, messages: any[]): Promise<void> {
-    const store = this.getStore(STORE_MESSAGES, 'readwrite');
-    for (const message of messages) {
-      store.put({ ...message, _cachedAt: Date.now() });
-    }
+    if (!this.db) return;
     return new Promise((resolve, reject) => {
-      store.transaction.oncomplete = () => resolve();
-      store.transaction.onerror = () => reject(store.transaction.error);
+      const transaction = this.db!.transaction(STORE_MESSAGES, 'readwrite');
+      const store = transaction.objectStore(STORE_MESSAGES);
+      for (const message of messages) {
+        store.put({ ...message, _cachedAt: Date.now() });
+      }
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => { transaction.abort(); reject(transaction.error); };
+      transaction.onabort = () => { resolve(); };
     });
   }
 
@@ -103,13 +106,16 @@ class CacheDB {
 
   // Chats
   async saveChats(chats: any[]): Promise<void> {
-    const store = this.getStore(STORE_CHATS, 'readwrite');
-    for (const chat of chats) {
-      store.put({ ...chat, _cachedAt: Date.now() });
-    }
+    if (!this.db) return;
     return new Promise((resolve, reject) => {
-      store.transaction.oncomplete = () => resolve();
-      store.transaction.onerror = () => reject(store.transaction.error);
+      const transaction = this.db!.transaction(STORE_CHATS, 'readwrite');
+      const store = transaction.objectStore(STORE_CHATS);
+      for (const chat of chats) {
+        store.put({ ...chat, _cachedAt: Date.now() });
+      }
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => { transaction.abort(); reject(transaction.error); };
+      transaction.onabort = () => { resolve(); };
     });
   }
 

@@ -9,7 +9,7 @@ import {
   MicOff, VideoOff, PhoneOff, Volume2, VolumeX, ZoomIn, ZoomOut, Monitor,
   ArrowDown, Slash, AtSign, Type, Clock, Link,
   Music, Archive, Eye, EyeOff, CheckSquare, Square,
-  UserPlus, Download, ChevronRight, Loader2, Lock, Plus,
+  UserPlus, Download, ChevronRight, Loader2, Lock,
   Inbox, User, Briefcase, Folder, Mail,
 } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
@@ -670,19 +670,7 @@ export default function DesktopMain() {
             </button>
           );
         })}
-        <button
-          onClick={() => {
-            const name = prompt('Название новой папки:');
-            if (name) {
-              api.createFolder({ name }).then(() => refreshChats());
-            }
-          }}
-          className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:opacity-70"
-          style={{ color: bg.textSec }}
-          title="Создать папку"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+        
       </div>
 
       {/* Chat List */}
