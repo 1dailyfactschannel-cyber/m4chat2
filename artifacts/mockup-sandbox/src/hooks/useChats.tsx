@@ -215,7 +215,10 @@ export function useMessages(chatId: number | null) {
   const sendMessage = async (content: string, messageType = 'text', replyTo?: number, mediaUrl?: string, isSilent?: boolean, encryptedPayload?: string) => {
     if (!chatId) return null;
     const message = await api.sendMessage(chatId, content, messageType, replyTo, mediaUrl, isSilent, encryptedPayload);
-    setMessages((prev) => [...prev, message]);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === message.id)) return prev;
+      return dedup([...prev, message]);
+    });
     return message;
   };
 

@@ -933,7 +933,7 @@ export default function DesktopMain() {
 
                     return (
                       <div
-                        key={msg.id}
+                        key={virtualItem.key}
                         ref={messageVirtualizer.measureElement}
                         data-index={virtualItem.index}
                         style={{
