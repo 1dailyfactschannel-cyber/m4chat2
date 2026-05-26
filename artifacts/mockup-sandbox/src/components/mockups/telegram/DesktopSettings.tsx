@@ -656,12 +656,15 @@ const DataSection = () => {
               </button>
               <button
                 className="flex-1 py-2 rounded-lg bg-[#EF4444] text-white text-[13px] font-medium hover:bg-[#DC2626] transition-colors"
-                onClick={() => {
-                  // Reset all local data
-                  setCacheSize(0);
-                  setD(prev => ({ ...DEFAULT_DATA_STATE }));
-                  setShowDeleteModal(false);
-                  // Could also call an API to delete all user data
+                onClick={async () => {
+                  try {
+                    await api.deleteAccount();
+                    localStorage.clear();
+                    window.location.href = '/';
+                  } catch (err) {
+                    console.error('Failed to delete account:', err);
+                    alert(t('general.error'));
+                  }
                 }}>
                 {t('data.deleteAll')}
               </button>

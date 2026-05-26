@@ -454,4 +454,37 @@ router.post("/auth/2fa/disable", async (req, res) => {
   }
 });
 
+// Delete account
+router.delete("/auth/me", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+    const [session] = await db
+      .select()
+      .from(sessionsTable)
+      .where(
+        and(
+          eq(sessionsTable.token, token),
+          gt(sessionsTable.expiresAt, new Date())
+        )
+      );
+
+    if (!session) return res.status(401).json({ error: "Invalid session" });
+
+    const userId = session.userId;
+
+    // Delete all related data
+    await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
+    await db.delete(chatMembersTable).where(eq(chatMembersTable.userId, userId));
+    // Note: messages and chats may have foreign key constraints; 
+    // in production we'd need cascading deletes or a soft-delete approach
+    await db.delete(usersTable).where(eq(usersTable.id, userId));
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

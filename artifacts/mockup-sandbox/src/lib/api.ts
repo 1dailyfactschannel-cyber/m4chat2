@@ -111,6 +111,12 @@ class ApiClient {
     this.setRefreshToken(null);
   }
 
+  async deleteAccount() {
+    await this.request('/api/auth/me', { method: 'DELETE' });
+    this.setToken(null);
+    this.setRefreshToken(null);
+  }
+
   async getMe() {
     return this.request('/api/auth/me');
   }
