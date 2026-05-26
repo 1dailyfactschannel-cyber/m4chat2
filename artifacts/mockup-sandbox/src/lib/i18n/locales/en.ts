@@ -55,6 +55,7 @@ loadDictionary("en", {
   "settings.premium": "Premium",
   "settings.devices": "Devices",
   "settings.bots": "Bots",
+  "settings.faq": "Telegram FAQ",
   "settings.version": "Version",
 
   // Account
@@ -170,6 +171,7 @@ loadDictionary("en", {
 
   // General
   "general.save": "Save",
+  "general.refresh": "Refresh",
   "general.cancel": "Cancel",
   "general.edit": "Edit",
   "general.delete": "Delete",

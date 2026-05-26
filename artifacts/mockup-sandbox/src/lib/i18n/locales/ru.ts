@@ -55,6 +55,7 @@ loadDictionary("ru", {
   "settings.premium": "Premium",
   "settings.devices": "Устройства",
   "settings.bots": "Боты",
+  "settings.faq": "Справка",
   "settings.version": "Версия",
 
   // Account
@@ -170,6 +171,7 @@ loadDictionary("ru", {
 
   // General
   "general.save": "Сохранить",
+  "general.refresh": "Обновить",
   "general.cancel": "Отмена",
   "general.edit": "Изменить",
   "general.delete": "Удалить",

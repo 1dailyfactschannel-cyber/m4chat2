@@ -992,7 +992,7 @@ export function DesktopSettings() {
   };
 
   return (
-    <div style={{width:'1280px',height:'800px',display:'flex',overflow:'hidden',fontFamily:'Inter,system-ui,sans-serif'}}>
+    <div className="w-full h-full flex overflow-hidden" style={{fontFamily:'Inter,system-ui,sans-serif'}}>
       {/* Nav column */}
       <div className="w-[68px] shrink-0 flex flex-col items-center py-3 justify-between" style={{background:'#17212B'}}>
         <div className="flex flex-col items-center w-full gap-0.5">
@@ -1018,13 +1018,13 @@ export function DesktopSettings() {
       {/* Settings list column */}
       <div className="w-[300px] shrink-0 flex flex-col bg-white border-r border-[#EDEDED]">
         <div className="h-[52px] flex items-center px-5 shrink-0 border-b border-[#EDEDED]">
-          <h1 className="font-bold text-[17px] text-[#1C1C1E]">Settings</h1>
+          <h1 className="font-bold text-[17px] text-[#1C1C1E]">{t('settings.title')}</h1>
         </div>
         {/* Search */}
         <div className="px-4 py-2 shrink-0">
           <div className="bg-[#F1F1F1] rounded-full h-8 flex items-center px-3 gap-2">
             <Search className="w-3.5 h-3.5 text-[#8E8E93] shrink-0"/>
-            <input type="text" placeholder="Search" value={search} onChange={e=>setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full text-[#1C1C1E] placeholder:text-[#8E8E93]"/>
+            <input type="text" placeholder={t('sidebar.search')} value={search} onChange={e=>setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full text-[#1C1C1E] placeholder:text-[#8E8E93]"/>
           </div>
         </div>
         {/* User card */}
@@ -1038,7 +1038,7 @@ export function DesktopSettings() {
             <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#4DCA65] border-2 border-white"/>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[14px] text-[#1C1C1E] truncate">{profile?.username || 'Loading...'}</h3>
+            <h3 className="font-bold text-[14px] text-[#1C1C1E] truncate">{profile?.username || t('general.loading')}</h3>
             <p className="text-[12px] text-[#8E8E93] truncate">{profile?.phone || ''}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-[#C7C7CC] shrink-0"/>
@@ -1059,7 +1059,7 @@ export function DesktopSettings() {
           <div className="h-px bg-[#F0F0F0] mx-4 my-2"/>
           <div className="flex items-center px-4 py-2.5 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
             <div className="w-8 h-8 rounded-xl bg-[#F1F1F1] flex items-center justify-center mr-3 shrink-0"><HelpCircle className="w-4 h-4 text-[#8E8E93]"/></div>
-            <span className="flex-1 text-[13px] font-medium text-[#1C1C1E]">Telegram FAQ</span>
+            <span className="flex-1 text-[13px] font-medium text-[#1C1C1E]">{t('settings.faq')}</span>
             <ChevronRight className="w-3.5 h-3.5 text-[#C7C7CC]"/>
           </div>
         </div>
@@ -1071,7 +1071,7 @@ export function DesktopSettings() {
         <div className="h-[52px] flex items-center justify-between px-6 shrink-0 bg-white border-b border-[#EDEDED]">
           <h2 className="font-bold text-[16px] text-[#1C1C1E]">{SECTION_TITLES[active]}</h2>
           {active==='account'&&<Edit3 className="w-5 h-5 text-[#8E8E93] cursor-pointer hover:text-[#1C1C1E] transition-colors"/>}
-          {active==='devices'&&<button className="text-[13px] text-[#2481CC] hover:opacity-70 font-medium">Refresh</button>}
+          {active==='devices'&&<button className="text-[13px] text-[#2481CC] hover:opacity-70 font-medium">{t('general.refresh')}</button>}
         </div>
         {active==='account'&&<AccountSection onLogout={handleLogout}/>}
         {active==='notifications'&&<NotificationsSection/>}
