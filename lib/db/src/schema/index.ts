@@ -8,6 +8,7 @@ import {
   varchar,
   primaryKey,
   index,
+  uniqueIndex,
   jsonb,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
@@ -414,7 +415,7 @@ export const signalSignedPreKeyTable = pgTable(
   },
   (table) => ({
     userIdIdx: index("signal_signed_prekey_user_id_idx").on(table.userId),
-    userKeyId: index("signal_signed_prekey_user_key_id_idx").on(table.userId, table.keyId),
+    userKeyId: uniqueIndex("signal_signed_prekey_user_key_id_idx").on(table.userId, table.keyId),
   }),
 );
 

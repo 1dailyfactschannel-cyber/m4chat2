@@ -606,7 +606,7 @@ export default function DesktopMain() {
               </div>
               <div className="flex-1 overflow-y-auto py-2">
                 {[
-                  { icon: MessageCircle, label: t('settings.title'), active: true },
+                  { icon: MessageCircle, label: t('sidebar.allChats'), active: true },
                   { icon: Phone, label: 'Звонки', active: false },
                   { icon: Users, label: 'Контакты', active: false },
                   { icon: Bookmark, label: 'Избранное', active: false },

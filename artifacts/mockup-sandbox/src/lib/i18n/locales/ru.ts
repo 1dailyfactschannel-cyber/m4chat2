@@ -7,6 +7,7 @@ loadDictionary("ru", {
 
   // Sidebar / Chat list
   "sidebar.search": "Поиск",
+  "sidebar.allChats": "Все чаты",
   "sidebar.newChat": "Новый чат",
   "sidebar.secretChat": "Секретный чат",
   "sidebar.archive": "Архив",

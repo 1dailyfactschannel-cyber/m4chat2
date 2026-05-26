@@ -7,6 +7,7 @@ loadDictionary("en", {
 
   // Sidebar / Chat list
   "sidebar.search": "Search",
+  "sidebar.allChats": "All Chats",
   "sidebar.newChat": "New chat",
   "sidebar.secretChat": "Secret chat",
   "sidebar.archive": "Archive",
