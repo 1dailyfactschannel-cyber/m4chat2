@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useState, useCallback } from "react";
+// Import locale files to register dictionaries
+import "./locales/en";
+import "./locales/ru";
 
 export type Locale = "ru" | "en";
 
