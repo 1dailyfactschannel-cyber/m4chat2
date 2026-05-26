@@ -352,6 +352,10 @@ const DataSection = () => {
   const [proxyUser, setProxyUser] = useState(d.proxyUser || '');
   const [proxyPass, setProxyPass] = useState(d.proxyPass || '');
   const [showProxyForm, setShowProxyForm] = useState(false);
+  const [showPathModal, setShowPathModal] = useState(false);
+  const [storagePath, setStoragePath] = useState(d.storagePath || '~/Downloads');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cacheSize, setCacheSize] = useState(1.42);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync with server settings when they load
@@ -375,14 +379,14 @@ const DataSection = () => {
     });
   }, []);
 
-  const usedGB = 1.42;
+  const usedGB = cacheSize;
   const totalGB = 8;
   const storageBreakdown = [
-    { label: t('data.photos'), size: '0.8 GB', pct: 56, color: '#2481CC' },
-    { label: t('data.videos'), size: '0.3 GB', pct: 21, color: '#4DA6E8' },
-    { label: t('data.files'), size: '0.2 GB', pct: 14, color: '#7BC4F0' },
-    { label: t('data.music'), size: '0.05 GB', pct: 4, color: '#A0D8F5' },
-    { label: t('data.other'), size: '0.07 GB', pct: 5, color: '#D1E9F8' },
+    { label: t('data.photos'), size: (cacheSize * 0.56).toFixed(2) + ' GB', pct: 56, color: '#2481CC' },
+    { label: t('data.videos'), size: (cacheSize * 0.21).toFixed(2) + ' GB', pct: 21, color: '#4DA6E8' },
+    { label: t('data.files'), size: (cacheSize * 0.14).toFixed(2) + ' GB', pct: 14, color: '#7BC4F0' },
+    { label: t('data.music'), size: (cacheSize * 0.04).toFixed(2) + ' GB', pct: 4, color: '#A0D8F5' },
+    { label: t('data.other'), size: (cacheSize * 0.05).toFixed(2) + ' GB', pct: 5, color: '#D1E9F8' },
   ];
 
   if (loading) {
@@ -396,6 +400,15 @@ const DataSection = () => {
   const handleClearCache = async () => {
     setClearingCache(true);
     await new Promise(r => setTimeout(r, 1500));
+    // Calculate how much to clear based on selected options
+    let clearedAmount = 0;
+    if (clearOptions.photos) clearedAmount += cacheSize * 0.56;
+    if (clearOptions.videos) clearedAmount += cacheSize * 0.21;
+    if (clearOptions.files) clearedAmount += cacheSize * 0.14;
+    if (clearOptions.music) clearedAmount += cacheSize * 0.04;
+    if (clearOptions.voice) clearedAmount += cacheSize * 0.02;
+    if (clearOptions.stickers) clearedAmount += cacheSize * 0.03;
+    setCacheSize(prev => Math.max(0, prev - clearedAmount));
     setClearingCache(false);
     setShowClearModal(false);
   };
@@ -428,10 +441,10 @@ const DataSection = () => {
           <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" onClick={() => setShowClearModal(true)}>
             <Trash2 className="w-4 h-4 text-[#EF4444] mr-3" />
             <span className="text-[14px] font-medium text-[#EF4444]">{t('data.clearCache')}</span>
-            <span className="ml-auto text-[13px] text-[#8E8E93]">1.42 GB</span>
+            <span className="ml-auto text-[13px] text-[#8E8E93]">{cacheSize.toFixed(2)} GB</span>
           </div>
           <Divider />
-          <Row label={t('data.storagePath')} value="~/Downloads" chevron onClick={() => {}} />
+          <Row label={t('data.storagePath')} value={storagePath} chevron onClick={() => setShowPathModal(true)} />
         </Card>
 
         {/* Auto-download */}
@@ -547,7 +560,7 @@ const DataSection = () => {
           <SectionTitle label={t('data.management')} />
           <Row label={t('data.exportData')} sub={t('data.exportDataSub')} chevron onClick={() => {}} />
           <Divider />
-          <Row label={t('data.deleteAll')} danger sub={t('data.deleteAllSub')} onClick={() => {}} />
+          <Row label={t('data.deleteAll')} danger sub={t('data.deleteAllSub')} onClick={() => setShowDeleteModal(true)} />
         </Card>
       </div>
 
@@ -586,6 +599,71 @@ const DataSection = () => {
               <button className="flex-1 py-2 rounded-lg bg-[#EF4444] text-white text-[13px] font-medium hover:bg-[#DC2626] transition-colors disabled:opacity-50"
                 onClick={handleClearCache} disabled={clearingCache}>
                 {clearingCache ? t('general.clearing') : t('general.clear')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Storage path modal */}
+      {showPathModal && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center" onClick={() => setShowPathModal(false)}>
+          <div className="bg-white rounded-2xl w-[400px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-[#EDEDED]">
+              <h3 className="font-bold text-[16px] text-[#1C1C1E]">{t('data.storagePath')}</h3>
+            </div>
+            <div className="px-6 py-4">
+              <input
+                type="text"
+                value={storagePath}
+                onChange={e => setStoragePath(e.target.value)}
+                className="w-full bg-[#F1F1F1] rounded-lg px-3 py-2 text-[14px] outline-none focus:ring-2 focus:ring-[#2481CC]"
+                placeholder="~/Downloads"
+              />
+            </div>
+            <div className="px-6 py-3 bg-[#F5F5F5] flex gap-2">
+              <button
+                className="flex-1 py-2 rounded-lg text-[13px] font-medium text-[#8E8E93] hover:bg-[#E5E5E5] transition-colors"
+                onClick={() => setShowPathModal(false)}>
+                {t('general.cancel')}
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg bg-[#2481CC] text-white text-[13px] font-medium hover:bg-[#1a6baa] transition-colors"
+                onClick={() => { updateField('storagePath', storagePath); setShowPathModal(false); }}>
+                {t('general.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete all data confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-white rounded-2xl w-[400px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-[#EDEDED]">
+              <h3 className="font-bold text-[16px] text-[#EF4444]">{t('data.deleteAll')}</h3>
+            </div>
+            <div className="px-6 py-4">
+              <p className="text-[14px] text-[#1C1C1E] mb-2">{t('data.deleteAllConfirm')}</p>
+              <p className="text-[13px] text-[#8E8E93]">{t('data.deleteAllWarning')}</p>
+            </div>
+            <div className="px-6 py-3 bg-[#F5F5F5] flex gap-2">
+              <button
+                className="flex-1 py-2 rounded-lg text-[13px] font-medium text-[#8E8E93] hover:bg-[#E5E5E5] transition-colors"
+                onClick={() => setShowDeleteModal(false)}>
+                {t('general.cancel')}
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg bg-[#EF4444] text-white text-[13px] font-medium hover:bg-[#DC2626] transition-colors"
+                onClick={() => {
+                  // Reset all local data
+                  setCacheSize(0);
+                  setD(prev => ({ ...DEFAULT_DATA_STATE }));
+                  setShowDeleteModal(false);
+                  // Could also call an API to delete all user data
+                }}>
+                {t('data.deleteAll')}
               </button>
             </div>
           </div>

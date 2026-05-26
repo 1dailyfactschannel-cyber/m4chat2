@@ -157,6 +157,8 @@ export default {
   "data.deleteAllSub": "Полностью удалить аккаунт и все данные",
   "data.voiceMessages": "Голосовые сообщения",
   "data.stickers": "Стикеры",
+  "data.deleteAllConfirm": "Вы уверены, что хотите удалить все данные?",
+  "data.deleteAllWarning": "Это действие нельзя отменить. Все сообщения, медиа и настройки будут удалены.",
 
   // Appearance
   "appearance.day": "День",

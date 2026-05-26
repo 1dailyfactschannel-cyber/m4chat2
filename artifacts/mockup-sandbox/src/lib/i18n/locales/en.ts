@@ -157,6 +157,8 @@ export default {
   "data.deleteAllSub": "Permanently delete account and all data",
   "data.voiceMessages": "Voice Messages",
   "data.stickers": "Stickers",
+  "data.deleteAllConfirm": "Are you sure you want to delete all data?",
+  "data.deleteAllWarning": "This action cannot be undone. All messages, media, and settings will be deleted.",
 
   // Appearance
   "appearance.day": "Day",
