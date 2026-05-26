@@ -1,6 +1,4 @@
-import { loadDictionary } from "../registry";
-
-loadDictionary("en", {
+export default {
   // App
   "app.title": "M4Chat",
   "app.loading": "Loading...",
@@ -8,6 +6,12 @@ loadDictionary("en", {
   // Sidebar / Chat list
   "sidebar.search": "Search",
   "sidebar.allChats": "All Chats",
+  "sidebar.calls": "Calls",
+  "sidebar.contacts": "Contacts",
+  "sidebar.savedMessages": "Saved Messages",
+  "sidebar.lightMode": "Light Mode",
+  "sidebar.darkMode": "Dark Mode",
+  "sidebar.logout": "Log Out",
   "sidebar.newChat": "New chat",
   "sidebar.secretChat": "Secret chat",
   "sidebar.archive": "Archive",
@@ -204,4 +208,4 @@ loadDictionary("en", {
   "general.loading": "Loading...",
   "general.error": "Error",
   "general.success": "Success",
-});
+};

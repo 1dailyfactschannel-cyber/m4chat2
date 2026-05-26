@@ -606,22 +606,22 @@ export default function DesktopMain() {
               </div>
               <div className="flex-1 overflow-y-auto py-2">
                 {[
-                  { icon: MessageCircle, label: t('sidebar.allChats'), active: true },
-                  { icon: Phone, label: 'Звонки', active: false },
-                  { icon: Users, label: 'Контакты', active: false },
-                  { icon: Bookmark, label: 'Избранное', active: false },
-                  { icon: Settings, label: t('settings.title'), active: false },
-                ].map(({ icon: Icon, label, active }) => (
+                  { id: 'chats', icon: MessageCircle, label: t('sidebar.allChats'), active: true },
+                  { id: 'calls', icon: Phone, label: t('sidebar.calls'), active: false },
+                  { id: 'contacts', icon: Users, label: t('sidebar.contacts'), active: false },
+                  { id: 'saved', icon: Bookmark, label: t('sidebar.savedMessages'), active: false },
+                  { id: 'settings', icon: Settings, label: t('settings.title'), active: false },
+                ].map(({ id, icon: Icon, label, active }) => (
                   <button
-                    key={label}
+                    key={id}
                     className="w-full flex items-center gap-4 px-5 py-3 text-left transition-colors hover:opacity-80"
                     style={{ color: active ? '#2481CC' : bg.text }}
                     onClick={() => {
-                      if (label === 'Избранное') {
+                      if (id === 'saved') {
                         const savedChat = chats.find((c) => c.isSelfChat);
                         if (savedChat) openChat(savedChat.id);
                       }
-                      if (label === 'Настройки') { setShowSettings(true); }
+                      if (id === 'settings') { setShowSettings(true); }
                       setShowBurger(false);
                     }}
                   >
@@ -636,13 +636,13 @@ export default function DesktopMain() {
                   style={{ color: bg.text }}
                 >
                   {d ? <Sun className="w-5 h-5 shrink-0" style={{ color: bg.textSec }} /> : <Moon className="w-5 h-5 shrink-0" style={{ color: bg.textSec }} />}
-                  <span className="text-[15px]">{d ? 'Светлый режим' : 'Ночной режим'}</span>
+                  <span className="text-[15px]">{d ? t('sidebar.lightMode') : t('sidebar.darkMode')}</span>
                 </button>
                 <button
                   onClick={() => { logout(); setShowBurger(false); }}
                   className="w-full flex items-center gap-4 px-5 py-3 text-left hover:opacity-80 transition-colors text-red-500"
                 >
-                  <span className="text-[15px]">Выйти</span>
+                  <span className="text-[15px]">{t('sidebar.logout')}</span>
                 </button>
               </div>
             </motion.div>

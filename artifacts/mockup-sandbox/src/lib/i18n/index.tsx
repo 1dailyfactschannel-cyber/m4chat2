@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useState, useCallback } from "react";
-import { getDictionary } from "./registry";
+import { getDictionary, loadDictionary } from "./registry";
 import type { Locale } from "./registry";
-// Import locale files to register dictionaries
-import "./locales/en";
-import "./locales/ru";
+// Import locale dictionaries explicitly to avoid tree-shaking
+import ruDict from "./locales/ru";
+import enDict from "./locales/en";
+
+loadDictionary("ru", ruDict);
+loadDictionary("en", enDict);
 
 export type { Locale } from "./registry";
 
