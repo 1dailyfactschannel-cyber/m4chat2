@@ -345,12 +345,30 @@ router.put("/messages/:messageId", requireAuth, async (req: any, res) => {
       .where(eq(messagesTable.id, Number(messageId)))
       .returning();
 
+    // Fetch sender info and reactions for the response
+    const [sender] = await db
+      .select({ username: usersTable.username, avatarUrl: usersTable.avatarUrl })
+      .from(usersTable)
+      .where(eq(usersTable.id, updated.senderId));
+
+    const reactions = await db
+      .select()
+      .from(reactionsTable)
+      .where(eq(reactionsTable.messageId, updated.id));
+
+    const fullUpdated = {
+      ...updated,
+      senderName: sender?.username,
+      senderAvatar: sender?.avatarUrl,
+      reactions,
+    };
+
     const io = req.app.get("io");
     if (io) {
-      io.to(`chat:${message.chatId}`).emit("message:edited", updated);
+      io.to(`chat:${message.chatId}`).emit("message:edited", fullUpdated);
     }
 
-    res.json(updated);
+    res.json(fullUpdated);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

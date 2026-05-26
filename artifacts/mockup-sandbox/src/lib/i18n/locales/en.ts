@@ -4,6 +4,10 @@ export default {
   "app.loading": "Loading...",
 
   // Sidebar / Chat list
+  "folder.all": "All",
+  "folder.personal": "Personal",
+  "folder.work": "Work",
+  "folder.unread": "Unread",
   "sidebar.search": "Search",
   "sidebar.allChats": "All Chats",
   "sidebar.calls": "Calls",
@@ -39,6 +43,7 @@ export default {
   "msg.videoMessage": "Video message",
   "msg.deleted": "Message deleted",
   "msg.edited": "edited",
+  "msg.decrypting": "Decrypting...",
 
   // Context menu
   "ctx.reply": "Reply",
@@ -47,7 +52,14 @@ export default {
   "ctx.pin": "Pin",
   "ctx.edit": "Edit",
   "ctx.delete": "Delete",
-  "ctx.select": "Select",
+  "chat.newMessage": "New message",
+  "chat.media": "Media",
+  "chat.encryptFailed": "Failed to encrypt message. Make sure session is established.",
+  "ctx.unpin": "Unpin",
+  "ctx.pinChat": "Pin",
+  "ctx.unarchive": "Unarchive",
+  "ctx.archive": "Archive",
+  "ctx.deleteChat": "Delete Chat",
 
   // Settings sections
   "settings.title": "Settings",

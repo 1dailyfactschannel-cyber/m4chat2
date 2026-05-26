@@ -4,6 +4,10 @@ export default {
   "app.loading": "Загрузка...",
 
   // Sidebar / Chat list
+  "folder.all": "Все",
+  "folder.personal": "Личные",
+  "folder.work": "Работа",
+  "folder.unread": "Непрочитанные",
   "sidebar.search": "Поиск",
   "sidebar.allChats": "Все чаты",
   "sidebar.calls": "Звонки",
@@ -39,6 +43,7 @@ export default {
   "msg.videoMessage": "Видеосообщение",
   "msg.deleted": "Сообщение удалено",
   "msg.edited": "изм.",
+  "msg.decrypting": "Расшифровка...",
 
   // Context menu
   "ctx.reply": "Ответить",
@@ -47,7 +52,14 @@ export default {
   "ctx.pin": "Закрепить",
   "ctx.edit": "Изменить",
   "ctx.delete": "Удалить",
-  "ctx.select": "Выбрать",
+  "chat.newMessage": "Новое сообщение",
+  "chat.media": "Медиа",
+  "chat.encryptFailed": "Не удалось зашифровать сообщение. Убедитесь, что сессия установлена.",
+  "ctx.unpin": "Открепить",
+  "ctx.pinChat": "Закрепить",
+  "ctx.unarchive": "Разархивировать",
+  "ctx.archive": "Архивировать",
+  "ctx.deleteChat": "Удалить чат",
 
   // Settings sections
   "settings.title": "Настройки",

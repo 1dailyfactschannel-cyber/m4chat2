@@ -214,8 +214,8 @@ export default function DesktopMain() {
       if (document.visibilityState === 'visible' && activeChatId === msg.chatId) return; // Don't notify if chat is open and visible
 
       const chat = chats.find((c) => c.id === msg.chatId);
-      const title = chat?.name || 'Новое сообщение';
-      const body = msg.content || 'Медиа';
+      const title = chat?.name || t('chat.newMessage');
+      const body = msg.content || t('chat.media');
 
       // Browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -313,7 +313,7 @@ export default function DesktopMain() {
         encryptedPayload = await signalProtocol.encrypt(activeChatId, text);
       } catch (err) {
         console.error('Encryption failed:', err);
-        alert('Не удалось зашифровать сообщение. Убедитесь, что сессия установлена.');
+        alert(t('chat.encryptFailed'));
         return;
       }
     }
@@ -1047,7 +1047,7 @@ export default function DesktopMain() {
                                     {msg.isDeleted ? (
                                       <span className="italic opacity-50">{t('msg.deleted')}</span>
                                     ) : activeChat?.isSecret ? (
-                                      <span>{decryptedMessages[msg.id] || '🔒 Расшифровка...'}</span>
+                                      <span>{decryptedMessages[msg.id] || '🔒 ' + t('msg.decrypting')}</span>
                                     ) : (
                                       <MessageText content={msg.content} entities={msg.entities} darkMode={darkMode} />
                                     )}
@@ -1138,7 +1138,7 @@ export default function DesktopMain() {
                 style={{ background: d ? '#21262d' : '#F5F5F5', borderLeft: '3px solid #2481CC' }}
               >
                 <div className="min-w-0">
-                  <div className="text-[11px] font-semibold text-[#2481CC]">Ответить {replyTo.senderName}</div>
+                  <div className="text-[11px] font-semibold text-[#2481CC]">{t('chat.replyTo')} {replyTo.senderName}</div>
                   <div className="text-[12px] truncate" style={{ color: bg.textSec }}>{replyTo.text}</div>
                 </div>
                 <button onClick={() => setReplyTo(null)} className="p-1 shrink-0 ml-2"><X className="w-4 h-4" style={{ color: bg.textSec }} /></button>
@@ -1359,12 +1359,12 @@ export default function DesktopMain() {
             onClick={(e) => e.stopPropagation()}
           >
             {[
-              { label: 'Ответить', icon: Reply, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg) setReplyTo({ id: msg.id, text: msg.content || '', senderName: msg.senderName || '' }); setContextMenu(null); } },
-              { label: 'Копировать', icon: Copy, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg?.content) navigator.clipboard.writeText(msg.content); setContextMenu(null); } },
-              { label: 'Редактировать', icon: Edit3, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg) { setEditingMsgId(msg.id); setEditText(msg.content || ''); } setContextMenu(null); } },
-              { label: 'Удалить', icon: Trash2, action: () => handleDelete(contextMenu.msgId) },
+              { label: t('ctx.reply'), icon: Reply, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg) setReplyTo({ id: msg.id, text: msg.content || '', senderName: msg.senderName || '' }); setContextMenu(null); } },
+              { label: t('ctx.copy'), icon: Copy, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg?.content) navigator.clipboard.writeText(msg.content); setContextMenu(null); } },
+              { label: t('ctx.edit'), icon: Edit3, action: () => { const msg = messages.find((m) => m.id === contextMenu.msgId); if (msg) { setEditingMsgId(msg.id); setEditText(msg.content || ''); } setContextMenu(null); } },
+              { label: t('ctx.delete'), icon: Trash2, action: () => handleDelete(contextMenu.msgId) },
             ].map(({ label, icon: Icon, action }) => (
-              <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === 'Удалить' ? '#EF4444' : bg.text }}>
+              <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === t('ctx.delete') ? '#EF4444' : bg.text }}>
                 <Icon className="w-4 h-4" /> {label}
               </button>
             ))}
@@ -1389,11 +1389,11 @@ export default function DesktopMain() {
               const isPinned = !!chat?.pinnedAt;
               const isArchived = !!chat?.archivedAt;
               return [
-                { label: isPinned ? 'Открепить' : 'Закрепить', icon: Pin, action: () => isPinned ? handleUnpinChat(chatCtxMenu.chatId) : handlePinChat(chatCtxMenu.chatId) },
-                { label: isArchived ? 'Разархивировать' : 'Архивировать', icon: Archive, action: () => isArchived ? handleUnarchiveChat(chatCtxMenu.chatId) : handleArchiveChat(chatCtxMenu.chatId) },
-                { label: 'Удалить чат', icon: Trash2, action: () => { setChatCtxMenu(null); /* TODO: delete */ } },
+                { label: isPinned ? t('ctx.unpin') : t('ctx.pinChat'), icon: Pin, action: () => isPinned ? handleUnpinChat(chatCtxMenu.chatId) : handlePinChat(chatCtxMenu.chatId) },
+                { label: isArchived ? t('ctx.unarchive') : t('ctx.archive'), icon: Archive, action: () => isArchived ? handleUnarchiveChat(chatCtxMenu.chatId) : handleArchiveChat(chatCtxMenu.chatId) },
+                { label: t('ctx.deleteChat'), icon: Trash2, action: () => { setChatCtxMenu(null); /* TODO: delete */ } },
               ].map(({ label, icon: Icon, action }) => (
-                <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === 'Удалить чат' ? '#EF4444' : bg.text }}>
+                <button key={label} onClick={action} className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-[#2481CC]/10 transition-colors" style={{ color: label === t('ctx.deleteChat') ? '#EF4444' : bg.text }}>
                   <Icon className="w-4 h-4" /> {label}
                 </button>
               ));
