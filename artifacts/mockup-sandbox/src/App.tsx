@@ -1,9 +1,11 @@
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { useSettings } from './hooks/useSettings';
 import LoginScreen from './components/LoginScreen';
 import DesktopMain from './components/mockups/telegram/DesktopMain';
 
 function AppContent() {
   const { user, loading } = useAuth();
+  useSettings(); // Load and sync settings on app start
 
   if (loading) {
     return (

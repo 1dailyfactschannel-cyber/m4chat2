@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../lib/api";
+import { useUIStore } from "../store/uiStore";
 
 interface Settings {
   notifications: Record<string, any>;
@@ -60,6 +61,24 @@ const DEFAULT_SETTINGS: Settings = {
   },
 };
 
+// Sync appearance settings with UI store
+function getSystemDark() {
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+}
+
+function syncAppearanceWithUI(appearance: Settings['appearance']) {
+  const { setFontSize, setChatBgId, setDarkMode } = useUIStore.getState();
+  if (appearance.fontSize !== undefined) setFontSize(appearance.fontSize);
+  if (appearance.chatBg !== undefined) setChatBgId(appearance.chatBg);
+
+  // Theme: night = dark, day = light, system = OS preference
+  let isDark = false;
+  if (appearance.theme === 'night') isDark = true;
+  else if (appearance.theme === 'system') isDark = getSystemDark();
+
+  setDarkMode(isDark);
+}
+
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -68,13 +87,15 @@ export function useSettings() {
   const loadSettings = useCallback(async () => {
     try {
       const data = await api.getSettings();
-      setSettings({
+      const merged = {
         notifications: { ...DEFAULT_SETTINGS.notifications, ...data.notifications },
         privacy: { ...DEFAULT_SETTINGS.privacy, ...data.privacy },
         appearance: { ...DEFAULT_SETTINGS.appearance, ...data.appearance },
         language: { ...DEFAULT_SETTINGS.language, ...data.language },
         data: { ...DEFAULT_SETTINGS.data, ...data.data },
-      });
+      };
+      setSettings(merged);
+      syncAppearanceWithUI(merged.appearance);
     } catch (err) {
       console.error("Failed to load settings:", err);
     } finally {
@@ -86,9 +107,26 @@ export function useSettings() {
     loadSettings();
   }, [loadSettings]);
 
+  // Listen for system theme changes when theme is set to "system"
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      if (settings.appearance.theme === 'system') {
+        syncAppearanceWithUI(settings.appearance);
+      }
+    };
+    mql.addEventListener?.('change', handler);
+    return () => mql.removeEventListener?.('change', handler);
+  }, [settings.appearance]);
+
   const updateSettings = useCallback((category: keyof Settings, values: Record<string, any>) => {
     setSettings((prev) => {
       const updated = { ...prev, [category]: { ...prev[category], ...values } };
+
+      // Sync appearance changes to UI store immediately
+      if (category === 'appearance') {
+        syncAppearanceWithUI(updated.appearance);
+      }
 
       // Debounced save to server
       if (timeoutRef.current) clearTimeout(timeoutRef.current);

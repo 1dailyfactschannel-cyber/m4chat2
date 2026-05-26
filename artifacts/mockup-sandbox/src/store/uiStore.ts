@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UIState {
   // Active chat
@@ -8,6 +9,7 @@ interface UIState {
   // Theme
   darkMode: boolean;
   toggleDarkMode: () => void;
+  setDarkMode: (mode: boolean) => void;
 
   // Sidebar / Drawer
   showBurger: boolean;
@@ -66,67 +68,81 @@ interface UIState {
   setActiveFolder: (folder: string) => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  activeChatId: null,
-  setActiveChatId: (id) => set({ activeChatId: id }),
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      activeChatId: null,
+      setActiveChatId: (id) => set({ activeChatId: id }),
 
-  darkMode: false,
-  toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      darkMode: false,
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      setDarkMode: (mode) => set({ darkMode: mode }),
 
-  showBurger: false,
-  setShowBurger: (show) => set({ showBurger: show }),
+      showBurger: false,
+      setShowBurger: (show) => set({ showBurger: show }),
 
-  showProfile: false,
-  setShowProfile: (show) => set({ showProfile: show }),
-  profileTab: 'media',
-  setProfileTab: (tab) => set({ profileTab: tab }),
+      showProfile: false,
+      setShowProfile: (show) => set({ showProfile: show }),
+      profileTab: 'media',
+      setProfileTab: (tab) => set({ profileTab: tab }),
 
-  searchText: '',
-  setSearchText: (text) => set({ searchText: text }),
-  showSearchBar: false,
-  setShowSearchBar: (show) => set({ showSearchBar: show }),
-  searchMsg: '',
-  setSearchMsg: (text) => set({ searchMsg: text }),
+      searchText: '',
+      setSearchText: (text) => set({ searchText: text }),
+      showSearchBar: false,
+      setShowSearchBar: (show) => set({ showSearchBar: show }),
+      searchMsg: '',
+      setSearchMsg: (text) => set({ searchMsg: text }),
 
-  replyTo: null,
-  setReplyTo: (reply) => set({ replyTo: reply }),
-  editingMsgId: null,
-  setEditingMsgId: (id) => set({ editingMsgId: id }),
+      replyTo: null,
+      setReplyTo: (reply) => set({ replyTo: reply }),
+      editingMsgId: null,
+      setEditingMsgId: (id) => set({ editingMsgId: id }),
 
-  showEmojiPanel: false,
-  setShowEmojiPanel: (show) => set({ showEmojiPanel: show }),
+      showEmojiPanel: false,
+      setShowEmojiPanel: (show) => set({ showEmojiPanel: show }),
 
-  selectMode: false,
-  setSelectMode: (mode) => set({ selectMode: mode }),
-  selectedMsgs: new Set(),
-  toggleSelectedMsg: (id) =>
-    set((state) => {
-      const next = new Set(state.selectedMsgs);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { selectedMsgs: next };
+      selectMode: false,
+      setSelectMode: (mode) => set({ selectMode: mode }),
+      selectedMsgs: new Set(),
+      toggleSelectedMsg: (id) =>
+        set((state) => {
+          const next = new Set(state.selectedMsgs);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return { selectedMsgs: next };
+        }),
+      clearSelectedMsgs: () => set({ selectedMsgs: new Set() }),
+
+      callState: null,
+      setCallState: (state) => set({ callState: state }),
+
+      toasts: [],
+      addToast: (toast) =>
+        set((state) => ({
+          toasts: [...state.toasts, { ...toast, id: Date.now() }],
+        })),
+      removeToast: (id) =>
+        set((state) => ({
+          toasts: state.toasts.filter((t) => t.id !== id),
+        })),
+
+      fontSize: 15,
+      setFontSize: (size) => set({ fontSize: size }),
+
+      chatBgId: 'default',
+      setChatBgId: (id) => set({ chatBgId: id }),
+
+      activeFolder: 'Все',
+      setActiveFolder: (folder) => set({ activeFolder: folder }),
     }),
-  clearSelectedMsgs: () => set({ selectedMsgs: new Set() }),
-
-  callState: null,
-  setCallState: (state) => set({ callState: state }),
-
-  toasts: [],
-  addToast: (toast) =>
-    set((state) => ({
-      toasts: [...state.toasts, { ...toast, id: Date.now() }],
-    })),
-  removeToast: (id) =>
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id),
-    })),
-
-  fontSize: 15,
-  setFontSize: (size) => set({ fontSize: size }),
-
-  chatBgId: 'default',
-  setChatBgId: (id) => set({ chatBgId: id }),
-
-  activeFolder: 'Все',
-  setActiveFolder: (folder) => set({ activeFolder: folder }),
-}));
+    {
+      name: 'm4chat-ui-store',
+      partialize: (state) => ({
+        darkMode: state.darkMode,
+        fontSize: state.fontSize,
+        chatBgId: state.chatBgId,
+        activeFolder: state.activeFolder,
+      }),
+    }
+  )
+);
