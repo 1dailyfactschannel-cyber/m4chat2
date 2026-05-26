@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MessageCircle, Phone, Bookmark, Settings, Users, Search, Edit3,
   Bell, Shield, Database, Palette, Globe, Star, Monitor, HelpCircle,
