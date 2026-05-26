@@ -10,6 +10,7 @@ import {
 import { api } from '../../../lib/api';
 import { useSettings } from '../../../hooks/useSettings';
 import { useUserProfile } from '../../../hooks/useUserProfile';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 // ─── Toggle Component ─────────────────────────────────────────────────────────
 const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
@@ -45,6 +46,7 @@ type Section = 'account' | 'notifications' | 'privacy' | 'data' | 'appearance' |
 
 // ─── Account Section ──────────────────────────────────────────────────────────
 const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
+  const { t } = useTranslation();
   const { profile, loading, updateProfile, uploadAvatar } = useUserProfile();
   const [editPhone, setEditPhone] = useState(false);
   const [editPhoneValue, setEditPhoneValue] = useState('');
@@ -86,7 +88,7 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
   if (loading || !profile) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading profile...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -113,20 +115,20 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange}/>
             <h2 className="font-bold text-[20px] text-[#1C1C1E]">{profile.username}</h2>
             <p className="text-[13px] text-[#4DCA65] font-medium">
-              {profile.isOnline ? 'online' : profile.lastSeenAt ? `last seen ${new Date(profile.lastSeenAt).toLocaleString()}` : 'offline'}
+              {profile.isOnline ? t('chatHeader.online') : profile.lastSeenAt ? `${new Date(profile.lastSeenAt).toLocaleString()}` : 'offline'}
             </p>
           </div>
           {/* Name */}
           <div className="border-b border-[#F0F0F0]">
             <div className="flex items-center px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]">
-              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.username}</div><div className="text-[12px] text-[#8E8E93]">Name</div></div>
+              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.username}</div><div className="text-[12px] text-[#8E8E93]">{t('account.name')}</div></div>
               <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 transition-opacity"/>
             </div>
           </div>
           {/* Username */}
           <div className="border-b border-[#F0F0F0]">
             <div className="flex items-center px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]">
-              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">@{profile.username}</div><div className="text-[12px] text-[#8E8E93]">Username</div></div>
+              <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">@{profile.username}</div><div className="text-[12px] text-[#8E8E93]">{t('account.username')}</div></div>
               <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 transition-opacity"/>
             </div>
           </div>
@@ -134,13 +136,13 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
           <div className="border-b border-[#F0F0F0]">
             {editPhone ? (
               <div className="px-5 py-3 flex items-center gap-3">
-                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Phone</div><input autoFocus value={editPhoneValue} onChange={e=>setEditPhoneValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">{t('account.phone')}</div><input autoFocus value={editPhoneValue} onChange={e=>setEditPhoneValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
                 <button onClick={savePhone} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button>
                 <button onClick={()=>setEditPhone(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button>
               </div>
             ) : (
               <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditPhone(true)}>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.phone || 'Not set'}</div><div className="text-[12px] text-[#8E8E93]">Phone (tap to change)</div></div>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.phone || t('account.notSet')}</div><div className="text-[12px] text-[#8E8E93]">{t('account.changePhone')}</div></div>
                 <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
               </div>
             )}
@@ -149,13 +151,13 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
           <div className="border-b border-[#F0F0F0]">
             {editEmail ? (
               <div className="px-5 py-3 flex items-center gap-3">
-                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Email</div><input autoFocus value={editEmailValue} onChange={e=>setEditEmailValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">{t('account.email')}</div><input autoFocus value={editEmailValue} onChange={e=>setEditEmailValue(e.target.value)} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent"/></div>
                 <button onClick={saveEmail} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button>
                 <button onClick={()=>setEditEmail(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button>
               </div>
             ) : (
               <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditEmail(true)}>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.email || 'Not set'}</div><div className="text-[12px] text-[#8E8E93]">Email (tap to change)</div></div>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E]">{profile.email || t('account.notSet')}</div><div className="text-[12px] text-[#8E8E93]">{t('account.changeEmail')}</div></div>
                 <ChevronRight className="w-4 h-4 text-[#C7C7CC]"/>
               </div>
             )}
@@ -164,12 +166,12 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
           <div>
             {editBio ? (
               <div className="px-5 py-3 flex items-start gap-3">
-                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">Bio</div><textarea autoFocus value={editBioValue} onChange={e=>setEditBioValue(e.target.value)} rows={3} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent resize-none"/></div>
+                <div className="flex-1"><div className="text-[11px] text-[#2481CC] font-semibold mb-0.5">{t('account.bio')}</div><textarea autoFocus value={editBioValue} onChange={e=>setEditBioValue(e.target.value)} rows={3} className="text-[14px] text-[#1C1C1E] w-full border-none outline-none bg-transparent resize-none"/></div>
                 <div className="flex flex-col gap-1.5 pt-3"><button onClick={saveBio} className="w-7 h-7 bg-[#2481CC] rounded-full flex items-center justify-center"><Check className="w-4 h-4 text-white"/></button><button onClick={()=>setEditBio(false)} className="w-7 h-7 bg-[#F1F1F1] rounded-full flex items-center justify-center"><X className="w-4 h-4 text-[#8E8E93]"/></button></div>
               </div>
             ) : (
               <div className="flex items-start px-5 py-3 group cursor-pointer hover:bg-[#F5F5F5]" onClick={()=>setEditBio(true)}>
-                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E] mb-0.5">{profile.bio || 'No bio yet'}</div><div className="text-[12px] text-[#8E8E93]">Bio</div><div className="text-[11px] text-[#C7C7CC] mt-1">Any details such as age, occupation or city</div></div>
+                <div className="flex-1"><div className="text-[14px] font-medium text-[#1C1C1E] mb-0.5">{profile.bio || t('account.noBio')}</div><div className="text-[12px] text-[#8E8E93]">{t('account.bio')}</div><div className="text-[11px] text-[#C7C7CC] mt-1">{t('account.bioHint')}</div></div>
                 <Edit3 className="w-4 h-4 text-[#8E8E93] opacity-0 group-hover:opacity-100 mt-1 shrink-0"/>
               </div>
             )}
@@ -179,14 +181,14 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
         <Card>
           <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
             <div className="w-9 h-9 rounded-full bg-[#E8F4FF] flex items-center justify-center mr-4 shrink-0"><Plus className="w-5 h-5 text-[#2481CC]"/></div>
-            <span className="text-[14px] font-medium text-[#2481CC]">Add Another Account</span>
+            <span className="text-[14px] font-medium text-[#2481CC]">{t('account.addAccount')}</span>
           </div>
         </Card>
         {/* Log out */}
         <Card>
           <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors" onClick={onLogout}>
             <div className="w-9 h-9 rounded-full bg-[#FEE2E2] flex items-center justify-center mr-4 shrink-0"><LogOut className="w-5 h-5 text-[#EF4444]"/></div>
-            <span className="text-[14px] font-medium text-[#EF4444]">Log Out</span>
+            <span className="text-[14px] font-medium text-[#EF4444]">{t('account.logout')}</span>
           </div>
         </Card>
       </div>
@@ -196,54 +198,55 @@ const AccountSection = ({ onLogout }: { onLogout: () => void }) => {
 
 // ─── Notifications Section ────────────────────────────────────────────────────
 const NotificationsSection = () => {
+  const { t } = useTranslation();
   const { settings, loading, updateSettings } = useSettings();
   if (loading || !settings?.notifications) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading notifications...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
   const s = settings.notifications;
-  const t = (k: keyof typeof s) => updateSettings('notifications', { [k]: !s[k] } as any);
+  const doToggle = (k: keyof typeof s) => updateSettings('notifications', { [k]: !s[k] } as any);
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         <Card>
-          <SectionTitle label="Private Chats"/>
-          <Row label="Enable Notifications" onClick={()=>t('privateChats')}><Toggle value={s.privateChats} onChange={()=>t('privateChats')}/></Row>
+          <SectionTitle label={t('notif.privateChats')}/>
+          <Row label={t('notif.enable')} onClick={()=>doToggle('privateChats')}><Toggle value={s.privateChats} onChange={()=>doToggle('privateChats')}/></Row>
           <Divider/>
-          <Row label="Sound" value="Default" chevron onClick={()=>{}}/>
+          <Row label={t('notif.sound')} value="Default" chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Message Preview" onClick={()=>t('privatePreview')}><Toggle value={s.privatePreview} onChange={()=>t('privatePreview')}/></Row>
+          <Row label={t('notif.preview')} onClick={()=>doToggle('privatePreview')}><Toggle value={s.privatePreview} onChange={()=>doToggle('privatePreview')}/></Row>
           <Divider/>
-          <Row label="Badge Counter" onClick={()=>t('privateBadge')}><Toggle value={s.privateBadge} onChange={()=>t('privateBadge')}/></Row>
+          <Row label={t('notif.badge')} onClick={()=>doToggle('privateBadge')}><Toggle value={s.privateBadge} onChange={()=>doToggle('privateBadge')}/></Row>
         </Card>
         <Card>
-          <SectionTitle label="Groups"/>
-          <Row label="Enable Notifications" onClick={()=>t('groups')}><Toggle value={s.groups} onChange={()=>t('groups')}/></Row>
+          <SectionTitle label={t('notif.groups')}/>
+          <Row label={t('notif.enable')} onClick={()=>doToggle('groups')}><Toggle value={s.groups} onChange={()=>doToggle('groups')}/></Row>
           <Divider/>
-          <Row label="Sound" value="None" chevron onClick={()=>{}}/>
+          <Row label={t('notif.sound')} value="None" chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Message Preview" onClick={()=>t('groupPreview')}><Toggle value={s.groupPreview} onChange={()=>t('groupPreview')}/></Row>
+          <Row label={t('notif.preview')} onClick={()=>doToggle('groupPreview')}><Toggle value={s.groupPreview} onChange={()=>doToggle('groupPreview')}/></Row>
           <Divider/>
-          <Row label="Badge Counter" onClick={()=>t('groupBadge')}><Toggle value={s.groupBadge} onChange={()=>t('groupBadge')}/></Row>
+          <Row label={t('notif.badge')} onClick={()=>doToggle('groupBadge')}><Toggle value={s.groupBadge} onChange={()=>doToggle('groupBadge')}/></Row>
         </Card>
         <Card>
-          <SectionTitle label="Channels"/>
-          <Row label="Enable Notifications" onClick={()=>t('channels')}><Toggle value={s.channels} onChange={()=>t('channels')}/></Row>
+          <SectionTitle label={t('notif.channels')}/>
+          <Row label={t('notif.enable')} onClick={()=>doToggle('channels')}><Toggle value={s.channels} onChange={()=>doToggle('channels')}/></Row>
           <Divider/>
-          <Row label="Sound" value="None" chevron onClick={()=>{}}/>
+          <Row label={t('notif.sound')} value="None" chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Message Preview" onClick={()=>t('channelPreview')}><Toggle value={s.channelPreview} onChange={()=>t('channelPreview')}/></Row>
+          <Row label={t('notif.preview')} onClick={()=>doToggle('channelPreview')}><Toggle value={s.channelPreview} onChange={()=>doToggle('channelPreview')}/></Row>
           <Divider/>
-          <Row label="Badge Counter" onClick={()=>t('channelBadge')}><Toggle value={s.channelBadge} onChange={()=>t('channelBadge')}/></Row>
+          <Row label={t('notif.badge')} onClick={()=>doToggle('channelBadge')}><Toggle value={s.channelBadge} onChange={()=>doToggle('channelBadge')}/></Row>
         </Card>
         <Card>
-          <SectionTitle label="General"/>
-          <Row label="Count Unread Messages" sub="Count all unread messages, not just conversations" onClick={()=>t('countUnread')}><Toggle value={s.countUnread} onChange={()=>t('countUnread')}/></Row>
+          <SectionTitle label={t('notif.general')}/>
+          <Row label={t('notif.countUnread')} sub={t('notif.countUnreadSub')} onClick={()=>doToggle('countUnread')}><Toggle value={s.countUnread} onChange={()=>doToggle('countUnread')}/></Row>
           <Divider/>
-          <Row label="Include Archived Chats" onClick={()=>t('includeArchived')}><Toggle value={s.includeArchived} onChange={()=>t('includeArchived')}/></Row>
+          <Row label={t('notif.includeArchived')} onClick={()=>doToggle('includeArchived')}><Toggle value={s.includeArchived} onChange={()=>doToggle('includeArchived')}/></Row>
         </Card>
       </div>
     </div>
@@ -252,12 +255,13 @@ const NotificationsSection = () => {
 
 // ─── Privacy Section ──────────────────────────────────────────────────────────
 const PrivacySection = () => {
+  const { t } = useTranslation();
   const [twoStep, setTwoStep] = useState(false);
   const { settings, loading, updateSettings } = useSettings();
   if (loading || !settings?.privacy) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading privacy...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -272,38 +276,38 @@ const PrivacySection = () => {
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         <Card>
-          <SectionTitle label="Privacy"/>
-          <Row label="Last Seen & Online" sub="Who can see when you were last online"><Select value={p.lastSeen} settingKey="lastSeen"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <SectionTitle label={t('privacy.title')}/>
+          <Row label={t('privacy.lastSeen')} sub={t('privacy.lastSeenSub')}><Select value={p.lastSeen} settingKey="lastSeen"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Profile Photo" sub="Who can see your profile photo"><Select value={p.profilePhoto} settingKey="profilePhoto"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label={t('privacy.profilePhoto')} sub={t('privacy.profilePhotoSub')}><Select value={p.profilePhoto} settingKey="profilePhoto"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Forwarded Messages" sub="Who can forward your messages"><Select value={p.forwardedFrom} settingKey="forwardedFrom"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label={t('privacy.forwarded')} sub={t('privacy.forwardedSub')}><Select value={p.forwardedFrom} settingKey="forwardedFrom"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Phone Number" sub="Who can see your phone number"><Select value={p.phoneNumber} settingKey="phoneNumber"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label={t('privacy.phoneNumber')} sub={t('privacy.phoneNumberSub')}><Select value={p.phoneNumber} settingKey="phoneNumber"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Calls" sub="Who can call you"><Select value={p.calls} settingKey="calls"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label={t('privacy.calls')} sub={t('privacy.callsSub')}><Select value={p.calls} settingKey="calls"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
           <Divider/>
-          <Row label="Group Chats & Channels" sub="Who can add you to groups"><Select value={p.groupAdd} settingKey="groupAdd"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
+          <Row label={t('privacy.groupAdd')} sub={t('privacy.groupAddSub')}><Select value={p.groupAdd} settingKey="groupAdd"/><ChevronRight className="w-4 h-4 text-[#C7C7CC] ml-1 shrink-0"/></Row>
         </Card>
         <Card>
-          <SectionTitle label="Security"/>
-          <Row label="Two-Step Verification" sub={twoStep?'Enabled — Password set':'Disabled'} chevron onClick={()=>{}}><Toggle value={twoStep} onChange={setTwoStep}/></Row>
+          <SectionTitle label={t('privacy.security')}/>
+          <Row label={t('privacy.2fa')} sub={twoStep?t('privacy.2faEnabled'):t('privacy.2faDisabled')} chevron onClick={()=>{}}><Toggle value={twoStep} onChange={setTwoStep}/></Row>
           <Divider/>
-          <Row label="Active Sessions" value="2 sessions" chevron onClick={()=>{}}/>
+          <Row label={t('privacy.sessions')} value="2 sessions" chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Passcode & Touch ID" value="Off" chevron onClick={()=>{}}/>
+          <Row label={t('privacy.passcode')} value="Off" chevron onClick={()=>{}}/>
         </Card>
         <Card>
-          <SectionTitle label="Advanced"/>
-          <Row label="Delete My Account" value="If away for 1 year" chevron onClick={()=>{}}/>
+          <SectionTitle label={t('privacy.advanced')}/>
+          <Row label={t('privacy.deleteAccount')} value={t('privacy.deleteAccountValue')} chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Blocked Users" value="0" chevron onClick={()=>{}}/>
+          <Row label={t('privacy.blocked')} value="0" chevron onClick={()=>{}}/>
         </Card>
         <Card>
-          <SectionTitle label="Bots & Websites"/>
-          <Row label="Connected Websites" value="0" chevron onClick={()=>{}}/>
+          <SectionTitle label={t('privacy.botsWebsites')}/>
+          <Row label={t('privacy.connectedWebsites')} value="0" chevron onClick={()=>{}}/>
           <Divider/>
-          <Row label="Connected Apps" value="0" chevron onClick={()=>{}}/>
+          <Row label={t('privacy.connectedApps')} value="0" chevron onClick={()=>{}}/>
         </Card>
       </div>
     </div>
@@ -312,12 +316,13 @@ const PrivacySection = () => {
 
 // ─── Data & Storage Section ───────────────────────────────────────────────────
 const DataSection = () => {
+  const { t } = useTranslation();
   const { settings, loading, updateSettings } = useSettings();
   const usedGB = 1.42; const totalGB = 8;
   if (loading || !settings?.data) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading data settings...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -327,39 +332,39 @@ const DataSection = () => {
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Storage usage */}
         <Card>
-          <SectionTitle label="Storage Usage"/>
+          <SectionTitle label={t('data.title')}/>
           <div className="px-5 pb-4">
             <div className="flex justify-between text-[12px] text-[#8E8E93] mb-2">
-              <span>Used: <span className="text-[#1C1C1E] font-medium">{usedGB} GB</span></span>
-              <span>Total: {totalGB} GB</span>
+              <span>{t('data.used')} <span className="text-[#1C1C1E] font-medium">{usedGB} GB</span></span>
+              <span>{t('data.total')} {totalGB} GB</span>
             </div>
             <div className="w-full h-2.5 bg-[#F1F1F1] rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#2481CC] to-[#4DA6E8] rounded-full" style={{width:`${(usedGB/totalGB)*100}%`}}/>
             </div>
             <div className="flex gap-3 mt-3 text-[11px]">
-              {[{label:'Photos',size:'0.8 GB',color:'#2481CC'},{label:'Videos',size:'0.3 GB',color:'#4DA6E8'},{label:'Files',size:'0.2 GB',color:'#7BC4F0'},{label:'Other',size:'0.12 GB',color:'#D1E9F8'}].map(c=>(
+              {[{label:t('data.photos'),size:'0.8 GB',color:'#2481CC'},{label:t('data.videos'),size:'0.3 GB',color:'#4DA6E8'},{label:t('data.files'),size:'0.2 GB',color:'#7BC4F0'},{label:'Other',size:'0.12 GB',color:'#D1E9F8'}].map(c=>(
                 <div key={c.label} className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full shrink-0" style={{background:c.color}}/><span className="text-[#8E8E93]">{c.label} {c.size}</span></div>
               ))}
             </div>
           </div>
           <Divider/>
           <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
-            <Trash2 className="w-4 h-4 text-[#EF4444] mr-3"/><span className="text-[14px] font-medium text-[#EF4444]">Clear Cache</span>
+            <Trash2 className="w-4 h-4 text-[#EF4444] mr-3"/><span className="text-[14px] font-medium text-[#EF4444]">{t('data.clearCache')}</span>
             <span className="ml-auto text-[13px] text-[#8E8E93]">1.42 GB</span>
           </div>
           <Divider/>
-          <Row label="Storage Path" value="~/Downloads" chevron onClick={()=>{}}/>
+          <Row label={t('data.storagePath')} value="~/Downloads" chevron onClick={()=>{}}/>
         </Card>
         {/* Auto-download */}
         <Card>
-          <SectionTitle label="Auto-Download Media"/>
+          <SectionTitle label={t('data.autoDownload')}/>
           <div className="px-5 py-3">
-            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">PRIVATE CHATS</div>
+            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">{t('data.privateChats')}</div>
             <div className="flex gap-4">
               {[
-                ['Photos', d.dlPhotoPrivate, 'dlPhotoPrivate'],
-                ['Videos', d.dlVideoPrivate, 'dlVideoPrivate'],
-                ['Files', d.dlFilePrivate, 'dlFilePrivate'],
+                [t('data.photos'), d.dlPhotoPrivate, 'dlPhotoPrivate'],
+                [t('data.videos'), d.dlVideoPrivate, 'dlVideoPrivate'],
+                [t('data.files'), d.dlFilePrivate, 'dlFilePrivate'],
               ].map(([label, val, key])=>(
                 <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
@@ -370,12 +375,12 @@ const DataSection = () => {
           </div>
           <Divider/>
           <div className="px-5 py-3">
-            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">GROUP CHATS</div>
+            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">{t('data.groupChats')}</div>
             <div className="flex gap-4">
               {[
-                ['Photos', d.dlPhotoGroup, 'dlPhotoGroup'],
-                ['Videos', d.dlVideoGroup, 'dlVideoGroup'],
-                ['Files', d.dlFileGroup, 'dlFileGroup'],
+                [t('data.photos'), d.dlPhotoGroup, 'dlPhotoGroup'],
+                [t('data.videos'), d.dlVideoGroup, 'dlVideoGroup'],
+                [t('data.files'), d.dlFileGroup, 'dlFileGroup'],
               ].map(([label, val, key])=>(
                 <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
@@ -387,17 +392,17 @@ const DataSection = () => {
         </Card>
         {/* Network */}
         <Card>
-          <SectionTitle label="Network Usage"/>
-          {[{label:'Bytes Sent',val:'24.5 MB',icon:Upload},{label:'Bytes Received',val:'142 MB',icon:Download}].map(({label,val,icon:Icon})=>(
+          <SectionTitle label={t('data.network')}/>
+          {[{label:t('data.bytesSent'),val:'24.5 MB',icon:Upload},{label:t('data.bytesReceived'),val:'142 MB',icon:Download}].map(({label,val,icon:Icon})=>(
             <React.Fragment key={label}><Row label={label} value={val}/><Divider/></React.Fragment>
           ))}
-          <Row label="Reset Statistics" danger onClick={()=>{}}/>
+          <Row label={t('data.resetStats')} danger onClick={()=>{}}/>
         </Card>
         {/* Proxy */}
         <Card>
-          <SectionTitle label="Connection Type"/>
-          <Row label="Use Proxy" onClick={()=>updateSettings('data', {proxyOn: !d.proxyOn})}><Toggle value={d.proxyOn} onChange={()=>updateSettings('data', {proxyOn: !d.proxyOn})}/></Row>
-          {d.proxyOn && <><Divider/><Row label="Add Proxy" chevron onClick={()=>{}}/></>}
+          <SectionTitle label={t('data.connectionType')}/>
+          <Row label={t('data.proxy')} onClick={()=>updateSettings('data', {proxyOn: !d.proxyOn})}><Toggle value={d.proxyOn} onChange={()=>updateSettings('data', {proxyOn: !d.proxyOn})}/></Row>
+          {d.proxyOn && <><Divider/><Row label={t('data.addProxy')} chevron onClick={()=>{}}/></>}
         </Card>
       </div>
     </div>
@@ -406,13 +411,14 @@ const DataSection = () => {
 
 // ─── Appearance Section ───────────────────────────────────────────────────────
 const AppearanceSection = () => {
+  const { t } = useTranslation();
   const { settings, loading, updateSettings } = useSettings();
-  const THEMES = [{id:'day',label:'Day',icon:Sun,color:'#FDB022'},{id:'night',label:'Night',icon:Moon,color:'#8E8E93'},{id:'system',label:'System',icon:Monitor,color:'#2481CC'}] as const;
+  const THEMES = [{id:'day',label:t('appearance.day')||'Day',icon:Sun,color:'#FDB022'},{id:'night',label:t('appearance.night')||'Night',icon:Moon,color:'#8E8E93'},{id:'system',label:t('appearance.system')||'System',icon:Monitor,color:'#2481CC'}] as const;
   const BGOPTS = [{id:'default',color:'#F0F2F5'},{id:'pattern',color:'#dfe6e9'},{id:'gradient',color:'linear-gradient(135deg,#667eea,#764ba2)'},{id:'nature',color:'linear-gradient(135deg,#56ab2f,#a8e063)'},{id:'dark',color:'#1a1a2e'}];
   if (loading || !settings?.appearance) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading appearance...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -422,18 +428,18 @@ const AppearanceSection = () => {
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Theme */}
         <Card>
-          <SectionTitle label="Color Theme"/>
+          <SectionTitle label={t('appearance.colorTheme')}/>
           <div className="flex gap-3 px-5 py-4">
-            {THEMES.map(t=>(
-              <button key={t.id} onClick={()=>updateSettings('appearance', {theme: t.id})}
-                className={`flex-1 py-3 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${a.theme===t.id?'border-[#2481CC] bg-[#E8F4FF]':'border-transparent bg-[#F5F5F5] hover:bg-[#EBEBEB]'}`}>
-                <t.icon className="w-6 h-6" style={{color:t.color}}/>
-                <span className={`text-[12px] font-semibold ${a.theme===t.id?'text-[#2481CC]':'text-[#8E8E93]'}`}>{t.label}</span>
+            {THEMES.map(th=>(
+              <button key={th.id} onClick={()=>updateSettings('appearance', {theme: th.id})}
+                className={`flex-1 py-3 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${a.theme===th.id?'border-[#2481CC] bg-[#E8F4FF]':'border-transparent bg-[#F5F5F5] hover:bg-[#EBEBEB]'}`}>
+                <th.icon className="w-6 h-6" style={{color:th.color}}/>
+                <span className={`text-[12px] font-semibold ${a.theme===th.id?'text-[#2481CC]':'text-[#8E8E93]'}`}>{th.label}</span>
               </button>
             ))}
           </div>
           <Divider/>
-          <Row label="Chat Background" chevron onClick={()=>{}}>
+          <Row label={t('appearance.chatBg')} chevron onClick={()=>{}}>
             <div className="flex gap-1 mr-2">
               {BGOPTS.map(b=>(
                 <button key={b.id} onClick={e=>{e.stopPropagation();updateSettings('appearance', {chatBg: b.id});}}
@@ -445,10 +451,10 @@ const AppearanceSection = () => {
         </Card>
         {/* Text size */}
         <Card>
-          <SectionTitle label="Messages"/>
+          <SectionTitle label={t('appearance.messages')}/>
           <div className="px-5 py-4">
             <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13px] text-[#8E8E93]">Text Size</span>
+              <span className="text-[13px] text-[#8E8E93]">{t('appearance.textSize')}</span>
               <span className="text-[13px] font-semibold text-[#2481CC]">{a.fontSize}px</span>
             </div>
             <input type="range" min={12} max={20} value={a.fontSize} onChange={e=>updateSettings('appearance', {fontSize: Number(e.target.value)})} className="w-full accent-[#2481CC]"/>
@@ -459,18 +465,18 @@ const AppearanceSection = () => {
             </div>
           </div>
           <Divider/>
-          <Row label="Large Emoji" sub="Show larger emoji in messages without text" onClick={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}><Toggle value={a.bigEmoji} onChange={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}/></Row>
+          <Row label={t('appearance.largeEmoji')} sub={t('appearance.largeEmojiSub')} onClick={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}><Toggle value={a.bigEmoji} onChange={()=>updateSettings('appearance', {bigEmoji: !a.bigEmoji})}/></Row>
           <Divider/>
-          <Row label="Animate Emoji" sub="Show animated stickers and emoji" onClick={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}><Toggle value={a.animateEmoji} onChange={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}/></Row>
+          <Row label={t('appearance.animateEmoji')} sub={t('appearance.animateEmojiSub')} onClick={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}><Toggle value={a.animateEmoji} onChange={()=>updateSettings('appearance', {animateEmoji: !a.animateEmoji})}/></Row>
           <Divider/>
-          <Row label="Message Bubbles" sub="Show colored bubbles for outgoing messages" onClick={()=>updateSettings('appearance', {bubbles: !a.bubbles})}><Toggle value={a.bubbles} onChange={()=>updateSettings('appearance', {bubbles: !a.bubbles})}/></Row>
+          <Row label={t('appearance.bubbles')} sub={t('appearance.bubblesSub')} onClick={()=>updateSettings('appearance', {bubbles: !a.bubbles})}><Toggle value={a.bubbles} onChange={()=>updateSettings('appearance', {bubbles: !a.bubbles})}/></Row>
         </Card>
         {/* Accessibility */}
         <Card>
-          <SectionTitle label="Accessibility"/>
-          <Row label="Reduce Motion" sub="Disable animations throughout the app" onClick={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}><Toggle value={a.reduceMotion} onChange={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}/></Row>
+          <SectionTitle label={t('appearance.accessibility')}/>
+          <Row label={t('appearance.reduceMotion')} sub={t('appearance.reduceMotionSub')} onClick={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}><Toggle value={a.reduceMotion} onChange={()=>updateSettings('appearance', {reduceMotion: !a.reduceMotion})}/></Row>
           <Divider/>
-          <Row label="Increase Contrast" onClick={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}><Toggle value={a.increaseContrast} onChange={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}/></Row>
+          <Row label={t('appearance.increaseContrast')} onClick={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}><Toggle value={a.increaseContrast} onChange={()=>updateSettings('appearance', {increaseContrast: !a.increaseContrast})}/></Row>
         </Card>
       </div>
     </div>
@@ -479,6 +485,7 @@ const AppearanceSection = () => {
 
 // ─── Language Section ─────────────────────────────────────────────────────────
 const LanguageSection = () => {
+  const { t } = useTranslation();
   const { settings, loading, updateSettings } = useSettings();
   const LANGS = [
     {code:'🇺🇸',name:'English',native:'English'},
@@ -497,7 +504,7 @@ const LanguageSection = () => {
   if (loading || !settings?.language) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading language...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -506,7 +513,7 @@ const LanguageSection = () => {
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         <Card>
-          <SectionTitle label="Interface Language"/>
+          <SectionTitle label={t('language.interface')}/>
           {LANGS.map((lang,i)=>(
             <React.Fragment key={lang.name}>
               {i>0&&<Divider/>}
@@ -519,11 +526,11 @@ const LanguageSection = () => {
           ))}
         </Card>
         <Card>
-          <Row label="Translate Messages" sub="Translate incoming messages automatically" onClick={()=>updateSettings('language', {translateMessages: !l.translateMessages})}>
+          <Row label={t('language.translate')} sub={t('language.translateSub')} onClick={()=>updateSettings('language', {translateMessages: !l.translateMessages})}>
             <Toggle value={l.translateMessages} onChange={()=>updateSettings('language', {translateMessages: !l.translateMessages})}/>
           </Row>
           <Divider/>
-          <Row label="Show Translate Button" onClick={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}><Toggle value={l.showTranslateButton} onChange={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}/></Row>
+          <Row label={t('language.showTranslate')} onClick={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}><Toggle value={l.showTranslateButton} onChange={()=>updateSettings('language', {showTranslateButton: !l.showTranslateButton})}/></Row>
         </Card>
       </div>
     </div>
@@ -571,6 +578,7 @@ const PremiumSection = () => (
 
 // ─── Devices Section ──────────────────────────────────────────────────────────
 const DevicesSection = () => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -638,7 +646,7 @@ const DevicesSection = () => {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
-        <div className="text-[14px] text-[#8E8E93]">Loading sessions...</div>
+        <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
@@ -648,7 +656,7 @@ const DevicesSection = () => {
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Current */}
         <Card>
-          <SectionTitle label="Current Session"/>
+          <SectionTitle label={t('devices.current')}/>
           {sessions.filter(s=>s.current).map(s=>{
             const Icon = getDeviceIcon(s.userAgent);
             return (
@@ -697,12 +705,12 @@ const DevicesSection = () => {
           <Card>
             <div className="flex items-center px-5 py-3.5 cursor-pointer hover:bg-[#FEF2F2] transition-colors" onClick={handleRevokeAll}>
               <UserX className="w-4 h-4 text-[#EF4444] mr-3 shrink-0"/>
-              <span className="text-[14px] font-medium text-[#EF4444]">Terminate All Other Sessions</span>
+              <span className="text-[14px] font-medium text-[#EF4444]">{t('devices.terminateAll')}</span>
             </div>
           </Card>
         )}
         {sessions.filter(s=>!s.current).length===0 && (
-          <div className="text-center py-8 text-[#8E8E93] text-[14px]">No other active sessions</div>
+          <div className="text-center py-8 text-[#8E8E93] text-[14px]">{t('devices.noOther')}</div>
         )}
       </div>
     </div>
@@ -950,6 +958,7 @@ const BotsSection = () => {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function DesktopSettings() {
+  const { t } = useTranslation();
   const [active, setActive] = useState<Section>('account');
   const [search, setSearch] = useState('');
   const { profile, loading: profileLoading } = useUserProfile();
@@ -966,20 +975,20 @@ export function DesktopSettings() {
   const initials = profile?.username ? profile.username.slice(0, 2).toUpperCase() : '??';
 
   const NAV_ITEMS: {id:Section; icon:React.ComponentType<{className?:string}>; label:string; badge?:string; color?:string}[] = [
-    { id:'account', icon:Settings, label:'My Account' },
-    { id:'notifications', icon:Bell, label:'Notifications and Sounds' },
-    { id:'privacy', icon:Shield, label:'Privacy and Security' },
-    { id:'data', icon:Database, label:'Data and Storage' },
-    { id:'appearance', icon:Palette, label:'Appearance' },
-    { id:'language', icon:Globe, label:'Language', badge:'English' },
-    { id:'bots', icon:Bot, label:'Bots' },
-    { id:'premium', icon:Crown, label:'Telegram Premium', color:'text-[#8B5CF6]' },
-    { id:'devices', icon:Monitor, label:'Devices', badge:'4' },
+    { id:'account', icon:Settings, label:t('settings.account') },
+    { id:'notifications', icon:Bell, label:t('settings.notifications') },
+    { id:'privacy', icon:Shield, label:t('settings.privacy') },
+    { id:'data', icon:Database, label:t('settings.data') },
+    { id:'appearance', icon:Palette, label:t('settings.appearance') },
+    { id:'language', icon:Globe, label:t('settings.language'), badge:'English' },
+    { id:'bots', icon:Bot, label:t('settings.bots') },
+    { id:'premium', icon:Crown, label:t('settings.premium'), color:'text-[#8B5CF6]' },
+    { id:'devices', icon:Monitor, label:t('settings.devices'), badge:'4' },
   ];
 
   const SECTION_TITLES: Record<Section,string> = {
-    account:'My Account', notifications:'Notifications and Sounds', privacy:'Privacy and Security',
-    data:'Data and Storage', appearance:'Appearance', language:'Language', bots:'Bot Management', premium:'Telegram Premium', devices:'Active Sessions',
+    account:t('settings.account'), notifications:t('settings.notifications'), privacy:t('settings.privacy'),
+    data:t('settings.data'), appearance:t('settings.appearance'), language:t('settings.language'), bots:t('settings.bots'), premium:t('settings.premium'), devices:t('settings.devices'),
   };
 
   return (

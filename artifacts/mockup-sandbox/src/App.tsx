@@ -1,5 +1,6 @@
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { useSettings } from './hooks/useSettings';
+import { I18nProvider } from './lib/i18n';
 import LoginScreen from './components/LoginScreen';
 import DesktopMain from './components/mockups/telegram/DesktopMain';
 
@@ -24,9 +25,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <I18nProvider defaultLocale="ru">
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </I18nProvider>
   );
 }
 

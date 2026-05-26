@@ -1,0 +1,182 @@
+import { loadDictionary } from "../index";
+
+loadDictionary("ru", {
+  // App
+  "app.title": "M4Chat",
+  "app.loading": "Загрузка...",
+
+  // Sidebar / Chat list
+  "sidebar.search": "Поиск",
+  "sidebar.newChat": "Новый чат",
+  "sidebar.secretChat": "Секретный чат",
+  "sidebar.archive": "Архив",
+  "sidebar.backToChats": "Назад к чатам",
+  "chatList.noMessages": "Нет сообщений",
+  "chatList.emptyState": "Выберите чат, чтобы начать общение",
+
+  // Chat header
+  "chatHeader.online": "онлайн",
+  "chatHeader.typing": "печатает",
+  "chatHeader.selectMode": "выбрано",
+  "chatHeader.deleteSelected": "Удалить",
+
+  // Message input
+  "input.placeholder": "Сообщение",
+  "input.silent": "Без звука",
+  "input.gif": "GIF",
+  "input.sticker": "стикер",
+  "input.recordVoice": "Записать голосовое",
+  "input.recordVideo": "Записать видеосообщение",
+
+  // Message types
+  "msg.photo": "Фото",
+  "msg.sticker": "Стикер",
+  "msg.videoMessage": "Видеосообщение",
+  "msg.deleted": "Сообщение удалено",
+  "msg.edited": "изм.",
+
+  // Context menu
+  "ctx.reply": "Ответить",
+  "ctx.copy": "Копировать",
+  "ctx.forward": "Переслать",
+  "ctx.pin": "Закрепить",
+  "ctx.edit": "Изменить",
+  "ctx.delete": "Удалить",
+  "ctx.select": "Выбрать",
+
+  // Settings sections
+  "settings.title": "Настройки",
+  "settings.account": "Аккаунт",
+  "settings.notifications": "Уведомления",
+  "settings.privacy": "Конфиденциальность",
+  "settings.data": "Данные и память",
+  "settings.appearance": "Оформление",
+  "settings.language": "Язык",
+  "settings.premium": "Premium",
+  "settings.devices": "Устройства",
+  "settings.bots": "Боты",
+  "settings.version": "Версия",
+
+  // Account
+  "account.name": "Имя",
+  "account.username": "Имя пользователя",
+  "account.phone": "Телефон",
+  "account.email": "Email",
+  "account.bio": "О себе",
+  "account.bioHint": "Любые подробности, например возраст, род занятий или город",
+  "account.noBio": "Нет описания",
+  "account.notSet": "Не указано",
+  "account.addAccount": "Добавить аккаунт",
+  "account.logout": "Выйти",
+  "account.changePhone": "Телефон (нажмите для изменения)",
+  "account.changeEmail": "Email (нажмите для изменения)",
+
+  // Notifications
+  "notif.privateChats": "Личные чаты",
+  "notif.groups": "Группы",
+  "notif.channels": "Каналы",
+  "notif.general": "Общие",
+  "notif.enable": "Включить уведомления",
+  "notif.sound": "Звук",
+  "notif.preview": "Предпросмотр сообщения",
+  "notif.badge": "Счётчик на иконке",
+  "notif.countUnread": "Считать непрочитанные",
+  "notif.countUnreadSub": "Считать все непрочитанные сообщения, а не только чаты",
+  "notif.includeArchived": "Включая архивные чаты",
+
+  // Privacy
+  "privacy.title": "Конфиденциальность",
+  "privacy.lastSeen": "Последнее посещение",
+  "privacy.lastSeenSub": "Кто видит, когда вы были в сети",
+  "privacy.profilePhoto": "Фото профиля",
+  "privacy.profilePhotoSub": "Кто видит ваше фото профиля",
+  "privacy.forwarded": "Пересылаемые сообщения",
+  "privacy.forwardedSub": "Кто может пересылать ваши сообщения",
+  "privacy.phoneNumber": "Номер телефона",
+  "privacy.phoneNumberSub": "Кто видит ваш номер телефона",
+  "privacy.calls": "Звонки",
+  "privacy.callsSub": "Кто может звонить вам",
+  "privacy.groupAdd": "Группы и каналы",
+  "privacy.groupAddSub": "Кто может добавлять вас в группы",
+  "privacy.security": "Безопасность",
+  "privacy.2fa": "Двухэтапная аутентификация",
+  "privacy.2faEnabled": "Включена — Пароль установлен",
+  "privacy.2faDisabled": "Отключена",
+  "privacy.sessions": "Активные сессии",
+  "privacy.passcode": "Пароль и Touch ID",
+  "privacy.advanced": "Расширенные",
+  "privacy.deleteAccount": "Удалить мой аккаунт",
+  "privacy.deleteAccountValue": "Если не был в сети 1 год",
+  "privacy.blocked": "Заблокированные",
+  "privacy.botsWebsites": "Боты и сайты",
+  "privacy.connectedWebsites": "Подключённые сайты",
+  "privacy.connectedApps": "Подключённые приложения",
+
+  // Data & Storage
+  "data.title": "Использование памяти",
+  "data.used": "Использовано:",
+  "data.total": "Всего:",
+  "data.clearCache": "Очистить кэш",
+  "data.storagePath": "Путь к хранилищу",
+  "data.autoDownload": "Автозагрузка медиа",
+  "data.privateChats": "ЛИЧНЫЕ ЧАТЫ",
+  "data.groupChats": "ГРУППОВЫЕ ЧАТЫ",
+  "data.photos": "Фото",
+  "data.videos": "Видео",
+  "data.files": "Файлы",
+  "data.network": "Использование сети",
+  "data.bytesSent": "Отправлено",
+  "data.bytesReceived": "Получено",
+  "data.resetStats": "Сбросить статистику",
+  "data.proxy": "Использовать прокси",
+  "data.addProxy": "Добавить прокси",
+  "data.connectionType": "Тип подключения",
+
+  // Appearance
+  "appearance.day": "День",
+  "appearance.night": "Ночь",
+  "appearance.system": "Системная",
+  "appearance.colorTheme": "Цветовая тема",
+  "appearance.chatBg": "Фон чата",
+  "appearance.messages": "Сообщения",
+  "appearance.textSize": "Размер текста",
+  "appearance.largeEmoji": "Крупные эмодзи",
+  "appearance.largeEmojiSub": "Показывать крупные эмодзи в сообщениях без текста",
+  "appearance.animateEmoji": "Анимированные эмодзи",
+  "appearance.animateEmojiSub": "Показывать анимированные стикеры и эмодзи",
+  "appearance.bubbles": "Пузыри сообщений",
+  "appearance.bubblesSub": "Показывать цветные пузыри для исходящих сообщений",
+  "appearance.accessibility": "Специальные возможности",
+  "appearance.reduceMotion": "Уменьшить движение",
+  "appearance.reduceMotionSub": "Отключить анимации в приложении",
+  "appearance.increaseContrast": "Повысить контрастность",
+
+  // Language
+  "language.interface": "Язык интерфейса",
+  "language.translate": "Переводить сообщения",
+  "language.translateSub": "Автоматически переводить входящие сообщения",
+  "language.showTranslate": "Показывать кнопку перевода",
+
+  // Devices
+  "devices.current": "Текущая сессия",
+  "devices.terminate": "Завершить",
+  "devices.terminateAll": "Завершить все остальные сессии",
+  "devices.noOther": "Нет других активных сессий",
+
+  // Time
+  "time.justNow": "только что",
+  "time.today": "сегодня",
+  "time.yesterday": "вчера",
+
+  // General
+  "general.save": "Сохранить",
+  "general.cancel": "Отмена",
+  "general.edit": "Изменить",
+  "general.delete": "Удалить",
+  "general.search": "Поиск",
+  "general.close": "Закрыть",
+  "general.open": "Открыть",
+  "general.loading": "Загрузка...",
+  "general.error": "Ошибка",
+  "general.success": "Готово",
+});

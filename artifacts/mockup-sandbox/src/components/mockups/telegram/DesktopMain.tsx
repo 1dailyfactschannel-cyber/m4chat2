@@ -26,6 +26,7 @@ import { useWebRTC } from '../../../hooks/useWebRTC';
 import { cacheDB } from '../../../lib/cache';
 import { MessageText } from '../../MessageText';
 
+import { useTranslation } from '../../../hooks/useTranslation';
 import { DesktopSettings } from './DesktopSettings';
 import { VoiceMessage } from '../../VoiceMessage';
 import { PollMessage } from '../../PollMessage';
@@ -33,7 +34,6 @@ import { GifPicker } from '../../GifPicker';
 import { StickerPicker } from '../../StickerPicker';
 import { VideoNoteRecorder } from '../../VideoNoteRecorder';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const nowStr = () => {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -76,8 +76,8 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function DesktopMain() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { chats, folders, loading: chatsLoading, refresh: refreshChats } = useChats();
   const {
@@ -601,16 +601,16 @@ export default function DesktopMain() {
                     <Camera className="w-5 h-5 text-white drop-shadow-md" />
                   </div>
                 </label>
-                <div className="font-bold text-[16px] text-white">{user?.username || 'User'}</div>
+                <div className="font-bold text-[16px] text-white">{user?.username || t('account.name')}</div>
                 <div className="text-white/60 text-[13px]">@{user?.username?.toLowerCase() || 'user'}</div>
               </div>
               <div className="flex-1 overflow-y-auto py-2">
                 {[
-                  { icon: MessageCircle, label: 'Чаты', active: true },
+                  { icon: MessageCircle, label: t('settings.title'), active: true },
                   { icon: Phone, label: 'Звонки', active: false },
                   { icon: Users, label: 'Контакты', active: false },
                   { icon: Bookmark, label: 'Избранное', active: false },
-                  { icon: Settings, label: 'Настройки', active: false },
+                  { icon: Settings, label: t('settings.title'), active: false },
                 ].map(({ icon: Icon, label, active }) => (
                   <button
                     key={label}
@@ -696,7 +696,7 @@ export default function DesktopMain() {
           <h1 className="font-semibold text-[16px] flex-1" style={{ color: bg.text }}>Telegram</h1>
           <div className="flex items-center gap-2" style={{ color: bg.textSec }}>
             <Search className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
-            <button onClick={() => setShowCreateModal(true)} title="Новый чат">
+            <button onClick={() => setShowCreateModal(true)}               title={t('sidebar.newChat')}>
               <Edit3 className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
             </button>
             <button
@@ -724,7 +724,7 @@ export default function DesktopMain() {
                   alert('Ошибка создания секретного чата');
                 }
               }}
-              title="Секретный чат"
+              title={t('sidebar.secretChat')}
             >
               <Lock className="w-5 h-5 cursor-pointer hover:text-[#2481CC] transition-colors" />
             </button>
@@ -736,7 +736,7 @@ export default function DesktopMain() {
             <Search className="w-4 h-4 shrink-0" style={{ color: bg.textSec }} />
             <input
               type="text"
-              placeholder="Поиск"
+              placeholder={t('sidebar.search')}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="bg-transparent border-none outline-none text-[13px] w-full"
@@ -801,7 +801,7 @@ export default function DesktopMain() {
                     <div className="flex justify-between items-baseline mb-0.5">
                       <div className="flex items-center gap-1 truncate">
                         {chat.isSecret && <Lock className="w-3 h-3" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : '#4DCA65' }} />}
-                        <h3 className="font-semibold text-[14px] truncate pr-1" style={{ color: isActive ? 'white' : bg.text }}>{chat.name || 'Unknown'}</h3>
+                        <h3 className="font-semibold text-[14px] truncate pr-1" style={{ color: isActive ? 'white' : bg.text }}>                {chat.name || t('general.error')}</h3>
                       </div>
                       <div className="flex items-center gap-1">
                         {chat.pinnedAt && (
@@ -814,7 +814,7 @@ export default function DesktopMain() {
                     </div>
                     <div className="flex justify-between items-center">
                       <p className="text-[12px] truncate pr-1" style={{ color: isActive ? 'rgba(255,255,255,0.75)' : bg.textSec }}>
-                        {lastMsg?.messageType === 'image' ? 'Фото' : lastMsg?.messageType === 'sticker' ? 'Стикер' : lastMsg?.messageType === 'video_note' ? 'Видеосообщение' : lastMsg?.content || 'Нет сообщений'}
+                        {lastMsg?.messageType === 'image' ? t('msg.photo') : lastMsg?.messageType === 'sticker' ? t('msg.sticker') : lastMsg?.messageType === 'video_note' ? t('msg.videoMessage') : lastMsg?.content || t('chatList.noMessages')}
                       </p>
                       <div className="flex items-center gap-1 shrink-0">
                         {(chat.unreadCount ?? 0) > 0 && (
@@ -845,7 +845,7 @@ export default function DesktopMain() {
             <button className="flex flex-col text-left hover:opacity-70 transition-opacity" onClick={(e) => { e.stopPropagation(); setShowProfile(!showProfile); }}>
               <div className="flex items-center gap-1.5">
                 {activeChat?.isSecret && <Lock className="w-3.5 h-3.5 text-[#4DCA65]" />}
-                <h2 className="font-semibold text-[14px] leading-tight" style={{ color: bg.text }}>{activeChat?.name || 'Выберите чат'}</h2>
+                <h2 className="font-semibold text-[14px] leading-tight" style={{ color: bg.text }}>{activeChat?.name || t('chatList.emptyState')}</h2>
               </div>
               <span className="text-[12px] leading-tight" style={{ color: typingUsers.size > 0 ? '#4DCA65' : bg.textSec }}>
                 {typingUsers.size > 0 ? (
@@ -880,7 +880,7 @@ export default function DesktopMain() {
                     <input
                       autoFocus
                       type="text"
-                      placeholder="Поиск в чате..."
+                      placeholder={t('sidebar.search') + '...'}
                       value={searchMsg}
                       onChange={(e) => setSearchMsg(e.target.value)}
                       className="border rounded-full px-3 py-1 text-[12px] outline-none"
@@ -905,7 +905,7 @@ export default function DesktopMain() {
               <div className="flex-1 flex items-center justify-center h-full">
                 <div className="text-center">
                   <MessageCircle className="w-16 h-16 mx-auto mb-4" style={{ color: bg.textSec, opacity: 0.3 }} />
-                  <p className="text-[16px] font-medium" style={{ color: bg.textSec }}>Выберите чат чтобы начать общение</p>
+                  <p className="text-[16px] font-medium" style={{ color: bg.textSec }}>{t('chatList.emptyState')}</p>
                 </div>
               </div>
             ) : (
@@ -972,8 +972,8 @@ export default function DesktopMain() {
                             {/* Reply preview */}
                             {replyMsg && (
                               <div className={`text-[11px] mb-1 pl-2 border-l-2 ${msg.senderId === user?.id ? 'border-blue-200 text-blue-100' : 'border-[#2481CC] text-[#2481CC]'}`}>
-                                <div className="font-semibold">{replyMsg.senderName || 'Unknown'}</div>
-                                <div className="truncate opacity-80">{replyMsg.content || 'Медиа'}</div>
+                                <div className="font-semibold">{replyMsg.senderName || t('account.notSet')}</div>
+                                <div className="truncate opacity-80">{replyMsg.content || t('msg.sticker')}</div>
                               </div>
                             )}
                             {/* Bubble */}
@@ -1045,7 +1045,7 @@ export default function DesktopMain() {
                                 ) : (
                                   <p className="leading-relaxed pr-14" style={{ fontSize, color: msg.senderId === user?.id ? 'white' : bg.text }}>
                                     {msg.isDeleted ? (
-                                      <span className="italic opacity-50">Сообщение удалено</span>
+                                      <span className="italic opacity-50">{t('msg.deleted')}</span>
                                     ) : activeChat?.isSecret ? (
                                       <span>{decryptedMessages[msg.id] || '🔒 Расшифровка...'}</span>
                                     ) : (
@@ -1069,7 +1069,7 @@ export default function DesktopMain() {
                                   </div>
                                 )}
                                 <div className={`flex items-center gap-1 ${msg.senderId === user?.id ? 'text-blue-100' : 'text-[#8E8E93]'} justify-end mt-0.5`}>
-                                  {msg.isEdited && <span className="text-[10px] opacity-70">изм.</span>}
+                                    {msg.isEdited && <span className="text-[10px] opacity-70">{t('msg.edited')}</span>}
                                   <span className="text-[11px]">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                   {msg.senderId === user?.id && <CheckCheck className="w-3 h-3" />}
                                 </div>
@@ -1168,7 +1168,7 @@ export default function DesktopMain() {
                 <textarea
                   ref={inputRef}
                   rows={1}
-                  placeholder="Сообщение..."
+                  placeholder={t('input.placeholder') + '...'}
                   value={inputText}
                   onChange={(e) => {
                     handleInputChange(e.target.value);

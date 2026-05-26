@@ -1,0 +1,182 @@
+import { loadDictionary } from "../index";
+
+loadDictionary("en", {
+  // App
+  "app.title": "M4Chat",
+  "app.loading": "Loading...",
+
+  // Sidebar / Chat list
+  "sidebar.search": "Search",
+  "sidebar.newChat": "New chat",
+  "sidebar.secretChat": "Secret chat",
+  "sidebar.archive": "Archive",
+  "sidebar.backToChats": "Back to chats",
+  "chatList.noMessages": "No messages",
+  "chatList.emptyState": "Select a chat to start messaging",
+
+  // Chat header
+  "chatHeader.online": "online",
+  "chatHeader.typing": "typing",
+  "chatHeader.selectMode": "selected",
+  "chatHeader.deleteSelected": "Delete",
+
+  // Message input
+  "input.placeholder": "Message",
+  "input.silent": "Silent",
+  "input.gif": "GIF",
+  "input.sticker": "sticker",
+  "input.recordVoice": "Record voice message",
+  "input.recordVideo": "Record video note",
+
+  // Message types
+  "msg.photo": "Photo",
+  "msg.sticker": "Sticker",
+  "msg.videoMessage": "Video message",
+  "msg.deleted": "Message deleted",
+  "msg.edited": "edited",
+
+  // Context menu
+  "ctx.reply": "Reply",
+  "ctx.copy": "Copy",
+  "ctx.forward": "Forward",
+  "ctx.pin": "Pin",
+  "ctx.edit": "Edit",
+  "ctx.delete": "Delete",
+  "ctx.select": "Select",
+
+  // Settings sections
+  "settings.title": "Settings",
+  "settings.account": "Account",
+  "settings.notifications": "Notifications",
+  "settings.privacy": "Privacy & Security",
+  "settings.data": "Data & Storage",
+  "settings.appearance": "Appearance",
+  "settings.language": "Language",
+  "settings.premium": "Premium",
+  "settings.devices": "Devices",
+  "settings.bots": "Bots",
+  "settings.version": "Version",
+
+  // Account
+  "account.name": "Name",
+  "account.username": "Username",
+  "account.phone": "Phone",
+  "account.email": "Email",
+  "account.bio": "Bio",
+  "account.bioHint": "Any details such as age, occupation or city",
+  "account.noBio": "No bio yet",
+  "account.notSet": "Not set",
+  "account.addAccount": "Add Another Account",
+  "account.logout": "Log Out",
+  "account.changePhone": "Phone (tap to change)",
+  "account.changeEmail": "Email (tap to change)",
+
+  // Notifications
+  "notif.privateChats": "Private Chats",
+  "notif.groups": "Groups",
+  "notif.channels": "Channels",
+  "notif.general": "General",
+  "notif.enable": "Enable Notifications",
+  "notif.sound": "Sound",
+  "notif.preview": "Message Preview",
+  "notif.badge": "Badge Counter",
+  "notif.countUnread": "Count Unread Messages",
+  "notif.countUnreadSub": "Count all unread messages, not just conversations",
+  "notif.includeArchived": "Include Archived Chats",
+
+  // Privacy
+  "privacy.title": "Privacy",
+  "privacy.lastSeen": "Last Seen & Online",
+  "privacy.lastSeenSub": "Who can see when you were last online",
+  "privacy.profilePhoto": "Profile Photo",
+  "privacy.profilePhotoSub": "Who can see your profile photo",
+  "privacy.forwarded": "Forwarded Messages",
+  "privacy.forwardedSub": "Who can forward your messages",
+  "privacy.phoneNumber": "Phone Number",
+  "privacy.phoneNumberSub": "Who can see your phone number",
+  "privacy.calls": "Calls",
+  "privacy.callsSub": "Who can call you",
+  "privacy.groupAdd": "Group Chats & Channels",
+  "privacy.groupAddSub": "Who can add you to groups",
+  "privacy.security": "Security",
+  "privacy.2fa": "Two-Step Verification",
+  "privacy.2faEnabled": "Enabled — Password set",
+  "privacy.2faDisabled": "Disabled",
+  "privacy.sessions": "Active Sessions",
+  "privacy.passcode": "Passcode & Touch ID",
+  "privacy.advanced": "Advanced",
+  "privacy.deleteAccount": "Delete My Account",
+  "privacy.deleteAccountValue": "If away for 1 year",
+  "privacy.blocked": "Blocked Users",
+  "privacy.botsWebsites": "Bots & Websites",
+  "privacy.connectedWebsites": "Connected Websites",
+  "privacy.connectedApps": "Connected Apps",
+
+  // Data & Storage
+  "data.title": "Storage Usage",
+  "data.used": "Used:",
+  "data.total": "Total:",
+  "data.clearCache": "Clear Cache",
+  "data.storagePath": "Storage Path",
+  "data.autoDownload": "Auto-Download Media",
+  "data.privateChats": "PRIVATE CHATS",
+  "data.groupChats": "GROUP CHATS",
+  "data.photos": "Photos",
+  "data.videos": "Videos",
+  "data.files": "Files",
+  "data.network": "Network Usage",
+  "data.bytesSent": "Bytes Sent",
+  "data.bytesReceived": "Bytes Received",
+  "data.resetStats": "Reset Statistics",
+  "data.proxy": "Use Proxy",
+  "data.addProxy": "Add Proxy",
+  "data.connectionType": "Connection Type",
+
+  // Appearance
+  "appearance.day": "Day",
+  "appearance.night": "Night",
+  "appearance.system": "System",
+  "appearance.colorTheme": "Color Theme",
+  "appearance.chatBg": "Chat Background",
+  "appearance.messages": "Messages",
+  "appearance.textSize": "Text Size",
+  "appearance.largeEmoji": "Large Emoji",
+  "appearance.largeEmojiSub": "Show larger emoji in messages without text",
+  "appearance.animateEmoji": "Animate Emoji",
+  "appearance.animateEmojiSub": "Show animated stickers and emoji",
+  "appearance.bubbles": "Message Bubbles",
+  "appearance.bubblesSub": "Show colored bubbles for outgoing messages",
+  "appearance.accessibility": "Accessibility",
+  "appearance.reduceMotion": "Reduce Motion",
+  "appearance.reduceMotionSub": "Disable animations throughout the app",
+  "appearance.increaseContrast": "Increase Contrast",
+
+  // Language
+  "language.interface": "Interface Language",
+  "language.translate": "Translate Messages",
+  "language.translateSub": "Translate incoming messages automatically",
+  "language.showTranslate": "Show Translate Button",
+
+  // Devices
+  "devices.current": "Current Session",
+  "devices.terminate": "Terminate",
+  "devices.terminateAll": "Terminate All Other Sessions",
+  "devices.noOther": "No other active sessions",
+
+  // Time
+  "time.justNow": "just now",
+  "time.today": "today",
+  "time.yesterday": "yesterday",
+
+  // General
+  "general.save": "Save",
+  "general.cancel": "Cancel",
+  "general.edit": "Edit",
+  "general.delete": "Delete",
+  "general.search": "Search",
+  "general.close": "Close",
+  "general.open": "Open",
+  "general.loading": "Loading...",
+  "general.error": "Error",
+  "general.success": "Success",
+});

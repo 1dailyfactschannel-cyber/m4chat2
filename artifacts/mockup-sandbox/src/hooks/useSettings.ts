@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../lib/api";
 import { useUIStore } from "../store/uiStore";
+import { useI18n } from "../lib/i18n";
 
 interface Settings {
   notifications: Record<string, any>;
@@ -79,10 +80,29 @@ function syncAppearanceWithUI(appearance: Settings['appearance']) {
   setDarkMode(isDark);
 }
 
+function mapLangToLocale(lang: string): "ru" | "en" {
+  const map: Record<string, "ru" | "en"> = {
+    Russian: "ru",
+    English: "en",
+    German: "en",
+    French: "en",
+    Spanish: "en",
+    Italian: "en",
+    Portuguese: "en",
+    "Chinese (Simplified)": "en",
+    Japanese: "en",
+    Korean: "en",
+    Arabic: "en",
+    Turkish: "en",
+  };
+  return map[lang] || "en";
+}
+
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { setLocale } = useI18n();
 
   const loadSettings = useCallback(async () => {
     try {
@@ -96,12 +116,13 @@ export function useSettings() {
       };
       setSettings(merged);
       syncAppearanceWithUI(merged.appearance);
+      setLocale(mapLangToLocale(merged.language.lang));
     } catch (err) {
       console.error("Failed to load settings:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setLocale]);
 
   useEffect(() => {
     loadSettings();
@@ -128,6 +149,11 @@ export function useSettings() {
         syncAppearanceWithUI(updated.appearance);
       }
 
+      // Sync language changes to i18n immediately
+      if (category === 'language' && values.lang !== undefined) {
+        setLocale(mapLangToLocale(values.lang));
+      }
+
       // Debounced save to server
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
@@ -138,7 +164,7 @@ export function useSettings() {
 
       return updated;
     });
-  }, []);
+  }, [setLocale]);
 
   return { settings, loading, updateSettings, reload: loadSettings };
 }
