@@ -1,4 +1,4 @@
-import { loadDictionary } from "../index";
+import { loadDictionary } from "../registry";
 
 loadDictionary("en", {
   // App
@@ -118,13 +118,17 @@ loadDictionary("en", {
   "data.used": "Used:",
   "data.total": "Total:",
   "data.clearCache": "Clear Cache",
+  "data.clearCacheDesc": "Choose which data to delete. This won't affect cloud data.",
   "data.storagePath": "Storage Path",
   "data.autoDownload": "Auto-Download Media",
   "data.privateChats": "PRIVATE CHATS",
   "data.groupChats": "GROUP CHATS",
+  "data.channels": "CHANNELS",
   "data.photos": "Photos",
   "data.videos": "Videos",
   "data.files": "Files",
+  "data.music": "Music",
+  "data.other": "Other",
   "data.network": "Network Usage",
   "data.bytesSent": "Bytes Sent",
   "data.bytesReceived": "Bytes Received",
@@ -132,6 +136,22 @@ loadDictionary("en", {
   "data.proxy": "Use Proxy",
   "data.addProxy": "Add Proxy",
   "data.connectionType": "Connection Type",
+  "data.proxySetup": "Proxy Setup",
+  "data.proxyHost": "Server",
+  "data.proxyUser": "Username (optional)",
+  "data.proxyPass": "Password (optional)",
+  "data.autoDownloadRoaming": "Roaming",
+  "data.autoDownloadRoamingSub": "Separate settings for mobile data",
+  "data.maxFileSize": "Max file size",
+  "data.useLessData": "Use Less Data for Calls",
+  "data.useLessDataSub": "Lower media quality when downloading",
+  "data.management": "Data Management",
+  "data.exportData": "Export Data",
+  "data.exportDataSub": "Download a copy of all your data",
+  "data.deleteAll": "Delete All Data",
+  "data.deleteAllSub": "Permanently delete account and all data",
+  "data.voiceMessages": "Voice Messages",
+  "data.stickers": "Stickers",
 
   // Appearance
   "appearance.day": "Day",
@@ -173,6 +193,8 @@ loadDictionary("en", {
   "general.save": "Save",
   "general.refresh": "Refresh",
   "general.cancel": "Cancel",
+  "general.clear": "Clear",
+  "general.clearing": "Clearing...",
   "general.edit": "Edit",
   "general.delete": "Delete",
   "general.search": "Search",

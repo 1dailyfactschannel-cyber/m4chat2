@@ -318,7 +318,25 @@ const PrivacySection = () => {
 const DataSection = () => {
   const { t } = useTranslation();
   const { settings, loading, updateSettings } = useSettings();
-  const usedGB = 1.42; const totalGB = 8;
+  const [clearingCache, setClearingCache] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [clearOptions, setClearOptions] = useState({ photos: true, videos: true, files: true, music: true, voice: true, stickers: true });
+  const [proxyHost, setProxyHost] = useState('');
+  const [proxyPort, setProxyPort] = useState('');
+  const [proxyUser, setProxyUser] = useState('');
+  const [proxyPass, setProxyPass] = useState('');
+  const [showProxyForm, setShowProxyForm] = useState(false);
+
+  const usedGB = 1.42;
+  const totalGB = 8;
+  const storageBreakdown = [
+    { label: t('data.photos'), size: '0.8 GB', pct: 56, color: '#2481CC' },
+    { label: t('data.videos'), size: '0.3 GB', pct: 21, color: '#4DA6E8' },
+    { label: t('data.files'), size: '0.2 GB', pct: 14, color: '#7BC4F0' },
+    { label: t('data.music'), size: '0.05 GB', pct: 4, color: '#A0D8F5' },
+    { label: t('data.other'), size: '0.07 GB', pct: 5, color: '#D1E9F8' },
+  ];
+
   if (loading || !settings?.data) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
@@ -327,84 +345,205 @@ const DataSection = () => {
     );
   }
   const d = settings.data;
+
+  const handleClearCache = async () => {
+    setClearingCache(true);
+    await new Promise(r => setTimeout(r, 1500));
+    setClearingCache(false);
+    setShowClearModal(false);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-5">
       <div className="max-w-[520px] mx-auto space-y-4">
         {/* Storage usage */}
         <Card>
-          <SectionTitle label={t('data.title')}/>
+          <SectionTitle label={t('data.title')} />
           <div className="px-5 pb-4">
             <div className="flex justify-between text-[12px] text-[#8E8E93] mb-2">
               <span>{t('data.used')} <span className="text-[#1C1C1E] font-medium">{usedGB} GB</span></span>
               <span>{t('data.total')} {totalGB} GB</span>
             </div>
-            <div className="w-full h-2.5 bg-[#F1F1F1] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[#2481CC] to-[#4DA6E8] rounded-full" style={{width:`${(usedGB/totalGB)*100}%`}}/>
+            <div className="w-full h-3 bg-[#F1F1F1] rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#2481CC] to-[#4DA6E8] rounded-full transition-all duration-500" style={{ width: `${(usedGB / totalGB) * 100}%` }} />
             </div>
-            <div className="flex gap-3 mt-3 text-[11px]">
-              {[{label:t('data.photos'),size:'0.8 GB',color:'#2481CC'},{label:t('data.videos'),size:'0.3 GB',color:'#4DA6E8'},{label:t('data.files'),size:'0.2 GB',color:'#7BC4F0'},{label:'Other',size:'0.12 GB',color:'#D1E9F8'}].map(c=>(
-                <div key={c.label} className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full shrink-0" style={{background:c.color}}/><span className="text-[#8E8E93]">{c.label} {c.size}</span></div>
+            <div className="mt-4 space-y-2">
+              {storageBreakdown.map(item => (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ background: item.color }} />
+                  <span className="flex-1 text-[13px] text-[#1C1C1E]">{item.label}</span>
+                  <span className="text-[12px] text-[#8E8E93]">{item.size}</span>
+                </div>
               ))}
             </div>
           </div>
-          <Divider/>
-          <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors">
-            <Trash2 className="w-4 h-4 text-[#EF4444] mr-3"/><span className="text-[14px] font-medium text-[#EF4444]">{t('data.clearCache')}</span>
+          <Divider />
+          <div className="flex items-center px-5 py-3 cursor-pointer hover:bg-[#F5F5F5] transition-colors" onClick={() => setShowClearModal(true)}>
+            <Trash2 className="w-4 h-4 text-[#EF4444] mr-3" />
+            <span className="text-[14px] font-medium text-[#EF4444]">{t('data.clearCache')}</span>
             <span className="ml-auto text-[13px] text-[#8E8E93]">1.42 GB</span>
           </div>
-          <Divider/>
-          <Row label={t('data.storagePath')} value="~/Downloads" chevron onClick={()=>{}}/>
+          <Divider />
+          <Row label={t('data.storagePath')} value="~/Downloads" chevron onClick={() => {}} />
         </Card>
+
         {/* Auto-download */}
         <Card>
-          <SectionTitle label={t('data.autoDownload')}/>
+          <SectionTitle label={t('data.autoDownload')} />
           <div className="px-5 py-3">
-            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">{t('data.privateChats')}</div>
-            <div className="flex gap-4">
+            <div className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-2">{t('data.privateChats')}</div>
+            <div className="flex gap-3">
               {[
                 [t('data.photos'), d.dlPhotoPrivate, 'dlPhotoPrivate'],
                 [t('data.videos'), d.dlVideoPrivate, 'dlVideoPrivate'],
                 [t('data.files'), d.dlFilePrivate, 'dlFilePrivate'],
-              ].map(([label, val, key])=>(
-                <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
-                  className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
+              ].map(([label, val, key]) => (
+                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                  className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
               ))}
             </div>
           </div>
-          <Divider/>
+          <Divider />
           <div className="px-5 py-3">
-            <div className="text-[12px] font-semibold text-[#8E8E93] mb-2">{t('data.groupChats')}</div>
-            <div className="flex gap-4">
+            <div className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-2">{t('data.groupChats')}</div>
+            <div className="flex gap-3">
               {[
                 [t('data.photos'), d.dlPhotoGroup, 'dlPhotoGroup'],
                 [t('data.videos'), d.dlVideoGroup, 'dlVideoGroup'],
                 [t('data.files'), d.dlFileGroup, 'dlFileGroup'],
-              ].map(([label, val, key])=>(
-                <button key={label as string} onClick={()=>updateSettings('data', {[key as string]: !val})}
-                  className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val?'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]':'border-[#EDEDED] text-[#8E8E93]'}`}>
+              ].map(([label, val, key]) => (
+                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                  className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
               ))}
             </div>
           </div>
+          <Divider />
+          <div className="px-5 py-3">
+            <div className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-2">{t('data.channels')}</div>
+            <div className="flex gap-3">
+              {[
+                [t('data.photos'), d.dlPhotoChannel ?? true, 'dlPhotoChannel'],
+                [t('data.videos'), d.dlVideoChannel ?? false, 'dlVideoChannel'],
+                [t('data.files'), d.dlFileChannel ?? false, 'dlFileChannel'],
+              ].map(([label, val, key]) => (
+                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                  className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
+                  {label as string}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Divider />
+          <Row label={t('data.autoDownloadRoaming')} sub={t('data.autoDownloadRoamingSub')}>
+            <Toggle value={d.roaming ?? false} onChange={() => updateSettings('data', { roaming: !d.roaming })} />
+          </Row>
+          <Divider />
+          <Row label={t('data.maxFileSize')} value={`${d.maxFileSize ?? 10} MB`} chevron onClick={() => {}} />
         </Card>
-        {/* Network */}
+
+        {/* Network & Proxy */}
         <Card>
-          <SectionTitle label={t('data.network')}/>
-          {[{label:t('data.bytesSent'),val:'24.5 MB',icon:Upload},{label:t('data.bytesReceived'),val:'142 MB',icon:Download}].map(({label,val,icon:Icon})=>(
-            <React.Fragment key={label}><Row label={label} value={val}/><Divider/></React.Fragment>
-          ))}
-          <Row label={t('data.resetStats')} danger onClick={()=>{}}/>
+          <SectionTitle label={t('data.network')} />
+          <Row label={t('data.bytesSent')} value="24.5 MB" />
+          <Divider />
+          <Row label={t('data.bytesReceived')} value="142 MB" />
+          <Divider />
+          <Row label={t('data.useLessData')} sub={t('data.useLessDataSub')}>
+            <Toggle value={d.useLessData ?? false} onChange={() => updateSettings('data', { useLessData: !d.useLessData })} />
+          </Row>
+          <Divider />
+          <Row label={t('data.resetStats')} danger onClick={() => updateSettings('data', { bytesSent: 0, bytesReceived: 0 })} />
         </Card>
+
         {/* Proxy */}
         <Card>
-          <SectionTitle label={t('data.connectionType')}/>
-          <Row label={t('data.proxy')} onClick={()=>updateSettings('data', {proxyOn: !d.proxyOn})}><Toggle value={d.proxyOn} onChange={()=>updateSettings('data', {proxyOn: !d.proxyOn})}/></Row>
-          {d.proxyOn && <><Divider/><Row label={t('data.addProxy')} chevron onClick={()=>{}}/></>}
+          <SectionTitle label={t('data.connectionType')} />
+          <Row label={t('data.proxy')} onClick={() => { if (!d.proxyOn) { setShowProxyForm(true); } updateSettings('data', { proxyOn: !d.proxyOn }); }}>
+            <Toggle value={d.proxyOn} onChange={() => { updateSettings('data', { proxyOn: !d.proxyOn }); if (d.proxyOn) setShowProxyForm(false); }} />
+          </Row>
+          {d.proxyOn && showProxyForm && (
+            <>
+              <Divider />
+              <div className="px-5 py-4 space-y-3">
+                <div className="text-[13px] font-medium text-[#1C1C1E]">{t('data.proxySetup')}</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <input type="text" placeholder={t('data.proxyHost')} value={proxyHost} onChange={e => setProxyHost(e.target.value)}
+                    className="col-span-2 bg-[#F1F1F1] rounded-lg px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2481CC]" />
+                  <input type="number" placeholder="Port" value={proxyPort} onChange={e => setProxyPort(e.target.value)}
+                    className="bg-[#F1F1F1] rounded-lg px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2481CC]" />
+                </div>
+                <input type="text" placeholder={t('data.proxyUser')} value={proxyUser} onChange={e => setProxyUser(e.target.value)}
+                  className="w-full bg-[#F1F1F1] rounded-lg px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2481CC]" />
+                <input type="password" placeholder={t('data.proxyPass')} value={proxyPass} onChange={e => setProxyPass(e.target.value)}
+                  className="w-full bg-[#F1F1F1] rounded-lg px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2481CC]" />
+                <div className="flex gap-2 pt-1">
+                  <button className="flex-1 py-2 rounded-lg bg-[#2481CC] text-white text-[13px] font-medium hover:bg-[#1a6baa] transition-colors"
+                    onClick={() => { updateSettings('data', { proxyHost, proxyPort, proxyUser, proxyPass }); setShowProxyForm(false); }}>
+                    {t('general.save')}
+                  </button>
+                  <button className="flex-1 py-2 rounded-lg bg-[#F1F1F1] text-[#1C1C1E] text-[13px] font-medium hover:bg-[#E5E5E5] transition-colors"
+                    onClick={() => setShowProxyForm(false)}>
+                    {t('general.cancel')}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </Card>
+
+        {/* Data management */}
+        <Card>
+          <SectionTitle label={t('data.management')} />
+          <Row label={t('data.exportData')} sub={t('data.exportDataSub')} chevron onClick={() => {}} />
+          <Divider />
+          <Row label={t('data.deleteAll')} danger sub={t('data.deleteAllSub')} onClick={() => {}} />
         </Card>
       </div>
+
+      {/* Clear cache modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center" onClick={() => setShowClearModal(false)}>
+          <div className="bg-white rounded-2xl w-[400px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-[#EDEDED]">
+              <h3 className="font-bold text-[16px] text-[#1C1C1E]">{t('data.clearCache')}</h3>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-[13px] text-[#8E8E93]">{t('data.clearCacheDesc')}</p>
+              <div className="space-y-2">
+                {[
+                  { key: 'photos', label: t('data.photos') },
+                  { key: 'videos', label: t('data.videos') },
+                  { key: 'files', label: t('data.files') },
+                  { key: 'music', label: t('data.music') },
+                  { key: 'voice', label: t('data.voiceMessages') },
+                  { key: 'stickers', label: t('data.stickers') },
+                ].map(opt => (
+                  <label key={opt.key} className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked={clearOptions[opt.key as keyof typeof clearOptions]}
+                      onChange={e => setClearOptions(prev => ({ ...prev, [opt.key]: e.target.checked }))}
+                      className="w-4 h-4 rounded border-[#C7C7CC] text-[#2481CC] focus:ring-[#2481CC]" />
+                    <span className="text-[14px] text-[#1C1C1E]">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="px-6 py-3 bg-[#F5F5F5] flex gap-2">
+              <button className="flex-1 py-2 rounded-lg text-[13px] font-medium text-[#8E8E93] hover:bg-[#E5E5E5] transition-colors"
+                onClick={() => setShowClearModal(false)}>
+                {t('general.cancel')}
+              </button>
+              <button className="flex-1 py-2 rounded-lg bg-[#EF4444] text-white text-[13px] font-medium hover:bg-[#DC2626] transition-colors disabled:opacity-50"
+                onClick={handleClearCache} disabled={clearingCache}>
+                {clearingCache ? t('general.clearing') : t('general.clear')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -958,7 +1097,7 @@ const BotsSection = () => {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function DesktopSettings() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [active, setActive] = useState<Section>('account');
   const [search, setSearch] = useState('');
   const { profile, loading: profileLoading } = useUserProfile();
@@ -980,7 +1119,7 @@ export function DesktopSettings() {
     { id:'privacy', icon:Shield, label:t('settings.privacy') },
     { id:'data', icon:Database, label:t('settings.data') },
     { id:'appearance', icon:Palette, label:t('settings.appearance') },
-    { id:'language', icon:Globe, label:t('settings.language'), badge:'English' },
+    { id:'language', icon:Globe, label:t('settings.language'), badge: locale === 'ru' ? 'Русский' : 'English' },
     { id:'bots', icon:Bot, label:t('settings.bots') },
     { id:'premium', icon:Crown, label:t('settings.premium'), color:'text-[#8B5CF6]' },
     { id:'devices', icon:Monitor, label:t('settings.devices'), badge:'4' },

@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useState, useCallback } from "react";
+import { getDictionary } from "./registry";
+import type { Locale } from "./registry";
 // Import locale files to register dictionaries
 import "./locales/en";
 import "./locales/ru";
 
-export type Locale = "ru" | "en";
+export type { Locale } from "./registry";
 
 export interface I18nContextValue {
   locale: Locale;
@@ -13,15 +15,6 @@ export interface I18nContextValue {
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
-
-const dictionaries: Record<Locale, Record<string, string>> = {
-  en: {},
-  ru: {},
-};
-
-export function loadDictionary(locale: Locale, dict: Record<string, string>) {
-  dictionaries[locale] = { ...dictionaries[locale], ...dict };
-}
 
 export function I18nProvider({
   children,
@@ -43,7 +36,8 @@ export function I18nProvider({
 
   const t = useCallback(
     (key: string, fallback?: string) => {
-      return dictionaries[locale][key] ?? fallback ?? key;
+      const dict = getDictionary(locale);
+      return dict[key] ?? fallback ?? key;
     },
     [locale]
   );

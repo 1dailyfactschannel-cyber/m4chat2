@@ -1,4 +1,4 @@
-import { loadDictionary } from "../index";
+import { loadDictionary } from "../registry";
 
 loadDictionary("ru", {
   // App
@@ -118,13 +118,17 @@ loadDictionary("ru", {
   "data.used": "Использовано:",
   "data.total": "Всего:",
   "data.clearCache": "Очистить кэш",
+  "data.clearCacheDesc": "Выберите, какие данные нужно удалить. Это не повлияет на данные в облаке.",
   "data.storagePath": "Путь к хранилищу",
   "data.autoDownload": "Автозагрузка медиа",
   "data.privateChats": "ЛИЧНЫЕ ЧАТЫ",
   "data.groupChats": "ГРУППОВЫЕ ЧАТЫ",
+  "data.channels": "КАНАЛЫ",
   "data.photos": "Фото",
   "data.videos": "Видео",
   "data.files": "Файлы",
+  "data.music": "Музыка",
+  "data.other": "Другое",
   "data.network": "Использование сети",
   "data.bytesSent": "Отправлено",
   "data.bytesReceived": "Получено",
@@ -132,6 +136,22 @@ loadDictionary("ru", {
   "data.proxy": "Использовать прокси",
   "data.addProxy": "Добавить прокси",
   "data.connectionType": "Тип подключения",
+  "data.proxySetup": "Настройка прокси",
+  "data.proxyHost": "Сервер",
+  "data.proxyUser": "Логин (необязательно)",
+  "data.proxyPass": "Пароль (необязательно)",
+  "data.autoDownloadRoaming": "Роуминг",
+  "data.autoDownloadRoamingSub": "Отдельные настройки для мобильных данных",
+  "data.maxFileSize": "Макс. размер файла",
+  "data.useLessData": "Экономить трафик",
+  "data.useLessDataSub": "Снижать качество медиа при загрузке",
+  "data.management": "Управление данными",
+  "data.exportData": "Экспорт данных",
+  "data.exportDataSub": "Скачать копию всех ваших данных",
+  "data.deleteAll": "Удалить все данные",
+  "data.deleteAllSub": "Полностью удалить аккаунт и все данные",
+  "data.voiceMessages": "Голосовые сообщения",
+  "data.stickers": "Стикеры",
 
   // Appearance
   "appearance.day": "День",
@@ -173,6 +193,8 @@ loadDictionary("ru", {
   "general.save": "Сохранить",
   "general.refresh": "Обновить",
   "general.cancel": "Отмена",
+  "general.clear": "Очистить",
+  "general.clearing": "Очистка...",
   "general.edit": "Изменить",
   "general.delete": "Удалить",
   "general.search": "Поиск",
