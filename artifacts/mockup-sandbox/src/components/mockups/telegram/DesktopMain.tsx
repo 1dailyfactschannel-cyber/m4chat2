@@ -971,9 +971,9 @@ export default function DesktopMain() {
                             )}
                             {/* Reply preview */}
                             {replyMsg && (
-                              <div className={`text-[11px] mb-1 pl-2 border-l-2 ${msg.senderId === user?.id ? 'border-blue-200 text-blue-100' : 'border-[#2481CC] text-[#2481CC]'}`}>
+                              <div className={`text-[11px] mb-1 pl-2 py-1 pr-2 rounded border-l-2 bg-[#F0F7FF] ${msg.senderId === user?.id ? 'border-blue-300 text-blue-600' : 'border-[#2481CC] text-[#2481CC]'}`}>
                                 <div className="font-semibold">{replyMsg.senderName || t('account.notSet')}</div>
-                                <div className="truncate opacity-80">{replyMsg.content || t('msg.sticker')}</div>
+                                <div className="truncate opacity-90">{replyMsg.content || t('msg.sticker')}</div>
                               </div>
                             )}
                             {/* Bubble */}
