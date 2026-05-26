@@ -315,17 +315,65 @@ const PrivacySection = () => {
 };
 
 // ─── Data & Storage Section ───────────────────────────────────────────────────
+const DEFAULT_DATA_STATE = {
+  dlPhotoPrivate: true,
+  dlVideoPrivate: false,
+  dlFilePrivate: false,
+  dlPhotoGroup: true,
+  dlVideoGroup: false,
+  dlFileGroup: false,
+  dlPhotoChannel: true,
+  dlVideoChannel: false,
+  dlFileChannel: false,
+  proxyOn: false,
+  proxyHost: '',
+  proxyPort: '',
+  proxyUser: '',
+  proxyPass: '',
+  roaming: false,
+  maxFileSize: 10,
+  useLessData: false,
+  bytesSent: 24.5,
+  bytesReceived: 142,
+};
+
 const DataSection = () => {
   const { t } = useTranslation();
-  const { settings, loading, updateSettings } = useSettings();
+  const { settings, loading } = useSettings();
+  const [d, setD] = useState<Record<string, any>>(() => {
+    const serverData = settings?.data || {};
+    return { ...DEFAULT_DATA_STATE, ...serverData };
+  });
   const [clearingCache, setClearingCache] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearOptions, setClearOptions] = useState({ photos: true, videos: true, files: true, music: true, voice: true, stickers: true });
-  const [proxyHost, setProxyHost] = useState('');
-  const [proxyPort, setProxyPort] = useState('');
-  const [proxyUser, setProxyUser] = useState('');
-  const [proxyPass, setProxyPass] = useState('');
+  const [proxyHost, setProxyHost] = useState(d.proxyHost || '');
+  const [proxyPort, setProxyPort] = useState(d.proxyPort || '');
+  const [proxyUser, setProxyUser] = useState(d.proxyUser || '');
+  const [proxyPass, setProxyPass] = useState(d.proxyPass || '');
   const [showProxyForm, setShowProxyForm] = useState(false);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync with server settings when they load
+  useEffect(() => {
+    if (settings?.data) {
+      setD(prev => ({ ...prev, ...settings.data }));
+    }
+  }, [settings?.data]);
+
+  const updateField = useCallback((key: string, value: any) => {
+    setD(prev => {
+      const next = { ...prev, [key]: value };
+      // Debounced save to server
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        api.updateSettings({ data: next }).catch((err: any) => {
+          console.error("Failed to save data settings:", err);
+        });
+      }, 500);
+      return next;
+    });
+  }, []);
 
   const usedGB = 1.42;
   const totalGB = 8;
@@ -337,14 +385,13 @@ const DataSection = () => {
     { label: t('data.other'), size: '0.07 GB', pct: 5, color: '#D1E9F8' },
   ];
 
-  if (loading || !settings?.data) {
+  if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-5">
         <div className="text-[14px] text-[#8E8E93]">{t('general.loading')}</div>
       </div>
     );
   }
-  const d = settings.data;
 
   const handleClearCache = async () => {
     setClearingCache(true);
@@ -398,7 +445,7 @@ const DataSection = () => {
                 [t('data.videos'), d.dlVideoPrivate, 'dlVideoPrivate'],
                 [t('data.files'), d.dlFilePrivate, 'dlFilePrivate'],
               ].map(([label, val, key]) => (
-                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                <button key={key as string} onClick={() => updateField(key as string, !val)}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
@@ -414,7 +461,7 @@ const DataSection = () => {
                 [t('data.videos'), d.dlVideoGroup, 'dlVideoGroup'],
                 [t('data.files'), d.dlFileGroup, 'dlFileGroup'],
               ].map(([label, val, key]) => (
-                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                <button key={key as string} onClick={() => updateField(key as string, !val)}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
@@ -430,7 +477,7 @@ const DataSection = () => {
                 [t('data.videos'), d.dlVideoChannel ?? false, 'dlVideoChannel'],
                 [t('data.files'), d.dlFileChannel ?? false, 'dlFileChannel'],
               ].map(([label, val, key]) => (
-                <button key={key as string} onClick={() => updateSettings('data', { [key as string]: !val })}
+                <button key={key as string} onClick={() => updateField(key as string, !val)}
                   className={`flex-1 py-2 rounded-xl text-[12px] font-medium border transition-all ${val ? 'border-[#2481CC] bg-[#E8F4FF] text-[#2481CC]' : 'border-[#EDEDED] text-[#8E8E93]'}`}>
                   {label as string}
                 </button>
@@ -439,7 +486,7 @@ const DataSection = () => {
           </div>
           <Divider />
           <Row label={t('data.autoDownloadRoaming')} sub={t('data.autoDownloadRoamingSub')}>
-            <Toggle value={d.roaming ?? false} onChange={() => updateSettings('data', { roaming: !d.roaming })} />
+            <Toggle value={d.roaming ?? false} onChange={() => updateField('roaming', !d.roaming)} />
           </Row>
           <Divider />
           <Row label={t('data.maxFileSize')} value={`${d.maxFileSize ?? 10} MB`} chevron onClick={() => {}} />
@@ -448,22 +495,22 @@ const DataSection = () => {
         {/* Network & Proxy */}
         <Card>
           <SectionTitle label={t('data.network')} />
-          <Row label={t('data.bytesSent')} value="24.5 MB" />
+          <Row label={t('data.bytesSent')} value={`${d.bytesSent ?? 0} MB`} />
           <Divider />
-          <Row label={t('data.bytesReceived')} value="142 MB" />
+          <Row label={t('data.bytesReceived')} value={`${d.bytesReceived ?? 0} MB`} />
           <Divider />
           <Row label={t('data.useLessData')} sub={t('data.useLessDataSub')}>
-            <Toggle value={d.useLessData ?? false} onChange={() => updateSettings('data', { useLessData: !d.useLessData })} />
+            <Toggle value={d.useLessData ?? false} onChange={() => updateField('useLessData', !d.useLessData)} />
           </Row>
           <Divider />
-          <Row label={t('data.resetStats')} danger onClick={() => updateSettings('data', { bytesSent: 0, bytesReceived: 0 })} />
+          <Row label={t('data.resetStats')} danger onClick={() => { updateField('bytesSent', 0); updateField('bytesReceived', 0); }} />
         </Card>
 
         {/* Proxy */}
         <Card>
           <SectionTitle label={t('data.connectionType')} />
-          <Row label={t('data.proxy')} onClick={() => { if (!d.proxyOn) { setShowProxyForm(true); } updateSettings('data', { proxyOn: !d.proxyOn }); }}>
-            <Toggle value={d.proxyOn} onChange={() => { updateSettings('data', { proxyOn: !d.proxyOn }); if (d.proxyOn) setShowProxyForm(false); }} />
+          <Row label={t('data.proxy')} onClick={() => { if (!d.proxyOn) { setShowProxyForm(true); } updateField('proxyOn', !d.proxyOn); }}>
+            <Toggle value={d.proxyOn ?? false} onChange={() => { updateField('proxyOn', !d.proxyOn); if (d.proxyOn) setShowProxyForm(false); }} />
           </Row>
           {d.proxyOn && showProxyForm && (
             <>
@@ -482,7 +529,7 @@ const DataSection = () => {
                   className="w-full bg-[#F1F1F1] rounded-lg px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-[#2481CC]" />
                 <div className="flex gap-2 pt-1">
                   <button className="flex-1 py-2 rounded-lg bg-[#2481CC] text-white text-[13px] font-medium hover:bg-[#1a6baa] transition-colors"
-                    onClick={() => { updateSettings('data', { proxyHost, proxyPort, proxyUser, proxyPass }); setShowProxyForm(false); }}>
+                    onClick={() => { updateField('proxyHost', proxyHost); updateField('proxyPort', proxyPort); updateField('proxyUser', proxyUser); updateField('proxyPass', proxyPass); setShowProxyForm(false); }}>
                     {t('general.save')}
                   </button>
                   <button className="flex-1 py-2 rounded-lg bg-[#F1F1F1] text-[#1C1C1E] text-[13px] font-medium hover:bg-[#E5E5E5] transition-colors"

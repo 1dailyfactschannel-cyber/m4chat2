@@ -161,11 +161,6 @@ export function useSettings() {
         syncAppearanceWithUI(updated.appearance);
       }
 
-      // Sync language changes to i18n immediately
-      if (category === 'language' && values.lang !== undefined) {
-        setLocale(mapLangToLocale(values.lang));
-      }
-
       // Debounced save to server
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
@@ -176,6 +171,11 @@ export function useSettings() {
 
       return updated;
     });
+
+    // Sync language changes to i18n immediately — must be OUTSIDE setState updater
+    if (category === 'language' && values.lang !== undefined) {
+      setLocale(mapLangToLocale(values.lang));
+    }
   }, [setLocale]);
 
   return { settings, loading, updateSettings, reload: loadSettings };
